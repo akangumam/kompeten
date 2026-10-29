@@ -1,0 +1,176 @@
+import { BadgeCheck, CalendarClock, Download, FileText, Users } from 'lucide-react'
+import { ContractsTable } from '@/components/dashboard/contracts-table'
+import { DepartmentChart } from '@/components/dashboard/department-chart'
+import { EmployeeTrendChart } from '@/components/dashboard/employee-trend-chart'
+import { MetricCard } from '@/components/dashboard/metric-card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { KoperasiTab } from '@/components/dashboard/koperasi-tab'
+import { PresensiTab } from '@/components/dashboard/presensi-tab'
+import type { DayRecord } from '@/data/attendance'
+import { ALL_DEPT, PRES_PERIOD_IDS, presPeriodLabel } from '@/data/dashboard'
+import { COOP_MONTHS, DEFAULT_COOP_MONTH } from '@/data/dashboard-koperasi'
+import type { LeaveRequest } from '@/data/leave'
+import { periodForId } from '@/data/master/attendance-rules'
+import { periodLabel } from '@/data/koperasi/loans'
+import { isKsbRole } from '@/data/koperasi/ksb'
+import type { CurrentUser, Role } from '@/data/users'
+import { funnel } from '@/data/candidates'
+import { useRecruitment } from '@/data/recruitment/store'
+import { useDirectoryNav } from '@/lib/directory-nav'
+import type { PageId } from '@/App'
+import { useEffect, useState } from 'react'
+import { expiringContracts, useTrx } from '@/data/transactions'
+
+const DEPARTMENTS = [
+  'Semua Department', 'Produksi', 'Quality Assurance', 'Maintenance', 'PPIC', 'Warehouse',
+  'Engineering', 'HR & GA', 'Finance', 'IT', 'Purchasing',
+]
+
+function Placeholder() {
+  return (
+    <Card>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <p className="text-sm text-muted-foreground">Konten tab ini dibuat di tahap berikutnya</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+type TabId = 'umum' | 'produksi' | 'presensi' | 'koperasi'
+const TAB_LABEL: Record<TabId, string> = { umum: 'Umum & Rekrutmen', produksi: 'Produksi', presensi: 'Presensi', koperasi: 'Koperasi' }
+
+/** Tab Dashboard per peran: Koperasi hanya untuk pengurus KSB; HR dan Payroll tidak pernah melihat tab Koperasi. */
+export function tabsFor(role: Role): TabId[] {
+  if (isKsbRole(role)) return ['koperasi']
+  if (role === 'admin' || role === 'manager') return ['umum', 'produksi', 'presensi']
+  if (role === 'supervisor') return ['umum', 'presensi']
+  return ['umum']
+}
+
+export default function DashboardPage({
+  user, records, requests, onNavigate,
+}: {
+  user: CurrentUser
+  records: DayRecord[]
+  requests: LeaveRequest[]
+  onNavigate: (page: PageId, id?: string | null) => void
+}) {
+  const { openDirectory } = useDirectoryNav()
+  useTrx()
+  useRecruitment()
+  const fun = funnel()
+  const tabs = tabsFor(user.role)
+  const ksb = isKsbRole(user.role)
+  const [tab, setTab] = useState<TabId>(tabs[0])
+  const [tahun, setTahun] = useState('2026')
+  const [dept, setDept] = useState('Semua Department')
+  const [presPeriod, setPresPeriod] = useState('2026-10')
+  const [presDept, setPresDept] = useState(ALL_DEPT)
+  const [coopMonth, setCoopMonth] = useState(DEFAULT_COOP_MONTH)
+  // Ganti persona: pertahankan tab aktif bila masih diizinkan, jika tidak pilih tab pertama.
+  const active: TabId = tabs.includes(tab) ? tab : tabs[0]
+  useEffect(() => { if (active !== tab) setTab(active) }, [active, tab])
+
+  return (
+    <div className="mx-auto w-full max-w-[1600px] space-y-6 p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{ksb ? 'Dashboard Koperasi' : 'Dashboard'}</h1>
+          <p className="text-sm text-muted-foreground">{ksb ? 'Ringkasan simpanan, pinjaman, dan keuangan Koperasi KSB' : 'Ringkasan SDM dan rekrutmen PT Primaplast Indonesia'}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {active === 'umum' && (
+            <>
+              <Select value={tahun} onValueChange={setTahun}>
+                <SelectTrigger aria-label="Tahun" className="min-w-[110px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['2026', '2025', '2024'].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={dept} onValueChange={setDept}>
+                <SelectTrigger aria-label="Department" className="min-w-[200px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline"><Download className="size-4" />Export</Button>
+            </>
+          )}
+          {active === 'presensi' && (
+            <>
+              <Select value={presPeriod} onValueChange={setPresPeriod}>
+                <SelectTrigger aria-label="Periode kehadiran" className="min-w-[340px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRES_PERIOD_IDS.map((id) => <SelectItem key={id} value={id}>{presPeriodLabel(periodForId(id))}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={presDept} onValueChange={setPresDept}>
+                <SelectTrigger aria-label="Department" className="min-w-[200px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_DEPT}>Semua Department</SelectItem>
+                  {DEPARTMENTS.slice(1).map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </>
+          )}
+          {active === 'koperasi' && (
+            <Select value={coopMonth} onValueChange={setCoopMonth}>
+              <SelectTrigger aria-label="Bulan" className="min-w-[190px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {COOP_MONTHS.map((m) => <SelectItem key={m} value={m}>{periodLabel(m)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+
+      <Tabs value={active} onValueChange={(v) => setTab(v as TabId)} className="gap-6">
+        {!ksb && (
+          <TabsList className="h-auto max-w-full flex-wrap justify-start">
+            {tabs.map((t) => <TabsTrigger key={t} value={t}>{TAB_LABEL[t]}</TabsTrigger>)}
+          </TabsList>
+        )}
+
+        {tabs.includes('umum') && (
+          <TabsContent value="umum" className="space-y-6">
+          <p className="text-sm text-muted-foreground">
+            Menampilkan 248 karyawan aktif di semua department per Oktober 2026, termasuk {expiringContracts().length} karyawan dengan kontrak berakhir dalam 45 hari.
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard label="Karyawan Aktif" value="248" icon={Users} iconClass="text-success" delta="+12% dari tahun lalu" trend="up" tone="success" onClick={() => openDirectory({ tab: 'aktif' })} />
+            <MetricCard label="Pelamar" value={String(fun['Seleksi Administrasi'])} icon={FileText} iconClass="text-info" delta="Semua lamaran yang masuk" tone="info" />
+            <MetricCard label="Interview" value={String(fun.Interview)} icon={CalendarClock} iconClass="text-warning" delta="Pernah mencapai tahap Interview" tone="warning" />
+            <MetricCard label="Lolos" value={String(fun.Diterima)} icon={BadgeCheck} iconClass="text-success" delta="Penawaran diterima kandidat" tone="success" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-7"><EmployeeTrendChart /></div>
+            <div className="lg:col-span-5"><DepartmentChart /></div>
+          </div>
+
+          <ContractsTable user={user} leaves={requests} />
+          </TabsContent>
+        )}
+        {tabs.includes('produksi') && <TabsContent value="produksi"><Placeholder /></TabsContent>}
+        {tabs.includes('presensi') && (
+          <TabsContent value="presensi">
+            <PresensiTab records={records} requests={requests} user={user} periodId={presPeriod} dept={presDept} onNavigate={onNavigate} />
+          </TabsContent>
+        )}
+        {tabs.includes('koperasi') && (
+          <TabsContent value="koperasi">
+            <KoperasiTab bulan={coopMonth} onNavigate={onNavigate} />
+          </TabsContent>
+        )}
+      </Tabs>
+    </div>
+  )
+}

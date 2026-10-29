@@ -1,0 +1,10 @@
+{
+  "description": "Dashboard HRIS untuk tim HR PT Primaplast Indonesia, menyajikan ringkasan karyawan, tren rekrutmen, distribusi departemen, dan kontrak yang segera berakhir.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

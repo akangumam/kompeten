@@ -1,0 +1,23 @@
+# KOMPETEN — Aturan Bisnis Lintas Modul
+
+Tambahkan aturan bisnis baru dari setiap prompt ke file ini (bagian PART A pada prompt).
+
+## 6b. Business rules
+- **Koperasi ledgers** are append-only: every balance change is a mutation row (tanggal, jenis, debit/kredit, saldo, sumber, oleh); balances are computed from mutations, never edited.
+- **KSB self-approval:** KSB members are also anggota and never approve their own request; it goes to another KSB member (Ketua's own → Sekretaris) and the Sheet says "Diproses oleh {nama} karena pengaju adalah {peran}".
+- **Request statuses** (use exactly): Draft · Diajukan · Menunggu Approval · Menunggu Verifikasi HRD · Disetujui · Ditolak · Dibatalkan. Verification is a separate status after the approver's decision; data takes effect only after the last step.
+- **Final payroll runs** are stored snapshots, never recalculated when masters or rules change later.
+- **Approvers** come from the master "Matriks Penyetuju" (jabatan pengaju → Penyetuju 1 → Penyetuju 2), resolved to the person holding that jabatan in the employee's unit. HRD verification (Sakit, Dinas, lembur) is a separate step after the last approver.
+- **Business numbers** (UMK, Grade, tunjangan, uang makan/transport, JKK, BPJS caps, cut-off, usia pensiun, simpanan, kasbon, tenor) are effective-dated master values editable by their owner role; never hard-coded.
+- **Koperasi ↔ Payroll:** Koperasi sends approved bills (tagihan) per periode payroll; Payroll sends back actual deductions (realisasi). Koperasi balances change only when the Bendahara confirms the realisasi. A bill disbursed after its payroll run was pulled goes to the next period not yet pulled.
+- **Koperasi finance ledger:** every Koperasi income (biaya admin kasbon when collected, selisih Unit Dagang) and expense (pengeluaran Tercatat per pos anggaran) is one row in `src/data/koperasi/finance.ts`; Budget, Unit Dagang, the Kasbon KPI and SHU read from it. Months before Oktober 2026 are migrated summary rows ('Data migrasi').
+- **Koperasi effective dates:** Berlaku mulai cannot be in the past; default = 1st of next month; today allowed.
+- **SHU:** a tahun buku is Sementara until the Ketua finalises it after the year ends. A Final SHU is a stored snapshot (totals, percentages, per-member shares), never recalculated.
+- **Health data:** Kategori sakit is visible only to Admin HRD and HR & GA Manager; Atasan and Payroll see only 'Sakit'. Dashboards show health data only as aggregates (no names).
+- **Transaksi Kepegawaian:** the only way to change an active employee's jabatan, penempatan, kontrak or kategori (Promosi, Demosi, Rotasi, Mutasi, Perpanjangan Kontrak, Pengangkatan Tetap, Pindah Kategori). Effective-dated; changes the record only on the effective date and adds a Riwayat Kepegawaian row. NIP and Tanggal Masuk never change; none count as turnover.
+- **Disiplin:** Teguran Lisan/Tertulis, SP1–SP3 and Surat Panggilan are separate records; an SP never escalates automatically (the system only suggests the next level while an earlier SP is active); validity from master (default 6 bulan). Visible to Admin HRD, HR & GA Manager and the employee's own atasan only.
+- **Pegawai Keluar:** only through an offboarding record (alasan from master, tanggal keluar = last working day); Nonaktif from the day after. Exit interview and Eligible for Rehire are HR-only. HR sees only the Koperasi clearance status and deduction amount, never Koperasi saldo.
+- **Hak akhir:** a Hak Akhir record is created automatically when an offboarding is approved or a PKWT ends (also when extended). Payroll Officer calculates, HR & GA Manager approves, paid via the payroll period containing the date or a separate transfer. Multipliers come from the Aturan Hak Akhir master; below the statutory minimum = warning + note, not a block.
+- **Turnover** always uses the Dashboard headcount series (start of year = 31 Des previous year).
+- **Recruitment stages:** Seleksi Administrasi → Tes → Interview → Penawaran → Diterima (Ditolak/Batal at any stage); move forward only when the stage rule is met. Generate Data Pegawai copies biodata AND the accepted offer. Interviewers from the user department never see salary or Catatan Internal HRD. Offer Grade = the posisi's Grade in Data Master; another Grade or a salary outside the range needs a justification.
+- **Portal Pelamar:** separate shell (no sidebar/HR Topbar; mobile Bottom Nav Lowongan · Lamaran · Tes · Akun). Applicants see only their own applications, never internal notes, interview scores, other candidates, employee data or rehire status. Privacy consent (UU PDP) is required before an account; non-hired applicant data is kept per master (default 12 bulan) then anonymised.
