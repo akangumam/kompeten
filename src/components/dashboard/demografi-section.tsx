@@ -197,7 +197,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-            <div className="h-[180px] w-full flex items-center justify-center">
+            <div className="h-45 w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <ChartTooltip formatter={(val, name) => [`${val} orang`, name]} />
@@ -234,7 +234,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] w-full">
+            <div className="h-50 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={jenisData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -255,7 +255,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] w-full">
+            <div className="h-50 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statusKerjaData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -278,7 +278,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] w-full">
+            <div className="h-50 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={groupKerjaData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -298,7 +298,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] w-full">
+            <div className="h-50 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={pendidikanData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -321,7 +321,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc} · Master rentang Primaplast</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[220px] w-full">
+            <div className="h-55 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={tenureTierData} margin={{ top: 10, right: 10, left: -15, bottom: 25 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -349,7 +349,7 @@ export function DemografiSection({ user, dept }: Props) {
             <CardDescription>{totalDesc} · Master rentang Primaplast</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[220px] w-full">
+            <div className="h-55 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={ageTierData} margin={{ top: 10, right: 10, left: -15, bottom: 25 }}>
                   <CartesianGrid vertical={false} stroke="var(--border)" />

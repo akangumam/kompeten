@@ -259,7 +259,7 @@ export function ProduksiTab({ user, year, section, onNavigate }: Props) {
             <CardDescription>Perbandingan kebutuhan standar dan jumlah aktual</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full">
+            <ChartContainer config={chartConfig} className="aspect-auto h-65 w-full">
               <BarChart
                 data={sectionChartData}
                 layout="vertical"
@@ -312,7 +312,7 @@ export function ProduksiTab({ user, year, section, onNavigate }: Props) {
                 y2025: { label: '2025', color: 'var(--chart-2)' },
                 y2026: { label: '2026', color: 'var(--chart-1)' },
               }}
-              className="aspect-auto h-[260px] w-full"
+              className="aspect-auto h-65 w-full"
             >
               <ComposedChart data={trendData} margin={{ left: 0, right: 8, top: 8 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -377,12 +377,12 @@ export function ProduksiTab({ user, year, section, onNavigate }: Props) {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[180px]">Section</TableHead>
+                  <TableHead className="w-45">Section</TableHead>
                   <TableHead>Jabatan / Posisi</TableHead>
-                  <TableHead className="text-right w-[100px]">Standar</TableHead>
-                  <TableHead className="text-right w-[100px]">Existing</TableHead>
-                  <TableHead className="w-[160px]">Selisih</TableHead>
-                  <TableHead className="w-[240px]">Lowongan Rekrutmen</TableHead>
+                  <TableHead className="text-right w-25">Standar</TableHead>
+                  <TableHead className="text-right w-25">Existing</TableHead>
+                  <TableHead className="w-40">Selisih</TableHead>
+                  <TableHead className="w-60">Lowongan Rekrutmen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

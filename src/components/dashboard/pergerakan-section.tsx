@@ -119,7 +119,7 @@ export function PergerakanSection({ user, dept, onNavigate }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-auto h-[240px] w-full">
+            <ChartContainer config={chartConfig} className="aspect-auto h-60 w-full">
               <BarChart data={movementData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />

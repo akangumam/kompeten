@@ -93,11 +93,11 @@ export function ManpowerStandardTab({ canEdit, onHistory }: TabProps) {
       }
     >
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-50">
           <SearchBar value={q} onChange={setQ} placeholder="Cari posisi atau section…" />
         </div>
         <Select value={deptFilter} onValueChange={setDeptFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Semua Department" />
           </SelectTrigger>
           <SelectContent>
