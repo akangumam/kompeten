@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ManpowerStandardTab } from '@/components/master/manpower-standard-tab'
 import { ALL, type DirPreset } from '@/data/directory'
 import { ensureSupervisor, ROSTER } from '@/data/employees'
 import { addAudit } from '@/data/master/audit-log'
@@ -52,6 +54,7 @@ function affectedBy(node: OrgNode, newNik: string) {
 }
 
 export function OrgTab({ canEdit, onHistory }: TabProps) {
+  const [subTab, setSubTab] = useState<'struktur' | 'standar'>('struktur')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState<Set<string>>(new Set(['ROOT', 'DIV-OPS', 'DIV-CRP']))
   const [sheet, setSheet] = useState<{ mode: 'add' | 'edit'; node?: OrgNode } | null>(null)
@@ -88,7 +91,14 @@ export function OrgTab({ canEdit, onHistory }: TabProps) {
   }
 
   return (
-    <MasterCard
+    <div className="space-y-4">
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as any)}>
+        <TabsList>
+          <TabsTrigger value="struktur">Struktur Organisasi</TabsTrigger>
+          <TabsTrigger value="standar">Standar Tenaga Kerja</TabsTrigger>
+        </TabsList>
+        <TabsContent value="struktur" className="space-y-4">
+          <MasterCard
       title="Organisasi"
       description="Divisi, department, dan section beserta kepala unit dan jumlah pegawai"
       action={
@@ -207,6 +217,12 @@ export function OrgTab({ canEdit, onHistory }: TabProps) {
         }}
       />
     </MasterCard>
+        </TabsContent>
+        <TabsContent value="standar">
+          <ManpowerStandardTab canEdit={canEdit} onHistory={onHistory} />
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }
 

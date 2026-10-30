@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Paperclip, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const formatSize = (b: number) => (b >= 1048576 ? `${(b / 1048576).toLocaleString('id-ID', { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(b / 1024)).toLocaleString('id-ID')} KB`)
 
@@ -15,6 +16,7 @@ export function FilePicker({
   value,
   onChange,
   describedBy,
+  size = 'default',
 }: {
   id: string
   accept: string
@@ -24,6 +26,7 @@ export function FilePicker({
   value: PickedFile | null
   onChange: (f: PickedFile | null) => void
   describedBy?: string
+  size?: 'default' | 'touch'
 }) {
   const input = useRef<HTMLInputElement>(null)
   const [error, setError] = useState('')
@@ -50,7 +53,13 @@ export function FilePicker({
             e.target.value = ''
           }}
         />
-        <Button type="button" variant="outline" className="h-12 gap-2" aria-describedby={describedBy} onClick={() => input.current?.click()}>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn('gap-2', size === 'touch' ? 'h-12' : 'h-9')}
+          aria-describedby={describedBy}
+          onClick={() => input.current?.click()}
+        >
           <Paperclip className="size-4" />
           Pilih file
         </Button>

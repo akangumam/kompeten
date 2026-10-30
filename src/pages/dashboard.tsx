@@ -10,6 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KoperasiTab } from '@/components/dashboard/koperasi-tab'
 import { PresensiTab } from '@/components/dashboard/presensi-tab'
+import { ProduksiTab } from '@/components/dashboard/produksi-tab'
+import { DemografiSection } from '@/components/dashboard/demografi-section'
+import { PergerakanSection } from '@/components/dashboard/pergerakan-section'
 import type { DayRecord } from '@/data/attendance'
 import { ALL_DEPT, PRES_PERIOD_IDS, presPeriodLabel } from '@/data/dashboard'
 import { COOP_MONTHS, DEFAULT_COOP_MONTH } from '@/data/dashboard-koperasi'
@@ -49,8 +52,7 @@ const TAB_LABEL: Record<TabId, string> = { umum: 'Umum & Rekrutmen', produksi: '
 /** Tab Dashboard per peran: Koperasi hanya untuk pengurus KSB; HR dan Payroll tidak pernah melihat tab Koperasi. */
 export function tabsFor(role: Role): TabId[] {
   if (isKsbRole(role)) return ['koperasi']
-  if (role === 'admin' || role === 'manager') return ['umum', 'produksi', 'presensi']
-  if (role === 'supervisor') return ['umum', 'presensi']
+  if (role === 'admin' || role === 'manager' || role === 'supervisor') return ['umum', 'produksi', 'presensi']
   return ['umum']
 }
 
@@ -74,6 +76,8 @@ export default function DashboardPage({
   const [presPeriod, setPresPeriod] = useState('2026-10')
   const [presDept, setPresDept] = useState(ALL_DEPT)
   const [coopMonth, setCoopMonth] = useState(DEFAULT_COOP_MONTH)
+  const [prodYear, setProdYear] = useState('2026')
+  const [prodSection, setProdSection] = useState(user.role === 'supervisor' ? 'Injection' : 'Semua Section')
   // Ganti persona: pertahankan tab aktif bila masih diizinkan, jika tidak pilih tab pertama.
   const active: TabId = tabs.includes(tab) ? tab : tabs[0]
   useEffect(() => { if (active !== tab) setTab(active) }, [active, tab])
@@ -101,6 +105,32 @@ export default function DashboardPage({
                 </SelectContent>
               </Select>
               <Button variant="outline"><Download className="size-4" />Export</Button>
+            </>
+          )}
+          {active === 'produksi' && (
+            <>
+              <Select value={prodYear} onValueChange={setProdYear}>
+                <SelectTrigger aria-label="Tahun" className="min-w-[110px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['2026', '2025'].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select
+                value={user.role === 'supervisor' ? 'Injection' : prodSection}
+                onValueChange={setProdSection}
+                disabled={user.role === 'supervisor'}
+              >
+                <SelectTrigger aria-label="Section" className="min-w-[180px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {user.role === 'supervisor' ? (
+                    <SelectItem value="Injection">Injection</SelectItem>
+                  ) : (
+                    ['Semua Section', 'Injection', 'Blow Molding', 'Extrusion', 'Printing'].map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </>
           )}
           {active === 'presensi' && (
@@ -157,9 +187,21 @@ export default function DashboardPage({
           </div>
 
           <ContractsTable user={user} leaves={requests} />
+
+          <DemografiSection user={user} dept={dept} />
+          <PergerakanSection user={user} dept={dept} onNavigate={onNavigate} />
           </TabsContent>
         )}
-        {tabs.includes('produksi') && <TabsContent value="produksi"><Placeholder /></TabsContent>}
+        {tabs.includes('produksi') && (
+          <TabsContent value="produksi">
+            <ProduksiTab
+              user={user}
+              year={prodYear}
+              section={user.role === 'supervisor' ? 'Injection' : prodSection}
+              onNavigate={onNavigate}
+            />
+          </TabsContent>
+        )}
         {tabs.includes('presensi') && (
           <TabsContent value="presensi">
             <PresensiTab records={records} requests={requests} user={user} periodId={presPeriod} dept={presDept} onNavigate={onNavigate} />

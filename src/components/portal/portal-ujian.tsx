@@ -1,4 +1,5 @@
 // cspell:disable
+// cspell:disable
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, CheckCircle2, Flag, Grid3x3, HelpCircle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -11,6 +12,7 @@ import { loadExamSession, recordPageLeave, saveAnswer, startExam, submitExam, ty
 import { cn } from '@/lib/utils'
 
 type Props = { assignId: string; onDone: () => void }
+
 
 function formatTime(sec: number) {
   const m = Math.floor(sec / 60); const s = sec % 60
@@ -311,7 +313,7 @@ export function PortalUjian({ assignId, onDone }: Props) {
             <AlertDialogDescription asChild>
               <div className="space-y-1 text-sm">
                 {unanswered > 0 && <p className="font-medium text-warning">Belum dijawab: {unanswered} soal</p>}
-                {raguCount > 0 && <p className="text-muted-foreground">Ditandai ragu-ragu: {raguCount} soal</p>}
+                {raguCount > 0 && <p className="text-muted-foreground">Ragu-ragu: {raguCount} soal</p>}
                 {unanswered === 0 && raguCount === 0 && <p>Semua {total} soal sudah dijawab.</p>}
                 <p className="pt-1 text-xs text-muted-foreground">Jawaban tidak dapat diubah setelah dikumpulkan.</p>
               </div>

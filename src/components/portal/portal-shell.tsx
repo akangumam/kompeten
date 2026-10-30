@@ -253,7 +253,7 @@ function LowonganList({ go, session }: { go: (n: PortalNav) => void; session: Po
       <div className="flex gap-2">
         <Input placeholder="Cari posisi..." value={q} onChange={(e) => setQ(e.target.value)} className="flex-1 h-12" />
         <Select value={dept || 'all'} onValueChange={(v) => setDept(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-36 h-12"><SelectValue placeholder="Semua" /></SelectTrigger>
+          <SelectTrigger className="w-36 h-12 data-[size=default]:h-12"><SelectValue placeholder="Semua" /></SelectTrigger>
           <SelectContent><SelectItem value="all">Semua Dept</SelectItem>{depts.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
         </Select>
       </div>
@@ -266,7 +266,7 @@ function LowonganList({ go, session }: { go: (n: PortalNav) => void; session: Po
             return (
               <Card
                 key={j.no}
-                className="cursor-pointer rounded-xl p-4 shadow-sm hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="cursor-pointer rounded-xl p-4 shadow-sm hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-1"
                 role="button"
                 tabIndex={0}
                 onClick={() => go({ id: 'lowongan-detail', jobNo: j.no })}
@@ -628,7 +628,7 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
             <div className="space-y-2">
               <Label htmlFor="s-sumber">Sumber informasi lowongan *</Label>
               <Select value={form.sumber} onValueChange={(v) => upd('sumber', v)}>
-                <SelectTrigger id="s-sumber" className="h-12"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="s-sumber" className="h-12 data-[size=default]:h-12"><SelectValue /></SelectTrigger>
                 <SelectContent>{sumberLamaran().map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -649,8 +649,8 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
               <FieldRow><Label htmlFor="s-tgl">Tanggal lahir *</Label><Input id="s-tgl" className="h-12" type="date" value={form.tanggalLahir} onChange={(e) => upd('tanggalLahir', e.target.value)} />{sub && !form.tanggalLahir && <Err>Wajib diisi</Err>}</FieldRow>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FieldRow><Label htmlFor="s-gender">Jenis kelamin *</Label><Select value={form.gender} onValueChange={(v) => upd('gender', v)}><SelectTrigger id="s-gender" className="h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent><SelectItem value="Laki-laki">Laki-laki</SelectItem><SelectItem value="Perempuan">Perempuan</SelectItem></SelectContent></Select>{sub && !form.gender && <Err>Wajib dipilih</Err>}</FieldRow>
-              <FieldRow><Label htmlFor="s-nikah">Status pernikahan *</Label><Select value={form.pernikahan} onValueChange={(v) => upd('pernikahan', v)}><SelectTrigger id="s-nikah" className="h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{['Belum Menikah', 'Menikah', 'Janda/Duda'].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>{sub && !form.pernikahan && <Err>Wajib dipilih</Err>}</FieldRow>
+              <FieldRow><Label htmlFor="s-gender">Jenis kelamin *</Label><Select value={form.gender} onValueChange={(v) => upd('gender', v)}><SelectTrigger id="s-gender" className="h-12 data-[size=default]:h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent><SelectItem value="Laki-laki">Laki-laki</SelectItem><SelectItem value="Perempuan">Perempuan</SelectItem></SelectContent></Select>{sub && !form.gender && <Err>Wajib dipilih</Err>}</FieldRow>
+              <FieldRow><Label htmlFor="s-nikah">Status pernikahan *</Label><Select value={form.pernikahan} onValueChange={(v) => upd('pernikahan', v)}><SelectTrigger id="s-nikah" className="h-12 data-[size=default]:h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{['Belum Menikah', 'Menikah', 'Janda/Duda'].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>{sub && !form.pernikahan && <Err>Wajib dipilih</Err>}</FieldRow>
             </div>
           </>
         )}
@@ -695,7 +695,7 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
                   {form.pendidikan.length > 1 && <Button variant="ghost" size="icon" className="size-12" onClick={() => upd('pendidikan', form.pendidikan.filter((_, j) => j !== i))}><Trash2 className="size-4" /></Button>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <FieldRow><Label>Jenjang *</Label><Select value={p.jenjang} onValueChange={(v) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, jenjang: v } : x))}><SelectTrigger className="h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{JENJANG.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></FieldRow>
+                  <FieldRow><Label>Jenjang *</Label><Select value={p.jenjang} onValueChange={(v) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, jenjang: v } : x))}><SelectTrigger className="h-12 data-[size=default]:h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{JENJANG.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></FieldRow>
                   <FieldRow><Label>Tahun lulus *</Label><Input className="h-12" inputMode="numeric" maxLength={4} value={p.tahun} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, tahun: e.target.value.replace(/\D/g, '').slice(0, 4) } : x))} /></FieldRow>
                 </div>
                 <FieldRow><Label>Institusi *</Label><Input className="h-12" value={p.institusi} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, institusi: e.target.value } : x))} /></FieldRow>
@@ -762,7 +762,7 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
               return (
                 <div key={d.key} className="space-y-1">
                   <Label htmlFor={`doc-${d.key}`}>{d.label}{d.wajib && ' *'}</Label>
-                  <FilePicker id={`doc-${d.key}`} {...acc} value={form.docs[d.key] ?? null} onChange={(f) => upd('docs', { ...form.docs, [d.key]: f ?? undefined })} />
+                  <FilePicker id={`doc-${d.key}`} size="touch" {...acc} value={form.docs[d.key] ?? null} onChange={(f) => upd('docs', { ...form.docs, [d.key]: f ?? undefined })} />
                   {!isPhoto && <p className="text-xs text-muted-foreground">Format PDF, JPG, atau PNG · maks. 5 MB</p>}
                   {isPhoto && <p className="text-xs text-muted-foreground">Format JPG atau PNG · maks. 5 MB · tampak depan, latar polos</p>}
                   {sub && d.wajib && !form.docs[d.key] && <p className="text-sm text-danger">Dokumen ini wajib diunggah</p>}
@@ -985,7 +985,7 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
             <DialogTitle>Unggah Ulang Dokumen</DialogTitle>
             <DialogDescription>{reuploadKey ? DOC_DEFS.find((d) => d.key === reuploadKey)?.label : ''}</DialogDescription>
           </DialogHeader>
-          <FilePicker id="reupload-file" {...DOC_ACCEPT} value={reuploadFile} onChange={setReuploadFile} />
+          <FilePicker id="reupload-file" size="touch" {...DOC_ACCEPT} value={reuploadFile} onChange={setReuploadFile} />
           <DialogFooter>
             <Button variant="outline" className="h-12" onClick={() => setReuploadKey(null)}>Batal</Button>
             <Button className="h-12" disabled={!reuploadFile} onClick={handleReupload}>Kirim</Button>

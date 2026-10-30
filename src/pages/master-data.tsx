@@ -1,7 +1,8 @@
-import { Briefcase, CalendarCheck, CalendarDays, Clock, History, Layers, Network, Scale, UserCheck, UserSearch, type LucideIcon } from 'lucide-react'
+import { Briefcase, CalendarCheck, CalendarDays, Clock, History, Layers, LayoutDashboard, Network, Scale, UserCheck, UserSearch, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { AuditSheet } from '@/components/master/audit-sheet'
 import { ApproverTab } from '@/components/master/approver-tab'
+import { DashboardTab } from '@/components/master/dashboard-tab'
 import { GradeTab } from '@/components/master/grade-tab'
 import { HolidayTab } from '@/components/master/holiday-tab'
 import { IndustrialTab } from '@/components/master/industrial-tab'
@@ -22,9 +23,10 @@ import { LEVEL_DEFS } from '@/data/master/levels'
 import { ORG } from '@/data/master/organization'
 import { POSITIONS } from '@/data/master/positions'
 import { POLA_DEFS, SHIFT_DEFS } from '@/data/master/shifts'
+import { AGE_TIERS, TENURE_TIERS } from '@/data/master/tier-ranges'
 import type { Role } from '@/data/users'
 
-type TabId = 'org' | 'pos' | 'grade' | 'shift' | 'holiday' | 'leave' | 'approver' | 'industrial' | 'recruit'
+type TabId = 'org' | 'pos' | 'grade' | 'shift' | 'holiday' | 'leave' | 'approver' | 'industrial' | 'recruit' | 'dashboard'
 
 export default function MasterDataPage({ role }: { role: Role }) {
   const [tab, setTab] = useState<TabId>('org')
@@ -42,6 +44,7 @@ export default function MasterDataPage({ role }: { role: Role }) {
     { id: 'approver', label: 'Penyetuju', icon: UserCheck, count: APPROVER_RULES.length },
     { id: 'industrial', label: 'Industrial', icon: Scale, count: EXIT_REASONS.length },
     { id: 'recruit', label: 'Rekrutmen', icon: UserSearch, count: 5 },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: TENURE_TIERS.length + AGE_TIERS.length },
   ]
   const onHistory = (q: string) => {
     setQuery(q)
@@ -96,6 +99,7 @@ export default function MasterDataPage({ role }: { role: Role }) {
           {tab === 'approver' && <ApproverTab {...props} />}
           {tab === 'industrial' && <IndustrialTab {...props} />}
           {tab === 'recruit' && <RecruitmentTab {...props} />}
+          {tab === 'dashboard' && <DashboardTab {...props} />}
         </div>
       </div>
       <AuditSheet open={hist} onOpenChange={setHist} query={query} onQuery={setQuery} />
