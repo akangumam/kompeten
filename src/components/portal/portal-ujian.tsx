@@ -1,3 +1,4 @@
+// cspell:disable
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, CheckCircle2, Flag, Grid3x3, HelpCircle } from 'lucide-react'
 import { toast } from 'sonner'

@@ -1,3 +1,4 @@
+// cspell:disable
 import { useCallback, useEffect, useState } from 'react'
 
 export type ThemeMode = 'light' | 'dark'
