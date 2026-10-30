@@ -1,7 +1,7 @@
 # KOMPETEN — Token, Tipografi, Status, Chart, Responsif, Aksesibilitas
 
 ## 3. Design tokens
-- Theme: shadcn/ui default, base color Neutral. `src/index.css` is the source of truth for tokens. Do not edit token values unless the prompt explicitly asks.
+- Theme: shadcn/ui default, base color Neutral. `src/index.css` is the source of truth for tokens. Do not edit token values unless the prompt explicitly asks. Theme mode hanya `light` | `dark` (tidak ada `system`). Default `light`. Semua akses localStorage dibungkus try/catch.
 - The app opens in **light mode** the first time regardless of the OS setting; the user's toggle choice (light | dark) is saved in localStorage `kompeten-theme` and applied before first paint (no flash).
 - Document head: `<title>{Judul halaman} · KOMPETEN HRIS & Koperasi</title>`, `lang="id"`, `robots` noindex/nofollow (internal app), Open Graph image = official logo on white. Favicon and app icons only from the official logo mark.
 - Use only token classes: background, foreground, card, muted, muted-foreground, primary, secondary, accent, border, input, ring, destructive, sidebar-*, chart-1..5, plus status tokens success, info, warning, danger.

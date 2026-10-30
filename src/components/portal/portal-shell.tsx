@@ -63,7 +63,7 @@ type PortalNav =
 type NavTab = 'lowongan' | 'lamaran' | 'tes' | 'akun'
 
 const PAGE_TITLE: Record<PortalPageId, string> = {
-  'lowongan-list': 'Karier', 'lowongan-detail': 'Detail Lowongan', masuk: 'Masuk', daftar: 'Daftar Akun',
+  'lowongan-list': 'Lowongan', 'lowongan-detail': 'Detail Lowongan', masuk: 'Masuk', daftar: 'Daftar Akun',
   otp: 'Verifikasi Email', 'apply-form': 'Form Lamaran', 'success-apply': 'Lamaran Berhasil',
   'lamaran-list': 'Lamaran Saya', 'lamaran-detail': 'Detail Lamaran', 'tes-list': 'Tes Saya',
   ujian: 'Ujian Online', akun: 'Akun Saya',
@@ -127,7 +127,7 @@ export function PortalShell({
         <span className="flex-1 text-sm font-semibold leading-tight">Karier PT Primaplast</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1 text-xs">
+            <Button variant="outline" className="h-12 gap-1 px-3 text-xs">
               Demo <ChevronsUpDown className="size-3" />
             </Button>
           </DropdownMenuTrigger>
@@ -156,7 +156,7 @@ export function PortalShell({
       </header>
 
       {/* Content */}
-      <div ref={mainRef} className="flex-1 overflow-y-auto pb-20">
+      <main ref={mainRef} className="flex-1 overflow-y-auto pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 py-6">
           {nav.id === 'lowongan-list' && <LowonganList go={go} session={session} />}
           {nav.id === 'lowongan-detail' && <LowonganDetail jobNo={nav.jobNo} go={go} session={session} />}
@@ -170,7 +170,7 @@ export function PortalShell({
           {nav.id === 'tes-list' && session && <TesList session={session} go={go} />}
           {nav.id === 'akun' && session && <AkunPage session={session} go={go} onLogout={() => { setSession(null); go({ id: 'lowongan-list' }) }} />}
         </div>
-      </div>
+      </main>
 
       {/* Portal Footer */}
       <div className="border-t bg-background px-4 py-3 text-center text-xs text-muted-foreground">
@@ -251,9 +251,9 @@ function LowonganList({ go, session }: { go: (n: PortalNav) => void; session: Po
         <p className="text-sm text-muted-foreground">PT Primaplast Indonesia · Oktober 2026</p>
       </div>
       <div className="flex gap-2">
-        <Input placeholder="Cari posisi..." value={q} onChange={(e) => setQ(e.target.value)} className="flex-1" />
+        <Input placeholder="Cari posisi..." value={q} onChange={(e) => setQ(e.target.value)} className="flex-1 h-12" />
         <Select value={dept || 'all'} onValueChange={(v) => setDept(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-36"><SelectValue placeholder="Semua" /></SelectTrigger>
+          <SelectTrigger className="w-36 h-12"><SelectValue placeholder="Semua" /></SelectTrigger>
           <SelectContent><SelectItem value="all">Semua Dept</SelectItem>{depts.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
         </Select>
       </div>
@@ -264,15 +264,25 @@ function LowonganList({ go, session }: { go: (n: PortalNav) => void; session: Po
           {filtered.map((j) => {
             const applied = alreadyApplied(j.no)
             return (
-              <Card key={j.no} className="cursor-pointer rounded-xl shadow-sm hover:bg-accent/50" role="button" tabIndex={0} onClick={() => go({ id: 'lowongan-detail', jobNo: j.no })} onKeyDown={(e) => e.key === 'Enter' && go({ id: 'lowongan-detail', jobNo: j.no })}>
-                <CardContent className="p-4">
-                  <div className="mb-1 flex items-start justify-between gap-2">
-                    <span className="font-semibold">{j.posisi}</span>
-                    {applied && <StatusBadge variant="success" className="shrink-0 text-[10px]">Sudah melamar</StatusBadge>}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{j.dept} · {j.jenis} · {j.statusKerja}</p>
-                  <p className="mt-2 text-xs text-muted-foreground">Ditutup {formatDate(j.tutup)}</p>
-                </CardContent>
+              <Card
+                key={j.no}
+                className="cursor-pointer rounded-xl p-4 shadow-sm hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                role="button"
+                tabIndex={0}
+                onClick={() => go({ id: 'lowongan-detail', jobNo: j.no })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    go({ id: 'lowongan-detail', jobNo: j.no })
+                  }
+                }}
+              >
+                <div className="mb-1 flex items-start justify-between gap-2">
+                  <span className="font-semibold">{j.posisi}</span>
+                  {applied && <StatusBadge variant="success" className="shrink-0 text-xs">Sudah melamar</StatusBadge>}
+                </div>
+                <p className="text-sm text-muted-foreground">{j.dept} · {j.jenis} · {j.statusKerja}</p>
+                <p className="mt-2 text-xs text-muted-foreground">Batas lamaran {formatDate(j.tutup)}</p>
               </Card>
             )
           })}
@@ -299,7 +309,7 @@ function LowonganDetail({ jobNo, go, session }: { jobNo: string; go: (n: PortalN
   return (
     <div className="space-y-6 pb-24">
       <div>
-        <button className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground" onClick={() => go({ id: 'lowongan-list' })}><ChevronLeft className="size-4" />Semua Lowongan</button>
+        <button className="mb-4 flex min-h-12 items-center gap-1 text-sm text-muted-foreground hover:text-foreground" onClick={() => go({ id: 'lowongan-list' })}><ChevronLeft className="size-4" />Semua Lowongan</button>
         <h1 className="text-2xl font-semibold tracking-tight">{job.posisi}</h1>
         <p className="text-sm text-muted-foreground">{job.dept} · {job.jenis} · {job.statusKerja}</p>
       </div>
@@ -387,26 +397,26 @@ function MasukPage({ returnJobNo, go, onLogin }: { returnJobNo?: string; go: (n:
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <div className="space-y-2">
           <Label htmlFor="m-email">Email *</Label>
-          <Input id="m-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!(sub && eEmail) || undefined} />
+          <Input id="m-email" type="email" className="h-12" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!(sub && eEmail) || undefined} />
           {sub && eEmail && <p className="text-sm text-danger">{eEmail}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="m-pw">Kata Sandi *</Label>
           <div className="relative">
-            <Input id="m-pw" type={show ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} className="pr-10" aria-invalid={!!(sub && ePw) || undefined} />
-            <button type="button" className="absolute right-2 top-2.5 text-muted-foreground" onClick={() => setShow(!show)} aria-label={show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}>
+            <Input id="m-pw" type={show ? 'text' : 'password'} className="h-12 pr-10" value={pw} onChange={(e) => setPw(e.target.value)} aria-invalid={!!(sub && ePw) || undefined} />
+            <button type="button" className="absolute right-0 top-0 flex h-12 w-10 items-center justify-center text-muted-foreground" onClick={() => setShow(!show)} aria-label={show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}>
               {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
           {sub && ePw && <p className="text-sm text-danger">{ePw}</p>}
         </div>
-        <button type="button" className="text-sm text-primary hover:underline" onClick={() => toast.info('Tautan reset kata sandi dikirim ke email Anda (demo)')}>Lupa kata sandi?</button>
+        <button type="button" className="inline-flex min-h-12 items-center text-sm text-primary hover:underline" onClick={() => toast.info('Tautan reset kata sandi dikirim ke email Anda (demo)')}>Lupa kata sandi?</button>
         <Button type="submit" className="h-12 w-full">Masuk</Button>
       </form>
       <Separator />
       <p className="text-center text-sm text-muted-foreground">
         Belum punya akun?{' '}
-        <button className="font-medium text-primary hover:underline" onClick={() => go({ id: 'daftar', returnJobNo, prefillEmail: email })}>Daftar</button>
+        <button className="inline-flex min-h-12 items-center font-medium text-primary hover:underline" onClick={() => go({ id: 'daftar', returnJobNo, prefillEmail: email })}>Daftar</button>
       </p>
     </div>
   )
@@ -437,31 +447,31 @@ function DaftarPage({ returnJobNo, prefillEmail, go }: { returnJobNo?: string; p
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <div className="space-y-2">
           <Label htmlFor="d-nama">Nama Lengkap *</Label>
-          <Input id="d-nama" value={nama} onChange={(e) => setNama(e.target.value)} aria-invalid={!!(sub && eNama) || undefined} />
+          <Input id="d-nama" className="h-12" value={nama} onChange={(e) => setNama(e.target.value)} aria-invalid={!!(sub && eNama) || undefined} />
           {sub && eNama && <p className="text-sm text-danger">{eNama}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="d-email">Email *</Label>
-          <Input id="d-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!(sub && eEmail) || undefined} />
+          <Input id="d-email" type="email" className="h-12" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!(sub && eEmail) || undefined} />
           {sub && eEmail && <p className="text-sm text-danger">{eEmail}</p>}
           <p className="text-xs text-muted-foreground">Kode verifikasi akan dikirim ke email ini</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="d-phone">Nomor HP *</Label>
-          <Input id="d-phone" inputMode="tel" value={phone} onChange={(e) => setPhone(formatHp(e.target.value))} aria-invalid={!!(sub && ePhone) || undefined} placeholder="0812-3456-7890" />
+          <Input id="d-phone" inputMode="tel" className="h-12" value={phone} onChange={(e) => setPhone(formatHp(e.target.value))} aria-invalid={!!(sub && ePhone) || undefined} placeholder="0812-3456-7890" />
           {sub && ePhone ? <p className="text-sm text-danger">{ePhone}</p> : <p className="text-xs text-muted-foreground">{RULES.hp.helper}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="d-pw">Kata Sandi *</Label>
           <div className="relative">
-            <Input id="d-pw" type={show ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} className="pr-10" aria-invalid={!!(sub && ePw) || undefined} />
-            <button type="button" className="absolute right-2 top-2.5 text-muted-foreground" onClick={() => setShow(!show)} aria-label={show ? 'Sembunyikan' : 'Tampilkan'}>
+            <Input id="d-pw" type={show ? 'text' : 'password'} className="h-12 pr-10" value={pw} onChange={(e) => setPw(e.target.value)} aria-invalid={!!(sub && ePw) || undefined} />
+            <button type="button" className="absolute right-0 top-0 flex h-12 w-10 items-center justify-center text-muted-foreground" onClick={() => setShow(!show)} aria-label={show ? 'Sembunyikan' : 'Tampilkan'}>
               {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
           {sub && ePw ? <p className="text-sm text-danger">{ePw}</p> : <p className="text-xs text-muted-foreground">Minimal 8 karakter</p>}
         </div>
-        <div className="flex items-start gap-3">
+        <div className="flex min-h-12 items-start gap-3">
           <Checkbox id="d-setuju" checked={setuju} onCheckedChange={(v) => setSetuju(!!v)} aria-invalid={!!(sub && eSetuju) || undefined} />
           <label htmlFor="d-setuju" className="text-sm leading-relaxed">
             Saya menyetujui{' '}
@@ -475,7 +485,7 @@ function DaftarPage({ returnJobNo, prefillEmail, go }: { returnJobNo?: string; p
         <Button type="submit" className="h-12 w-full">Daftar &amp; Kirim Kode OTP</Button>
       </form>
       <p className="text-center text-sm text-muted-foreground">
-        Sudah punya akun? <button className="font-medium text-primary hover:underline" onClick={() => go({ id: 'masuk', returnJobNo })}>Masuk</button>
+        Sudah punya akun? <button className="inline-flex min-h-12 items-center font-medium text-primary hover:underline" onClick={() => go({ id: 'masuk', returnJobNo })}>Masuk</button>
       </p>
     </div>
   )
@@ -503,11 +513,11 @@ function OtpPage({ email, nama, phone, returnJobNo, go, onLogin }: { email: stri
       <form className="space-y-4" onSubmit={handleVerify} noValidate>
         <div className="space-y-2">
           <Label htmlFor="otp">Kode OTP *</Label>
-          <Input id="otp" inputMode="numeric" maxLength={6} value={otp} onChange={(e) => setOtp(digitsOnly(e.target.value).slice(0, 6))} aria-invalid={!!(sub && eOtp) || undefined} placeholder="6 digit" className="text-center text-xl tracking-[0.3em]" />
+          <Input id="otp" inputMode="numeric" maxLength={6} value={otp} onChange={(e) => setOtp(digitsOnly(e.target.value).slice(0, 6))} aria-invalid={!!(sub && eOtp) || undefined} placeholder="6 digit" className="h-12 text-center text-xl tracking-[0.3em]" />
           {sub && eOtp && <p className="text-sm text-danger">{eOtp}</p>}
         </div>
         <Button type="submit" className="h-12 w-full">Verifikasi</Button>
-        <button type="button" className="w-full text-sm text-muted-foreground hover:text-foreground" onClick={() => toast.info(`Kode demo: 123456 (dikirim ulang ke ${email})`)}>Kirim ulang kode</button>
+        <button type="button" className="flex h-12 w-full items-center justify-center text-sm text-muted-foreground hover:text-foreground" onClick={() => toast.info(`Kode demo: 123456 (dikirim ulang ke ${email})`)}>Kirim ulang kode</button>
       </form>
     </div>
   )
@@ -597,7 +607,7 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
 
   return (
     <div className="space-y-4">
-      <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground" onClick={() => go({ id: 'lowongan-detail', jobNo })}><ChevronLeft className="size-4" />Kembali</button>
+      <button className="flex min-h-12 items-center gap-1 text-sm text-muted-foreground hover:text-foreground" onClick={() => go({ id: 'lowongan-detail', jobNo })}><ChevronLeft className="size-4" />Kembali</button>
       <div>
         <p className="text-xs text-muted-foreground">Langkah {step + 1} dari {STEPS.length}</p>
         <h1 className="text-xl font-semibold">{STEPS[step]}</h1>
@@ -613,12 +623,12 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
           <>
             <div className="space-y-2">
               <Label>Posisi yang dilamar</Label>
-              <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm">{job.posisi} · {job.dept}</div>
+              <div className="flex min-h-12 items-center rounded-md border bg-muted/50 px-3 py-2 text-sm">{job.posisi} · {job.dept}</div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="s-sumber">Sumber informasi lowongan *</Label>
               <Select value={form.sumber} onValueChange={(v) => upd('sumber', v)}>
-                <SelectTrigger id="s-sumber"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="s-sumber" className="h-12"><SelectValue /></SelectTrigger>
                 <SelectContent>{sumberLamaran().map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -628,19 +638,19 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
         {/* Step 1: Data pribadi */}
         {step === 1 && (
           <>
-            <FieldRow><Label htmlFor="s-nama">Nama lengkap *</Label><Input id="s-nama" value={form.nama} onChange={(e) => upd('nama', e.target.value)} aria-invalid={!!(sub && !form.nama.trim()) || undefined} />{sub && !form.nama.trim() && <Err>Nama wajib diisi</Err>}</FieldRow>
+            <FieldRow><Label htmlFor="s-nama">Nama lengkap *</Label><Input id="s-nama" className="h-12" value={form.nama} onChange={(e) => upd('nama', e.target.value)} aria-invalid={!!(sub && !form.nama.trim()) || undefined} />{sub && !form.nama.trim() && <Err>Nama wajib diisi</Err>}</FieldRow>
             <FieldRow>
               <Label htmlFor="s-ktp">NIK (KTP) *</Label>
-              <Input id="s-ktp" inputMode="numeric" maxLength={16} value={form.ktp} onChange={(e) => upd('ktp', digitsOnly(e.target.value).slice(0, 16))} onBlur={checkKtp} aria-invalid={!!(sub && form.ktp.length !== 16) || !!nikBlock || undefined} placeholder="16 digit" />
+              <Input id="s-ktp" className="h-12" inputMode="numeric" maxLength={16} value={form.ktp} onChange={(e) => upd('ktp', digitsOnly(e.target.value).slice(0, 16))} onBlur={checkKtp} aria-invalid={!!(sub && form.ktp.length !== 16) || !!nikBlock || undefined} placeholder="16 digit" />
               {nikBlock ? <Err>{nikBlock}</Err> : sub && form.ktp.length !== 16 ? <Err>NIK harus 16 digit</Err> : <p className="text-xs text-muted-foreground">16 digit angka sesuai KTP</p>}
             </FieldRow>
             <div className="grid grid-cols-2 gap-4">
-              <FieldRow><Label htmlFor="s-tlahir">Tempat lahir *</Label><Input id="s-tlahir" value={form.tempatLahir} onChange={(e) => upd('tempatLahir', e.target.value)} />{sub && !form.tempatLahir.trim() && <Err>Wajib diisi</Err>}</FieldRow>
-              <FieldRow><Label htmlFor="s-tgl">Tanggal lahir *</Label><Input id="s-tgl" type="date" value={form.tanggalLahir} onChange={(e) => upd('tanggalLahir', e.target.value)} />{sub && !form.tanggalLahir && <Err>Wajib diisi</Err>}</FieldRow>
+              <FieldRow><Label htmlFor="s-tlahir">Tempat lahir *</Label><Input id="s-tlahir" className="h-12" value={form.tempatLahir} onChange={(e) => upd('tempatLahir', e.target.value)} />{sub && !form.tempatLahir.trim() && <Err>Wajib diisi</Err>}</FieldRow>
+              <FieldRow><Label htmlFor="s-tgl">Tanggal lahir *</Label><Input id="s-tgl" className="h-12" type="date" value={form.tanggalLahir} onChange={(e) => upd('tanggalLahir', e.target.value)} />{sub && !form.tanggalLahir && <Err>Wajib diisi</Err>}</FieldRow>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FieldRow><Label htmlFor="s-gender">Jenis kelamin *</Label><Select value={form.gender} onValueChange={(v) => upd('gender', v)}><SelectTrigger id="s-gender"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent><SelectItem value="Laki-laki">Laki-laki</SelectItem><SelectItem value="Perempuan">Perempuan</SelectItem></SelectContent></Select>{sub && !form.gender && <Err>Wajib dipilih</Err>}</FieldRow>
-              <FieldRow><Label htmlFor="s-nikah">Status pernikahan *</Label><Select value={form.pernikahan} onValueChange={(v) => upd('pernikahan', v)}><SelectTrigger id="s-nikah"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{['Belum Menikah', 'Menikah', 'Janda/Duda'].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>{sub && !form.pernikahan && <Err>Wajib dipilih</Err>}</FieldRow>
+              <FieldRow><Label htmlFor="s-gender">Jenis kelamin *</Label><Select value={form.gender} onValueChange={(v) => upd('gender', v)}><SelectTrigger id="s-gender" className="h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent><SelectItem value="Laki-laki">Laki-laki</SelectItem><SelectItem value="Perempuan">Perempuan</SelectItem></SelectContent></Select>{sub && !form.gender && <Err>Wajib dipilih</Err>}</FieldRow>
+              <FieldRow><Label htmlFor="s-nikah">Status pernikahan *</Label><Select value={form.pernikahan} onValueChange={(v) => upd('pernikahan', v)}><SelectTrigger id="s-nikah" className="h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{['Belum Menikah', 'Menikah', 'Janda/Duda'].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>{sub && !form.pernikahan && <Err>Wajib dipilih</Err>}</FieldRow>
             </div>
           </>
         )}
@@ -649,28 +659,28 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
         {step === 2 && (
           <>
             <FieldRow><Label htmlFor="s-aktp">Alamat sesuai KTP *</Label><Textarea id="s-aktp" value={form.alamatKtp} onChange={(e) => upd('alamatKtp', e.target.value)} rows={3} />{sub && !form.alamatKtp.trim() && <Err>Alamat wajib diisi</Err>}</FieldRow>
-            <div className="flex items-center gap-2">
+            <div className="flex min-h-12 items-center gap-2">
               <Checkbox id="s-same" checked={form.samaKtp} onCheckedChange={(v) => upd('samaKtp', !!v)} />
               <label htmlFor="s-same" className="text-sm">Alamat domisili sama dengan KTP</label>
             </div>
             {!form.samaKtp && <FieldRow><Label htmlFor="s-adom">Alamat domisili *</Label><Textarea id="s-adom" value={form.alamatDomisili} onChange={(e) => upd('alamatDomisili', e.target.value)} rows={3} /></FieldRow>}
             <FieldRow>
               <Label htmlFor="s-hp">Nomor HP *</Label>
-              <Input id="s-hp" inputMode="tel" value={form.hp} onChange={(e) => upd('hp', formatHp(e.target.value))} aria-invalid={!!(sub && !RULES.hp.valid(digitsOnly(form.hp))) || undefined} placeholder="0812-3456-7890" />
+              <Input id="s-hp" className="h-12" inputMode="tel" value={form.hp} onChange={(e) => upd('hp', formatHp(e.target.value))} aria-invalid={!!(sub && !RULES.hp.valid(digitsOnly(form.hp))) || undefined} placeholder="0812-3456-7890" />
               {sub && !RULES.hp.valid(digitsOnly(form.hp)) ? <Err>{RULES.hp.error}</Err> : <p className="text-xs text-muted-foreground">{RULES.hp.helper}</p>}
             </FieldRow>
             <FieldRow>
               <Label htmlFor="s-email">Email *</Label>
-              <Input id="s-email" type="email" value={form.email} onChange={(e) => upd('email', e.target.value)} aria-invalid={!!(sub && !RULES.email.valid(form.email)) || undefined} />
+              <Input id="s-email" className="h-12" type="email" value={form.email} onChange={(e) => upd('email', e.target.value)} aria-invalid={!!(sub && !RULES.email.valid(form.email)) || undefined} />
               {sub && !RULES.email.valid(form.email) && <Err>{RULES.email.error}</Err>}
             </FieldRow>
             <div className="space-y-2 rounded-md border p-4">
               <p className="text-sm font-medium">Kontak darurat</p>
               <div className="grid grid-cols-2 gap-3">
-                <FieldRow><Label htmlFor="s-dnam">Nama *</Label><Input id="s-dnam" value={form.daruratNama} onChange={(e) => upd('daruratNama', e.target.value)} /></FieldRow>
-                <FieldRow><Label htmlFor="s-dhub">Hubungan *</Label><Input id="s-dhub" value={form.daruratHubungan} onChange={(e) => upd('daruratHubungan', e.target.value)} /></FieldRow>
+                <FieldRow><Label htmlFor="s-dnam">Nama *</Label><Input id="s-dnam" className="h-12" value={form.daruratNama} onChange={(e) => upd('daruratNama', e.target.value)} /></FieldRow>
+                <FieldRow><Label htmlFor="s-dhub">Hubungan *</Label><Input id="s-dhub" className="h-12" value={form.daruratHubungan} onChange={(e) => upd('daruratHubungan', e.target.value)} /></FieldRow>
               </div>
-              <FieldRow><Label htmlFor="s-dhp">No. HP *</Label><Input id="s-dhp" inputMode="tel" value={form.daruratHp} onChange={(e) => upd('daruratHp', formatHp(e.target.value))} /></FieldRow>
+              <FieldRow><Label htmlFor="s-dhp">No. HP *</Label><Input id="s-dhp" className="h-12" inputMode="tel" value={form.daruratHp} onChange={(e) => upd('daruratHp', formatHp(e.target.value))} /></FieldRow>
             </div>
           </>
         )}
@@ -682,25 +692,25 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
               <div key={i} className="space-y-3 rounded-md border p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Riwayat Pendidikan {i + 1}</p>
-                  {form.pendidikan.length > 1 && <Button variant="ghost" size="icon" onClick={() => upd('pendidikan', form.pendidikan.filter((_, j) => j !== i))}><Trash2 className="size-4" /></Button>}
+                  {form.pendidikan.length > 1 && <Button variant="ghost" size="icon" className="size-12" onClick={() => upd('pendidikan', form.pendidikan.filter((_, j) => j !== i))}><Trash2 className="size-4" /></Button>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <FieldRow><Label>Jenjang *</Label><Select value={p.jenjang} onValueChange={(v) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, jenjang: v } : x))}><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{JENJANG.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></FieldRow>
-                  <FieldRow><Label>Tahun lulus *</Label><Input inputMode="numeric" maxLength={4} value={p.tahun} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, tahun: e.target.value.replace(/\D/g, '').slice(0, 4) } : x))} /></FieldRow>
+                  <FieldRow><Label>Jenjang *</Label><Select value={p.jenjang} onValueChange={(v) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, jenjang: v } : x))}><SelectTrigger className="h-12"><SelectValue placeholder="Pilih" /></SelectTrigger><SelectContent>{JENJANG.map((j) => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></FieldRow>
+                  <FieldRow><Label>Tahun lulus *</Label><Input className="h-12" inputMode="numeric" maxLength={4} value={p.tahun} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, tahun: e.target.value.replace(/\D/g, '').slice(0, 4) } : x))} /></FieldRow>
                 </div>
-                <FieldRow><Label>Institusi *</Label><Input value={p.institusi} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, institusi: e.target.value } : x))} /></FieldRow>
-                <FieldRow><Label>Jurusan *</Label><Input value={p.jurusan} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, jurusan: e.target.value } : x))} /></FieldRow>
-                <FieldRow><Label>IPK / Nilai</Label><Input value={p.nilai} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, nilai: e.target.value } : x))} /></FieldRow>
+                <FieldRow><Label>Institusi *</Label><Input className="h-12" value={p.institusi} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, institusi: e.target.value } : x))} /></FieldRow>
+                <FieldRow><Label>Jurusan *</Label><Input className="h-12" value={p.jurusan} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, jurusan: e.target.value } : x))} /></FieldRow>
+                <FieldRow><Label>IPK / Nilai</Label><Input className="h-12" value={p.nilai} onChange={(e) => upd('pendidikan', form.pendidikan.map((x, j) => j === i ? { ...x, nilai: e.target.value } : x))} /></FieldRow>
               </div>
             ))}
-            <Button variant="outline" className="w-full gap-2" onClick={() => upd('pendidikan', [...form.pendidikan, { ...BLANK_EDU }])}><Plus className="size-4" />Tambah Pendidikan</Button>
+            <Button variant="outline" className="h-12 w-full gap-2" onClick={() => upd('pendidikan', [...form.pendidikan, { ...BLANK_EDU }])}><Plus className="size-4" />Tambah Pendidikan</Button>
           </>
         )}
 
         {/* Step 4: Pengalaman */}
         {step === 4 && (
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex min-h-12 items-center gap-2">
               <Checkbox id="s-belum" checked={form.belumBekerja} onCheckedChange={(v) => upd('belumBekerja', !!v)} />
               <label htmlFor="s-belum" className="text-sm">Belum pernah bekerja</label>
             </div>
@@ -708,18 +718,18 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
               <div key={i} className="space-y-3 rounded-md border p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Pengalaman {i + 1}</p>
-                  {form.pengalaman.length > 1 && <Button variant="ghost" size="icon" onClick={() => upd('pengalaman', form.pengalaman.filter((_, j) => j !== i))}><Trash2 className="size-4" /></Button>}
+                  {form.pengalaman.length > 1 && <Button variant="ghost" size="icon" className="size-12" onClick={() => upd('pengalaman', form.pengalaman.filter((_, j) => j !== i))}><Trash2 className="size-4" /></Button>}
                 </div>
-                <FieldRow><Label>Perusahaan *</Label><Input value={p.perusahaan} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, perusahaan: e.target.value } : x))} /></FieldRow>
-                <FieldRow><Label>Posisi *</Label><Input value={p.posisi} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, posisi: e.target.value } : x))} /></FieldRow>
+                <FieldRow><Label>Perusahaan *</Label><Input className="h-12" value={p.perusahaan} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, perusahaan: e.target.value } : x))} /></FieldRow>
+                <FieldRow><Label>Posisi *</Label><Input className="h-12" value={p.posisi} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, posisi: e.target.value } : x))} /></FieldRow>
                 <div className="grid grid-cols-2 gap-3">
-                  <FieldRow><Label>Mulai</Label><Input type="month" value={p.mulai} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, mulai: e.target.value } : x))} /></FieldRow>
-                  <FieldRow><Label>Selesai</Label><Input type="month" value={p.selesai} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, selesai: e.target.value } : x))} /></FieldRow>
+                  <FieldRow><Label>Mulai</Label><Input className="h-12" type="month" value={p.mulai} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, mulai: e.target.value } : x))} /></FieldRow>
+                  <FieldRow><Label>Selesai</Label><Input className="h-12" type="month" value={p.selesai} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, selesai: e.target.value } : x))} /></FieldRow>
                 </div>
-                <FieldRow><Label>Alasan berhenti</Label><Input value={p.alasan} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, alasan: e.target.value } : x))} /></FieldRow>
+                <FieldRow><Label>Alasan berhenti</Label><Input className="h-12" value={p.alasan} onChange={(e) => upd('pengalaman', form.pengalaman.map((x, j) => j === i ? { ...x, alasan: e.target.value } : x))} /></FieldRow>
               </div>
             ))}
-            {!form.belumBekerja && <Button variant="outline" className="w-full gap-2" onClick={() => upd('pengalaman', [...form.pengalaman, { ...BLANK_EXP }])}><Plus className="size-4" />Tambah Pengalaman</Button>}
+            {!form.belumBekerja && <Button variant="outline" className="h-12 w-full gap-2" onClick={() => upd('pengalaman', [...form.pengalaman, { ...BLANK_EXP }])}><Plus className="size-4" />Tambah Pengalaman</Button>}
           </>
         )}
 
@@ -729,13 +739,13 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
             <div className="space-y-3">
               <Label htmlFor="s-skill">Tambah keterampilan</Label>
               <div className="flex gap-2">
-                <Input id="s-skill" value={form.newSkill} placeholder="e.g. Microsoft Excel" onChange={(e) => upd('newSkill', e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const v = form.newSkill.trim(); if (v && !form.skills.includes(v)) upd('skills', [...form.skills, v]); upd('newSkill', '') } }} />
-                <Button variant="outline" onClick={() => { const v = form.newSkill.trim(); if (v && !form.skills.includes(v)) upd('skills', [...form.skills, v]); upd('newSkill', '') }}>Tambah</Button>
+                <Input id="s-skill" className="h-12" value={form.newSkill} placeholder="e.g. Microsoft Excel" onChange={(e) => upd('newSkill', e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const v = form.newSkill.trim(); if (v && !form.skills.includes(v)) upd('skills', [...form.skills, v]); upd('newSkill', '') } }} />
+                <Button variant="outline" className="h-12 px-5" onClick={() => { const v = form.newSkill.trim(); if (v && !form.skills.includes(v)) upd('skills', [...form.skills, v]); upd('newSkill', '') }}>Tambah</Button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {form.skills.map((s) => (
-                  <span key={s} className="flex items-center gap-1 rounded-full border bg-secondary px-2.5 py-0.5 text-xs font-medium">
-                    {s}<button type="button" aria-label={`Hapus ${s}`} onClick={() => upd('skills', form.skills.filter((x) => x !== s))}><X className="size-3" /></button>
+                  <span key={s} className="flex items-center gap-1.5 rounded-full border bg-secondary px-3 py-1 text-xs font-medium">
+                    {s}<button type="button" className="flex size-4 items-center justify-center" aria-label={`Hapus ${s}`} onClick={() => upd('skills', form.skills.filter((x) => x !== s))}><X className="size-3" /></button>
                   </span>
                 ))}
               </div>
@@ -766,7 +776,7 @@ function ApplyForm({ jobNo, session, go }: { jobNo: string; session: PortalSessi
         {step === 7 && (
           <div className="space-y-4">
             <Alert><Shield className="size-4" /><AlertTitle>Pernyataan Pelamar</AlertTitle><AlertDescription className="text-sm">Dengan mengirim lamaran ini, saya menyatakan bahwa semua informasi yang saya berikan adalah benar dan dapat dipertanggungjawabkan.</AlertDescription></Alert>
-            <div className="flex items-start gap-3">
+            <div className="flex min-h-12 items-start gap-3">
               <Checkbox id="s-setuju" checked={form.setuju} onCheckedChange={(v) => upd('setuju', !!v)} aria-invalid={!!(sub && !form.setuju) || undefined} />
               <label htmlFor="s-setuju" className="text-sm leading-relaxed">Saya menyatakan bahwa data yang saya isi adalah benar, dan saya menyetujui pemrosesan data pribadi untuk keperluan rekrutmen sesuai Kebijakan Privasi PT Primaplast Indonesia.</label>
             </div>
@@ -819,7 +829,7 @@ function LamaranList({ session, go }: { session: PortalSession; go: (n: PortalNa
         <div className="py-12 text-center">
           <ClipboardList className="mx-auto mb-3 size-10 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">Belum ada lamaran. Cari lowongan yang sesuai!</p>
-          <Button variant="outline" className="mt-4" onClick={() => go({ id: 'lowongan-list' })}>Lihat Lowongan</Button>
+          <Button variant="outline" className="mt-4 h-12" onClick={() => go({ id: 'lowongan-list' })}>Lihat Lowongan</Button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -828,7 +838,7 @@ function LamaranList({ session, go }: { session: PortalSession; go: (n: PortalNa
             const stageLabel = HR_STAGE_TO_PORTAL[c.stage] ?? c.stage
             const variant = c.stage === 'Diterima' ? 'success' : c.stage === 'Ditolak' || c.stage === 'Batal' ? 'neutral' : 'info'
             return (
-              <Card key={c.id} className="cursor-pointer rounded-xl shadow-sm hover:bg-accent/50" role="button" tabIndex={0} onClick={() => go({ id: 'lamaran-detail', candId: c.id })} onKeyDown={(e) => e.key === 'Enter' && go({ id: 'lamaran-detail', candId: c.id })}>
+              <Card key={c.id} className="cursor-pointer rounded-xl shadow-sm hover:bg-accent/50" role="button" tabIndex={0} onClick={() => go({ id: 'lamaran-detail', candId: c.id })} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), go({ id: 'lamaran-detail', candId: c.id }))}>
                 <CardContent className="p-4">
                   <div className="mb-1 flex items-start justify-between gap-2">
                     <span className="font-semibold">{c.posisi}</span>
@@ -888,7 +898,7 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
 
   return (
     <div className="space-y-6">
-      <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground" onClick={() => go({ id: 'lamaran-list' })}><ChevronLeft className="size-4" />Lamaran Saya</button>
+      <button className="flex min-h-12 items-center gap-1 text-sm text-muted-foreground hover:text-foreground" onClick={() => go({ id: 'lamaran-list' })}><ChevronLeft className="size-4" />Lamaran Saya</button>
       <div>
         <h1 className="text-xl font-semibold">{c.posisi}</h1>
         <p className="text-xs text-muted-foreground tabular-nums">{c.id} · Dilamar {formatDate(c.applyDate)}</p>
@@ -903,7 +913,7 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
             {rejectedDocs.map((d) => (
               <div key={d.key} className="space-y-1">
                 <p className="text-sm font-medium">{DOC_DEFS.find((x) => x.key === d.key)?.label}: <span className="font-normal">{d.alasan}</span></p>
-                <Button variant="outline" size="sm" className="gap-2 h-9" onClick={() => { setReuploadKey(d.key); setReuploadFile(null) }}>
+                <Button variant="outline" size="sm" className="h-12 gap-2" onClick={() => { setReuploadKey(d.key); setReuploadFile(null) }}>
                   <Upload className="size-4" />Unggah Ulang
                 </Button>
               </div>
@@ -945,7 +955,7 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
               <div><p className="text-xs text-muted-foreground">Pukul</p><p className="font-medium">{c.interview.jam} WIB</p></div>
             </div>
             <div><p className="text-xs text-muted-foreground">Lokasi</p><p className="font-medium">{c.interview.lokasi}</p></div>
-            <Button variant="outline" className="h-10 gap-2 w-full" onClick={() => {
+            <Button variant="outline" className="h-12 gap-2 w-full" onClick={() => {
               const dtstart = `${c.interview!.tanggal.replace(/-/g, '')}T${c.interview!.jam.replace('.', '')}0000`
               const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Interview ${c.posisi} - PT Primaplast\nDTSTART:${dtstart}\nDURATION:PT1H\nLOCATION:${c.interview!.lokasi}\nDESCRIPTION:Nomor lamaran ${c.id}\nEND:VEVENT\nEND:VCALENDAR`
               const blob = new Blob([ics], { type: 'text/calendar' })
@@ -977,8 +987,8 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
           </DialogHeader>
           <FilePicker id="reupload-file" {...DOC_ACCEPT} value={reuploadFile} onChange={setReuploadFile} />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReuploadKey(null)}>Batal</Button>
-            <Button disabled={!reuploadFile} onClick={handleReupload}>Kirim</Button>
+            <Button variant="outline" className="h-12" onClick={() => setReuploadKey(null)}>Batal</Button>
+            <Button className="h-12" disabled={!reuploadFile} onClick={handleReupload}>Kirim</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -990,13 +1000,13 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
             <AlertDialogTitle>Terima Penawaran?</AlertDialogTitle>
             <AlertDialogDescription>Keputusan ini tidak dapat dibatalkan setelah dikonfirmasi.</AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex items-start gap-3 px-1 py-2">
+          <div className="flex min-h-12 items-start gap-3 px-1 py-2">
             <Checkbox id="oc-check" checked={offerConfirmCheck} onCheckedChange={(v) => setOfferConfirmCheck(!!v)} />
             <label htmlFor="oc-check" className="text-sm">Saya telah membaca surat penawaran dan menyetujui semua syarat dan ketentuan.</label>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction disabled={!offerConfirmCheck} onClick={handleAcceptOffer}>Terima Penawaran</AlertDialogAction>
+            <AlertDialogCancel className="h-12">Batal</AlertDialogCancel>
+            <AlertDialogAction className="h-12" disabled={!offerConfirmCheck} onClick={handleAcceptOffer}>Terima Penawaran</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1011,8 +1021,8 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
             {declineAlasan && declineAlasan.trim().length < 10 && <p className="text-sm text-danger">Alasan minimal 10 karakter</p>}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeclineDialog(false)}>Batal</Button>
-            <Button variant="destructive" disabled={declineAlasan.trim().length < 10} onClick={handleDeclineOffer}>Tolak Penawaran</Button>
+            <Button variant="outline" className="h-12" onClick={() => setDeclineDialog(false)}>Batal</Button>
+            <Button variant="destructive" className="h-12" disabled={declineAlasan.trim().length < 10} onClick={handleDeclineOffer}>Tolak Penawaran</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1026,8 +1036,8 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
             <Textarea id="q-text" rows={3} value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setQuestionDialog(false)}>Batal</Button>
-            <Button disabled={!questionText.trim()} onClick={() => { toast.success('Pertanyaan Anda telah dikirim ke tim HR.'); setQuestionDialog(false); setQuestionText('') }}>Kirim Pertanyaan</Button>
+            <Button variant="outline" className="h-12" onClick={() => setQuestionDialog(false)}>Batal</Button>
+            <Button className="h-12" disabled={!questionText.trim()} onClick={() => { toast.success('Pertanyaan Anda telah dikirim ke tim HR.'); setQuestionDialog(false); setQuestionText('') }}>Kirim Pertanyaan</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1065,12 +1075,12 @@ function OfferSection({ offer, offerEff, candName, onAccept, onDecline, onQuesti
               {offer.transport > 0 && <Row label="Uang transport" value={rp(offer.transport)} />}
               <Row label="Benefit lain" value={offer.benefit} />
             </dl>
-            <Button variant="outline" className="h-10 gap-2 w-full" onClick={() => setLetterOpen(true)}><FileText className="size-4" />Lihat Surat Penawaran</Button>
+            <Button variant="outline" className="h-12 gap-2 w-full" onClick={() => setLetterOpen(true)}><FileText className="size-4" />Lihat Surat Penawaran</Button>
             <div className="flex gap-3">
               <Button className="h-12 flex-1" onClick={onAccept}>Terima Penawaran</Button>
               <Button variant="destructive" className="h-12 flex-1" onClick={onDecline}>Tolak</Button>
             </div>
-            <Button variant="ghost" className="h-10 w-full gap-2" onClick={onQuestion}><Info className="size-4" />Ajukan Pertanyaan</Button>
+            <Button variant="ghost" className="h-12 w-full gap-2" onClick={onQuestion}><Info className="size-4" />Ajukan Pertanyaan</Button>
           </>
         )}
       </CardContent>
@@ -1090,7 +1100,7 @@ function OfferSection({ offer, offerEff, candName, onAccept, onDecline, onQuesti
             </ul>
             <p className="text-muted-foreground text-xs">Penawaran ini berlaku hingga {offer.dikirim ? formatDate(offer.dikirim.batas) : '—'}.</p>
           </div>
-          <DialogFooter><Button onClick={() => setLetterOpen(false)}>Tutup</Button></DialogFooter>
+          <DialogFooter><Button className="h-12" onClick={() => setLetterOpen(false)}>Tutup</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </Card>
@@ -1151,7 +1161,7 @@ function PreTestRules({ paket, saved, onStart }: { paket: ReturnType<typeof pake
   if (!paket) return null
   return (
     <>
-      <Button variant="outline" className="h-10 w-full" onClick={() => setOpen(true)}>
+      <Button variant="outline" className="h-12 w-full" onClick={() => setOpen(true)}>
         {saved ? 'Lanjutkan Tes' : 'Mulai Tes'}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -1164,13 +1174,13 @@ function PreTestRules({ paket, saved, onStart }: { paket: ReturnType<typeof pake
             <li className="flex gap-2"><span className="mt-0.5 text-muted-foreground">•</span>Waktu tetap berjalan bila Anda keluar dari halaman</li>
             <li className="flex gap-2"><span className="mt-0.5 text-muted-foreground">•</span>Keluar halaman akan tercatat dan dilaporkan ke HRD</li>
           </ul>
-          <div className="flex items-center gap-3 rounded-md border p-3">
+          <div className="flex min-h-12 items-center gap-3 rounded-md border p-3">
             <Checkbox id="pre-ready" checked={ready} onCheckedChange={(v) => setReady(!!v)} />
             <label htmlFor="pre-ready" className="text-sm font-medium">Saya siap memulai tes</label>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Kembali</Button>
-            <Button disabled={!ready} onClick={() => { setOpen(false); onStart() }}>Mulai Tes</Button>
+            <Button variant="outline" className="h-12" onClick={() => setOpen(false)}>Kembali</Button>
+            <Button className="h-12" disabled={!ready} onClick={() => { setOpen(false); onStart() }}>Mulai Tes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

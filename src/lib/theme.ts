@@ -1,30 +1,38 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export type ThemeMode = 'light' | 'dark' | 'system'
+export type ThemeMode = 'light' | 'dark'
 const KEY = 'kompeten-theme'
 
+function read(): ThemeMode {
+  try {
+    return localStorage.getItem(KEY) === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+
 function apply(mode: ThemeMode) {
-  const dark =
-    mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  document.documentElement.classList.toggle('dark', dark)
+  document.documentElement.classList.toggle('dark', mode === 'dark')
 }
 
 export function useTheme() {
-  const [mode, setMode] = useState<ThemeMode>(() => (localStorage.getItem(KEY) as ThemeMode) || 'system')
+  const [mode, setModeState] = useState<ThemeMode>(read)
 
   useEffect(() => {
     apply(mode)
-    if (mode !== 'system') return
-    const mql = window.matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => apply('system')
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
   }, [mode])
 
-  const update = useCallback((next: ThemeMode) => {
-    localStorage.setItem(KEY, next)
-    setMode(next)
+  const setMode = useCallback((next: ThemeMode) => {
+    try {
+      localStorage.setItem(KEY, next)
+    } catch {}
+    setModeState(next)
+    apply(next)
   }, [])
 
-  return { mode, setMode: update }
+  const toggle = useCallback(() => {
+    setMode(read() === 'dark' ? 'light' : 'dark')
+  }, [setMode])
+
+  return { mode, setMode, toggle }
 }

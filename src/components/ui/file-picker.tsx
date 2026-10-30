@@ -50,7 +50,7 @@ export function FilePicker({
             e.target.value = ''
           }}
         />
-        <Button type="button" variant="outline" aria-describedby={describedBy} onClick={() => input.current?.click()}>
+        <Button type="button" variant="outline" className="h-12 gap-2" aria-describedby={describedBy} onClick={() => input.current?.click()}>
           <Paperclip className="size-4" />
           Pilih file
         </Button>
