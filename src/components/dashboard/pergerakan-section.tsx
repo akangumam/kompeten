@@ -1,16 +1,16 @@
 import { useMemo } from 'react'
-import { ArrowRight, UserCheck, UserMinus, TrendingDown, ExternalLink } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
+import { ArrowRight, UserMinus } from 'lucide-react'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ChartContainer, ChartTooltip, type ChartConfig } from '@/components/ui/chart'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import { StatCard } from '@/components/dashboard/stat-card'
+import { ChartCard, BarChartGrouped } from '@/components/charts'
+import type { ChartConfig } from '@/components/ui/chart'
 import { OFFS, turnoverStats, personOf } from '@/data/offboarding'
 import { HEADCOUNT } from '@/data/headcount'
 import { ROSTER } from '@/data/employees'
 import { formatTenure } from '@/data/directory'
 import { formatDate } from '@/lib/format'
-import { DEMO_TODAY } from '@/lib/today'
 import type { CurrentUser } from '@/data/users'
 import type { PageId } from '@/App'
 
@@ -109,95 +109,56 @@ export function PergerakanSection({ user, dept, onNavigate }: Props) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-stretch">
         {/* Masuk vs Keluar per Bulan (Grouped Bar) */}
-        <Card className="lg:col-span-8">
-          <CardHeader>
-            <CardTitle>Masuk vs Keluar per Bulan 2026</CardTitle>
-            <CardDescription>
-              {dept !== 'Semua Department' ? `Department ${dept}` : 'Seluruh perusahaan'} · Jan–Okt 2026
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-auto h-60 w-full">
-              <BarChart data={movementData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
-                <ChartTooltip
-                  formatter={(val, name) => [
-                    val !== null ? `${val} orang` : 'Belum ada data',
-                    name === 'masuk' ? 'Masuk' : 'Keluar',
-                  ]}
-                />
-                <Bar dataKey="masuk" fill="var(--chart-1)" radius={[4, 4, 0, 0]} name="masuk" />
-                <Bar dataKey="keluar" fill="var(--chart-2)" radius={[4, 4, 0, 0]} name="keluar" />
-              </BarChart>
-            </ChartContainer>
-            <div className="flex items-center justify-center gap-6 pt-3 text-xs">
-              <span className="flex items-center gap-2">
-                <span className="size-2.5 rounded-[2px]" style={{ backgroundColor: 'var(--chart-1)' }} />
-                Masuk
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="size-2.5 rounded-[2px]" style={{ backgroundColor: 'var(--chart-2)' }} />
-                Keluar
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Masuk vs Keluar per Bulan 2026"
+          description={`${dept !== 'Semua Department' ? `Department ${dept}` : 'Seluruh perusahaan'} · Jan–Okt 2026`}
+          className="lg:col-span-8"
+        >
+          <BarChartGrouped
+            layout="vertical"
+            data={movementData}
+            series={[
+              { key: 'masuk', label: 'Masuk' },
+              { key: 'keluar', label: 'Keluar' },
+            ]}
+            categoryKey="bulan"
+            config={chartConfig}
+            height={260}
+          />
+        </ChartCard>
 
         {/* Small KPI: Turnover Tahun Berjalan */}
-        <Card className="lg:col-span-4 flex flex-col justify-between">
-          <CardHeader>
-            <CardTitle className="text-base">Turnover Tahun Berjalan</CardTitle>
-            <CardDescription>
-              {dept !== 'Semua Department' ? 'Angka berlaku seluruh perusahaan' : 'Rasio keluar per rata-rata headcount'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
-                {tov.pct.toFixed(1).replace('.', ',')}%
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {tov.keluar} keluar ÷ {tov.avg.toLocaleString('id-ID')} rata-rata headcount × 100
-              </p>
-            </div>
-            <div className="rounded-md border bg-muted/40 p-3 space-y-1.5 text-xs text-muted-foreground">
-              <div className="flex justify-between">
-                <span>Headcount Awal Tahun:</span>
-                <strong className="text-foreground tabular-nums">{tov.awal}</strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Headcount Akhir Periode:</span>
-                <strong className="text-foreground tabular-nums">{tov.akhir}</strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Total Keluar (Turnover):</span>
-                <strong className="text-foreground tabular-nums">{tov.keluar} orang</strong>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-4 flex flex-col">
+          <StatCard
+            label="Turnover Tahun Berjalan"
+            value={`${tov.pct.toFixed(1).replace('.', ',')}%`}
+            delta={`${tov.keluar} keluar`}
+            categoryIcon={UserMinus}
+            summary={`Rata-rata headcount ${tov.avg.toLocaleString('id-ID')} (${tov.awal} → ${tov.akhir})`}
+            description={dept !== 'Semua Department' ? 'Angka berlaku seluruh perusahaan' : 'Rasio keluar per rata-rata headcount'}
+            className="h-full"
+          />
+        </div>
       </div>
 
       {/* Tabel Preview Keluar Terakhir */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <div>
-            <CardTitle>Keluar Terakhir</CardTitle>
-            <CardDescription>Daftar pegawai yang baru saja menyelesaikan proses offboarding</CardDescription>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs font-medium"
-            onClick={() => onNavigate?.('industrial-relations')}
-          >
-            <span>Lihat semua</span>
-            <ArrowRight className="size-3.5" />
-          </Button>
+        <CardHeader>
+          <CardTitle>Keluar Terakhir</CardTitle>
+          <CardDescription>Daftar pegawai yang baru saja menyelesaikan proses offboarding</CardDescription>
+          <CardAction>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-xs font-medium"
+              onClick={() => onNavigate?.('industrial-relations')}
+            >
+              <span>Lihat semua</span>
+              <ArrowRight className="size-3.5" />
+            </Button>
+          </CardAction>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -244,8 +205,10 @@ export function PergerakanSection({ user, dept, onNavigate }: Props) {
             </Table>
           </div>
         </CardContent>
+        <CardFooter className="text-xs text-muted-foreground pt-4 border-t">
+          Menampilkan {lastExits.length} dari {completedOffs.length} data
+        </CardFooter>
       </Card>
     </div>
   )
 }
-

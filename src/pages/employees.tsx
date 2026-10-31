@@ -16,7 +16,7 @@ import { AddEmployeeDialog } from '@/components/employees/add-employee-dialog'
 import { DirectoryFooter } from '@/components/employees/directory-footer'
 import { DirectoryHeader, DraftRow, EmployeeRow, ExitedRow, type Sort, type SortKey } from '@/components/employees/directory-rows'
 import { summarize } from '@/components/employees/summary'
-import { MetricCard } from '@/components/dashboard/metric-card'
+import { StatCard } from '@/components/dashboard/stat-card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -233,43 +233,45 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
+        <StatCard
           label="Pegawai Aktif"
           value={kpi.aktif.toLocaleString('id-ID')}
-          icon={Users}
-          iconClass="text-success"
-          delta={`Per ${formatDate(DEMO_TODAY)}`}
-          tone="success"
+          categoryIcon={Users}
+          summary={`Per ${formatDate(DEMO_TODAY)}`}
+          description="Total pegawai organik & kontrak aktif"
           active={tab === 'aktif' && filters.statusKerja === ALL && !filters.kontrak45}
           onClick={() => apply({ tab: 'aktif' })}
         />
-        <MetricCard
+        <StatCard
           label="Tetap"
           value={kpi.tetap.toLocaleString('id-ID')}
-          icon={BadgeCheck}
-          iconClass="text-info"
-          delta={`${kpi.aktif ? Math.round((kpi.tetap / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
-          tone="info"
+          delta={`${kpi.aktif ? Math.round((kpi.tetap / kpi.aktif) * 100) : 0}%`}
+          trend="neutral"
+          categoryIcon={BadgeCheck}
+          summary={`${kpi.aktif ? Math.round((kpi.tetap / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
+          description="Status pegawai perjanjian kerja waktu tidak tertentu"
           active={filters.statusKerja === 'Tetap'}
           onClick={() => apply({ tab: 'aktif', statusKerja: 'Tetap' })}
         />
-        <MetricCard
+        <StatCard
           label="Kontrak"
           value={kpi.pkwt.toLocaleString('id-ID')}
-          icon={FileClock}
-          iconClass="text-info"
-          delta={`${kpi.aktif ? Math.round((kpi.pkwt / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
-          tone="info"
+          delta={`${kpi.aktif ? Math.round((kpi.pkwt / kpi.aktif) * 100) : 0}%`}
+          trend="neutral"
+          categoryIcon={FileClock}
+          summary={`${kpi.aktif ? Math.round((kpi.pkwt / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
+          description="Status perjanjian kerja waktu tertentu (PKWT)"
           active={filters.statusKerja === 'Kontrak' && !filters.kontrak45}
           onClick={() => apply({ tab: 'aktif', statusKerja: 'Kontrak' })}
         />
-        <MetricCard
+        <StatCard
           label="Kontrak ≤ 45 hari"
           value={kpi.kontrak.toLocaleString('id-ID')}
-          icon={CalendarClock}
-          iconClass="text-warning"
-          delta="Perlu ditindaklanjuti"
-          tone="warning"
+          delta={kpi.kontrak ? `${kpi.kontrak} segera berakhir` : 'Aman'}
+          trend={kpi.kontrak ? 'down' : 'neutral'}
+          categoryIcon={CalendarClock}
+          summary="Perlu ditindaklanjuti"
+          description="Evaluasi perpanjangan atau selesai kontrak"
           active={filters.kontrak45}
           onClick={() => apply({ tab: 'aktif', kontrak45: true })}
         />

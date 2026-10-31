@@ -10,7 +10,7 @@ import { Pager, usePaging } from '@/components/attendance/pager'
 import { ReviewSheet } from '@/components/attendance/review-sheet'
 import { RecapTable } from '@/components/attendance/recap-table'
 import type { AttendanceApi } from '@/components/attendance/use-attendance'
-import { MetricCard } from '@/components/dashboard/metric-card'
+import { StatCard } from '@/components/dashboard/stat-card'
 import { DatePicker } from '@/components/employee/date-picker'
 import {
   AlertDialog,
@@ -258,43 +258,43 @@ export default function AttendancePage({ api, user, otPending = 0, verifItems = 
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
+        <StatCard
           label="Tingkat Kehadiran"
           value={`${stats.rate.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
-          icon={CalendarCheck}
-          iconClass="text-success"
-          delta="Dari hari kerja efektif"
-          tone="success"
+          categoryIcon={CalendarCheck}
+          summary="Dari hari kerja efektif"
+          description="Rasio kehadiran pegawai"
           active={statusTab === 'hadir'}
           onClick={() => kpiFilter('hadir')}
         />
-        <MetricCard
+        <StatCard
           label="Telat"
           value={`${stats.telat.toLocaleString('id-ID')} kali`}
-          icon={Clock}
-          iconClass="text-warning"
-          delta="Sepanjang periode"
-          tone="warning"
+          categoryIcon={Clock}
+          summary="Sepanjang periode"
+          description="Total kejadian keterlambatan"
           active={statusTab === 'telat'}
           onClick={() => kpiFilter('telat')}
         />
-        <MetricCard
+        <StatCard
           label="Anomali"
           value={String(stats.anomali)}
-          icon={TriangleAlert}
-          iconClass="text-danger"
-          delta={stats.anomali ? 'Perlu tindakan sebelum closing' : 'Semua anomali selesai'}
-          tone={stats.anomali ? 'danger' : 'success'}
+          delta={stats.anomali ? `${stats.anomali} perlu tindakan` : 'Selesai'}
+          trend={stats.anomali ? 'down' : 'up'}
+          categoryIcon={TriangleAlert}
+          summary={stats.anomali ? 'Perlu tindakan sebelum closing' : 'Semua anomali selesai'}
+          description="Penyelesaian anomali presensi"
           active={statusTab === 'anomali'}
           onClick={() => kpiFilter('anomali')}
         />
-        <MetricCard
+        <StatCard
           label="Menunggu Approval"
           value={String(stats.pending)}
-          icon={Hourglass}
-          iconClass="text-info"
-          delta={stats.pending ? 'Menunggu persetujuan atasan' : 'Tidak ada antrean'}
-          tone={stats.pending ? 'info' : 'success'}
+          delta={stats.pending ? `${stats.pending} antrean` : '0 antrean'}
+          trend={stats.pending ? 'down' : 'neutral'}
+          categoryIcon={Hourglass}
+          summary={stats.pending ? 'Menunggu persetujuan atasan' : 'Tidak ada antrean'}
+          description="Koreksi dan permohonan tertunda"
           active={statusTab === 'pending'}
           onClick={() => kpiFilter('pending')}
         />

@@ -190,7 +190,7 @@ export default function RecruitmentPage({ user, onOpenDraft, onOpenForm, initial
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8"><AvatarFallback className="bg-muted text-xs font-semibold text-foreground">{initials(c.nama)}</AvatarFallback></Avatar>
                         <div className="flex flex-col leading-tight">
-                          <span className="whitespace-nowrap font-medium">{c.nama}{c.deleteRequest && <span className="ml-1 inline-flex items-center rounded-full border border-danger/20 bg-danger/10 px-1.5 py-px text-[10px] font-medium text-danger">Minta hapus data</span>}</span>
+                          <span className="whitespace-nowrap font-medium">{c.nama}{c.deleteRequest && <span className="ml-1 inline-flex items-center rounded-full border border-danger/20 bg-danger/10 px-1.5 py-px text-xs font-medium text-danger">Minta hapus data</span>}</span>
                           <span className="text-xs text-muted-foreground tabular-nums">{c.id}</span>
                         </div>
                       </div>

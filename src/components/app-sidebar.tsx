@@ -67,6 +67,8 @@ const NAV: NavItem[] = [
 
 const PAGES: Record<string, PageId> = {
   'Dashboard/Umum & Rekrutmen': 'dashboard',
+  'Dashboard/Produksi': 'dashboard-produksi',
+  'Dashboard/Presensi': 'dashboard-presensi',
   'Recruitment/Daftar Kandidat': 'recruitment',
   'Recruitment/Lowongan': 'recruitment-jobs',
   'Recruitment/Form DICAP': 'recruitment-form',

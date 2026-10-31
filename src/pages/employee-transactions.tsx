@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { CalendarClock, CircleCheck, Clock, FileText, Hourglass, MoreHorizontal, Plus, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { MetricCard } from '@/components/dashboard/metric-card'
+import { StatCard } from '@/components/dashboard/stat-card'
 import { DirectoryFooter } from '@/components/employees/directory-footer'
 import { ExpiringCard } from '@/components/transactions/expiring-card'
 import { TrxCreateSheet } from '@/components/transactions/create-sheet'
@@ -162,10 +162,45 @@ export default function EmployeeTransactionsPage({ user, leaves, periodId, onCle
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Menunggu approval" value={String(kpi.menunggu)} icon={Hourglass} iconClass="text-info" delta="Perlu keputusan penyetuju" tone="info" onClick={() => pickStatus('menunggu')} active={status === 'menunggu'} />
-        <MetricCard label="Terjadwal" value={String(kpi.terjadwal)} icon={CalendarClock} iconClass="text-info" delta="Disetujui, belum berlaku" tone="info" onClick={() => pickStatus('terjadwal')} active={status === 'terjadwal'} />
-        <MetricCard label="Berlaku bulan ini" value={String(kpi.bulan)} icon={CircleCheck} iconClass="text-success" delta="Efektif Oktober 2026" tone="success" onClick={() => pickStatus('bulan')} active={status === 'bulan'} />
-        <MetricCard label="Kontrak ≤ 45 hari" value={String(kpi.kontrak)} icon={Clock} iconClass="text-warning" delta="Lihat daftar tindakan" tone="warning" onClick={() => expiringRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+        <StatCard
+          label="Menunggu approval"
+          value={String(kpi.menunggu)}
+          delta={kpi.menunggu ? `${kpi.menunggu} antrean` : '0 antrean'}
+          trend={kpi.menunggu ? 'down' : 'neutral'}
+          categoryIcon={Hourglass}
+          summary="Perlu keputusan penyetuju"
+          description="Persetujuan atasan dan HRD"
+          onClick={() => pickStatus('menunggu')}
+          active={status === 'menunggu'}
+        />
+        <StatCard
+          label="Terjadwal"
+          value={String(kpi.terjadwal)}
+          categoryIcon={CalendarClock}
+          summary="Disetujui, belum berlaku"
+          description="Efektif pada tanggal mendatang"
+          onClick={() => pickStatus('terjadwal')}
+          active={status === 'terjadwal'}
+        />
+        <StatCard
+          label="Berlaku bulan ini"
+          value={String(kpi.bulan)}
+          categoryIcon={CircleCheck}
+          summary="Efektif Oktober 2026"
+          description="Transaksi kepegawaian aktif"
+          onClick={() => pickStatus('bulan')}
+          active={status === 'bulan'}
+        />
+        <StatCard
+          label="Kontrak ≤ 45 hari"
+          value={String(kpi.kontrak)}
+          delta={kpi.kontrak ? `${kpi.kontrak} kontrak` : 'Aman'}
+          trend={kpi.kontrak ? 'down' : 'neutral'}
+          categoryIcon={Clock}
+          summary="Lihat daftar tindakan"
+          description="Evaluasi perpanjangan kontrak"
+          onClick={() => expiringRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        />
       </div>
 
       <div ref={expiringRef} className="scroll-mt-6">

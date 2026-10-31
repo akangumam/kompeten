@@ -8,6 +8,8 @@
 
 type PageId =
   | 'dashboard'
+  | 'dashboard-produksi'
+  | 'dashboard-presensi'
   | 'recruitment'
   | 'recruitment-jobs'
   | 'recruitment-form'
@@ -40,6 +42,8 @@ type PageId =
 
 const PAGE_LABELS: Record<PageId, string> = {
   dashboard: 'Dashboard',
+  'dashboard-produksi': 'Produksi',
+  'dashboard-presensi': 'Presensi',
   recruitment: 'Daftar Kandidat',
   'recruitment-jobs': 'Lowongan',
   'recruitment-form': 'Form Rekrutmen',

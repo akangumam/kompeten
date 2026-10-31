@@ -1,7 +1,7 @@
 import { Banknote, Paperclip, PiggyBank, Plus, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Bar, BarChart, LabelList, XAxis, YAxis } from 'recharts'
+import { ChartCard, BarChartGrouped } from '@/components/charts'
 import { DatePicker } from '@/components/employee/date-picker'
 import { descId, Field } from '@/components/employee/field'
 import { AlasanField, alasanOk, MoneyField, ReviewSheet, rp, SHEET_W } from '@/components/koperasi/shared'
@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui/chart'
 import { FilePicker, type PickedFile } from '@/components/ui/file-picker'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -181,25 +181,23 @@ function BudgetTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBend: b
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader><CardTitle>Budget dan realisasi per pos</CardTitle><CardDescription>{monthName(bulan)}</CardDescription></CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="aspect-auto h-[260px] w-full">
-            <BarChart data={data} layout="vertical" margin={{ left: 0, right: 90 }} barCategoryGap={8}>
-              <XAxis type="number" hide domain={[0, 'dataMax']} />
-              <YAxis type="category" dataKey="pos" width={80} tickLine={false} axisLine={false} tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} />
-              <ChartTooltip cursor={{ fill: 'var(--muted)', opacity: 0.5 }} content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="budget" fill="var(--color-budget)" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                <LabelList dataKey="budget" content={({ x, y, width, height, value }) => <text x={Number(x) + Number(width) + 6} y={Number(y) + Number(height) / 2} dominantBaseline="middle" className="fill-foreground text-xs tabular-nums">{rp(Number(value))}</text>} />
-              </Bar>
-              <Bar dataKey="realisasi" fill="var(--color-realisasi)" radius={[0, 4, 4, 0]} minPointSize={2} isAnimationActive={false}>
-                <LabelList dataKey="realisasi" content={({ x, y, width, height, value }) => <text x={Number(x) + Number(width) + 6} y={Number(y) + Number(height) / 2} dominantBaseline="middle" className="fill-muted-foreground text-xs tabular-nums">{rp(Number(value))}</text>} />
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <ChartCard
+        title="Budget dan realisasi per pos"
+        description={monthName(bulan)}
+      >
+        <BarChartGrouped
+          data={data}
+          series={[
+            { key: 'budget', label: 'Budget' },
+            { key: 'realisasi', label: 'Realisasi' },
+          ]}
+          categoryKey="pos"
+          config={chartConfig}
+          layout="horizontal"
+          height={260}
+          showLabels={false}
+        />
+      </ChartCard>
 
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent>

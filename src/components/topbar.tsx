@@ -75,6 +75,8 @@ function crumbsFor(activePage: PageId, draft?: Draft, ksb = false): Crumb[] {
   if (activePage === 'leave') return c('Kehadiran', 'Cuti, Izin, Sakit & Dinas')
   if (activePage === 'shift-swap') return c('Kehadiran', 'Tukar Shift')
   if (activePage === 'overtime') return c('Kehadiran', 'Input & Slip Overtime')
+  if (activePage === 'dashboard-produksi') return c('Dashboard', 'Produksi')
+  if (activePage === 'dashboard-presensi') return c('Dashboard', 'Presensi')
   return ksb ? c('Dashboard', 'Koperasi') : c('Dashboard', 'Umum & Rekrutmen')
 }
 
@@ -162,7 +164,7 @@ export function Topbar({
             {PERSONA_GROUPS.map((g, gi) => (
               <DropdownMenuGroup key={g.label}>
                 {gi > 0 && <DropdownMenuSeparator />}
-                <DropdownMenuLabel className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80">{g.label}</DropdownMenuLabel>
+                <DropdownMenuLabel className="pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">{g.label}</DropdownMenuLabel>
                 {g.roles.map((r) => (
                   <DropdownMenuItem key={r} onSelect={() => onUserChange(r)} aria-current={user.role === r}>
                     <Check className={user.role === r ? 'size-4' : 'size-4 opacity-0'} aria-hidden />
@@ -172,7 +174,7 @@ export function Topbar({
               </DropdownMenuGroup>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80">Portal Pelamar</DropdownMenuLabel>
+            <DropdownMenuLabel className="pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Portal Pelamar</DropdownMenuLabel>
             <DropdownMenuGroup>
               {([
                 { p: 'visitor' as PortalPersona, label: 'Pengunjung (belum masuk)' },

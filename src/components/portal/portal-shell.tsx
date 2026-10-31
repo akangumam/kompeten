@@ -330,7 +330,7 @@ function LowonganDetail({ jobNo, go, session }: { jobNo: string; go: (n: PortalN
           <ol className="relative ml-3 space-y-4 border-l border-border pl-5 text-sm">
             {STEPS.map((s, i) => (
               <li key={s} className="flex items-center gap-2">
-                <span className="absolute -left-2 flex size-4 items-center justify-center rounded-full border bg-background text-[10px] font-bold text-muted-foreground">{i + 1}</span>
+                <span className="absolute -left-2 flex size-4 items-center justify-center rounded-full border bg-background text-xs font-bold text-muted-foreground">{i + 1}</span>
                 {s}
               </li>
             ))}
@@ -805,9 +805,9 @@ function SuccessApply({ lamaranNo, posisi, go }: { lamaranNo: string; posisi: st
       <Card className="w-full max-w-sm rounded-xl shadow-sm text-left">
         <CardHeader><CardTitle>Langkah Selanjutnya</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <div className="flex gap-2"><span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">1</span><span>Tim HR akan memverifikasi dokumen lamaran Anda</span></div>
-          <div className="flex gap-2"><span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground font-bold">2</span><span>Jika lulus seleksi berkas, Anda akan diundang untuk mengikuti tes</span></div>
-          <div className="flex gap-2"><span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] text-muted-foreground font-bold">3</span><span>Pantau perkembangan lamaran Anda di menu Lamaran Saya</span></div>
+          <div className="flex gap-2"><span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-bold">1</span><span>Tim HR akan memverifikasi dokumen lamaran Anda</span></div>
+          <div className="flex gap-2"><span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground font-bold">2</span><span>Jika lulus seleksi berkas, Anda akan diundang untuk mengikuti tes</span></div>
+          <div className="flex gap-2"><span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground font-bold">3</span><span>Pantau perkembangan lamaran Anda di menu Lamaran Saya</span></div>
         </CardContent>
       </Card>
       <Button className="h-12 w-full max-w-sm" onClick={() => go({ id: 'lamaran-list' })}>Lihat Lamaran Saya</Button>

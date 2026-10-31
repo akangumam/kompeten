@@ -10,23 +10,20 @@ import { KELOMPOK_LIST } from '@/data/master/levels'
 import type { PeriodId } from '@/data/payroll/runs'
 import { cn } from '@/lib/utils'
 
+import { StatCard as UnifiedStatCard } from '@/components/dashboard/stat-card'
+
 export const idr = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
 
-/** Kartu KPI untuk halaman hilir payroll; selalu satu baris dalam grid kolom sama lebar. */
+/** Kartu KPI untuk halaman hilir payroll; mengikuti pola shadcn StatCard. */
 export function StatCard({ label, value, icon: Icon, iconClass, hint }: { label: string; value: ReactNode; icon: LucideIcon; iconClass?: string; hint?: string }) {
   return (
-    <Card className="h-full">
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-muted-foreground">{label}</span>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-            <Icon className={cn('size-5', iconClass)} aria-hidden />
-          </span>
-        </div>
-        <div className="whitespace-nowrap text-xl font-bold tabular-nums tracking-tight">{value}</div>
-        <p className="line-clamp-2 min-h-5 text-sm text-muted-foreground">{hint}</p>
-      </CardContent>
-    </Card>
+    <UnifiedStatCard
+      label={label}
+      value={value}
+      categoryIcon={Icon}
+      description={hint}
+      className="h-full"
+    />
   )
 }
 

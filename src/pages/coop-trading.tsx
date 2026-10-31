@@ -1,7 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Paperclip, Plus, Scale, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Bar, BarChart, Cell, XAxis, YAxis } from 'recharts'
+import { ChartCard, BarChartSimple } from '@/components/charts'
 import { DatePicker } from '@/components/employee/date-picker'
 import { descId, Field } from '@/components/employee/field'
 import { AlasanField, alasanOk, MoneyField, rp, SHEET_W } from '@/components/koperasi/shared'
@@ -9,7 +9,7 @@ import { KPI_GRID, PageHeader, StatCard } from '@/components/payroll/pay/shared'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui/chart'
 import { FilePicker, type PickedFile } from '@/components/ui/file-picker'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -62,21 +62,18 @@ export default function CoopTradingPage({ user }: { user: CurrentUser }) {
         <StatCard label={`Selisih tahun berjalan (${year})`} value={<span className={cn(tahun < 0 && 'text-danger')}>{signed(tahun)}</span>} icon={TrendingUp} iconClass="text-success" hint="Pendapatan unit dagang untuk SHU" />
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Selisih per bulan 2026</CardTitle><CardDescription>Januari – Oktober</CardDescription></CardHeader>
-        <CardContent>
-          <ChartContainer config={config} className="aspect-auto h-[240px] w-full">
-            <BarChart data={chart} margin={{ top: 16, right: 8 }}>
-              <XAxis dataKey="bulan" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} width={70} tickFormatter={(v) => `${(Number(v) / 1_000_000).toLocaleString('id-ID')} jt`} />
-              <ChartTooltip cursor={{ fill: 'var(--muted)', opacity: 0.5 }} content={<ChartTooltipContent formatter={(v) => rp(Number(v))} />} />
-              <Bar dataKey="selisih" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-                {chart.map((c, i) => <Cell key={i} fill="var(--color-selisih)" />)}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <ChartCard
+        title="Selisih per bulan 2026"
+        description="Januari – Oktober"
+      >
+        <BarChartSimple
+          data={chart}
+          dataKey="selisih"
+          categoryKey="bulan"
+          config={config}
+          height={240}
+        />
+      </ChartCard>
 
       <Card>
         <CardContent>

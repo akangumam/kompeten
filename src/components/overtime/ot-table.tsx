@@ -90,7 +90,7 @@ export function OtTable({
                 <TableCell>
                   <div className="flex flex-col items-start gap-0.5 leading-tight">
                     <span className="whitespace-nowrap tabular-nums">{dayName(rec.date).slice(0, 3)}, {formatDate(rec.date)}</span>
-                    <StatusBadge variant="neutral" className="px-2 py-0 text-[11px]">
+                    <StatusBadge variant="neutral" className="px-2 py-0 text-xs">
                       {dayTypeLabel(dayTypeOf(emp, rec.date))}
                     </StatusBadge>
                   </div>

@@ -1,7 +1,7 @@
 import { ArrowUpRight, Download, Info, Search, Users, Wallet } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Cell, Pie, PieChart } from 'recharts'
+import { DonutChart } from '@/components/charts'
 import type { PageId } from '@/App'
 import { DirectoryFooter } from '@/components/employees/directory-footer'
 import { rp } from '@/components/koperasi/shared'
@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui/chart'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/status-badge'
@@ -69,7 +69,7 @@ export default function CoopShuPage({ user, onNavigate }: { user: CurrentUser; o
   const start = (cur - 1) * perPage
   const pageRows = rows.slice(start, start + perPage)
   const penerima = r.members.filter((m) => m.total > 0).length
-  const donut = SHU_GROUPS.map((g, i) => ({ key: g.key, nama: g.nama, value: r.pools[i] }))
+  const donutData = SHU_GROUPS.map((g, i) => ({ name: g.key, value: r.shu > 0 ? r.pools[i] : 0 }))
   const setP = (i: number, v: string) => {
     const n = Math.max(0, Math.min(100, Math.round(Number(v.replace(/\D/g, '')) || 0)))
     setDraft((d) => ({ ...d, [year]: persen.map((x, j) => (j === i ? n : x)) }))
@@ -174,14 +174,14 @@ export default function CoopShuPage({ user, onNavigate }: { user: CurrentUser; o
               )}
             </div>
             <div className="flex flex-col items-center gap-4 sm:flex-row">
-              <ChartContainer config={chartConfig} className="aspect-square h-[200px] shrink-0">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent hideLabel formatter={(v, n) => `${chartConfig[n as keyof typeof chartConfig]?.label ?? n}: ${rp(Number(v))}`} />} />
-                  <Pie data={r.shu > 0 ? donut : [{ key: 'kosong', nama: 'Belum ada pool', value: 1 }]} dataKey="value" nameKey="key" innerRadius={55} outerRadius={85} strokeWidth={2} isAnimationActive={false}>
-                    {(r.shu > 0 ? donut : [{ key: 'kosong' }]).map((d, i) => <Cell key={d.key} fill={r.shu > 0 ? COLORS[i] : 'var(--muted)'} />)}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
+              <div className="w-[200px] shrink-0">
+                <DonutChart
+                  data={donutData}
+                  config={chartConfig}
+                  centerLabel="Total SHU"
+                  height={200}
+                />
+              </div>
               <ul className="space-y-2 text-sm">
                 {SHU_GROUPS.map((g, i) => (
                   <li key={g.key} className="flex items-center gap-2"><span className="size-3 rounded-sm" style={{ background: COLORS[i] }} aria-hidden /><span className="text-muted-foreground">{g.nama}</span><span className="ml-auto pl-3 font-medium tabular-nums">{rp(r.pools[i])}</span></li>

@@ -204,7 +204,7 @@ export function ManpowerStandardTab({ canEdit, onHistory }: TabProps) {
                   {editingItem.history.map((h, i) => (
                     <div key={i} className="flex justify-between border-b pb-1 last:border-0 last:pb-0">
                       <span>{h.standar} orang ({formatDate(h.berlakuMulai)})</span>
-                      <span className="text-[11px]">{h.by}</span>
+                      <span className="text-xs">{h.by}</span>
                     </div>
                   ))}
                 </div>

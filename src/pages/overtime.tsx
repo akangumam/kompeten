@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { CalendarClock, Clock, FilePlus, Hourglass, Search, Users, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Pager, usePaging } from '@/components/attendance/pager'
-import { MetricCard } from '@/components/dashboard/metric-card'
+import { StatCard } from '@/components/dashboard/stat-card'
 import { BuatSplSheet } from '@/components/overtime/buat-spl-sheet'
 import { OtTable, type OtRow } from '@/components/overtime/ot-table'
 import { RekapTable } from '@/components/overtime/rekap-table'
@@ -134,25 +134,50 @@ export default function OvertimePage({
       <TransitionAlert period={period} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Jam Lembur Tervalidasi" value={`${fj(jamValid)} jam`} icon={Clock} iconClass="text-success" delta={`${validated.length} lembur tervalidasi`} tone="success" />
-        <MetricCard
+        <StatCard
+          label="Jam Lembur Tervalidasi"
+          value={`${fj(jamValid)} jam`}
+          categoryIcon={Clock}
+          summary={`${validated.length} lembur tervalidasi`}
+          description="Total jam lembur efektif yang disetujui"
+        />
+        <StatCard
           label="Menunggu Validasi"
           value={String(waiting)}
-          icon={Hourglass}
-          iconClass="text-warning"
-          delta={waiting ? 'Perlu divalidasi atasan' : 'Tidak ada antrean'}
-          tone="warning"
+          delta={waiting ? `${waiting} antrean` : '0 antrean'}
+          trend={waiting ? 'down' : 'neutral'}
+          categoryIcon={Hourglass}
+          summary={waiting ? 'Perlu divalidasi atasan' : 'Tidak ada antrean'}
+          description="Realisasi lembur yang menunggu persetujuan"
           active={tab === 'validasi'}
           onClick={() => {
             setView('lembur')
             setTab((t) => (t === 'validasi' ? 'all' : 'validasi'))
           }}
         />
-        <MetricCard label="Lembur Terjadwal" value={`${scheduled} SPL`} icon={CalendarClock} iconClass="text-info" delta="Belum dilaksanakan" tone="info" />
+        <StatCard
+          label="Lembur Terjadwal"
+          value={`${scheduled} SPL`}
+          categoryIcon={CalendarClock}
+          summary="Belum dilaksanakan"
+          description="Surat Perintah Lembur yang terbit"
+        />
         {showPay ? (
-          <MetricCard label="Biaya Lembur Tervalidasi" value={rp(biaya)} icon={Wallet} iconClass="text-chart-1" delta="Periode terpilih" tone="info" />
+          <StatCard
+            label="Biaya Lembur Tervalidasi"
+            value={rp(biaya)}
+            categoryIcon={Wallet}
+            summary="Periode terpilih"
+            description="Estimasi biaya upah lembur"
+          />
         ) : (
-          <MetricCard label="Pegawai Lembur" value={`${people} orang`} icon={Users} iconClass="text-chart-1" delta="Dengan lembur tervalidasi" tone="info" />
+          <StatCard
+            label="Pegawai Lembur"
+            value={`${people} orang`}
+            categoryIcon={Users}
+            summary="Dengan lembur tervalidasi"
+            description="Jumlah pegawai yang melaksanakan lembur"
+          />
         )}
       </div>
 

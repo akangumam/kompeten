@@ -1,9 +1,8 @@
 import { ROSTER } from '@/data/employees'
 import { hasLeft } from '@/data/offboarding'
 import { DEMO_TODAY } from '@/lib/today'
-import { Bar, BarChart, LabelList, XAxis, YAxis } from 'recharts'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import { ChartCard, BarChartSimple } from '@/components/charts'
+import type { ChartConfig } from '@/components/ui/chart'
 
 /** Jumlah pegawai aktif per department, dibaca dari roster (berubah mengikuti Mutasi yang sudah berlaku). */
 function departmentCounts() {
@@ -18,43 +17,19 @@ export function DepartmentChart() {
   const data = departmentCounts()
   const total = data.reduce((a, d) => a + d.value, 0)
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle>Karyawan per Department</CardTitle>
-        <CardDescription>Total {total.toLocaleString('id-ID')} karyawan aktif</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
-          <BarChart data={data} layout="vertical" margin={{ left: 0, right: 40 }} barCategoryGap={6}>
-            <XAxis type="number" hide domain={[0, 'dataMax + 12']} />
-            <YAxis
-              type="category"
-              dataKey="dept"
-              width={140}
-              tickLine={false}
-              axisLine={false}
-              interval={0}
-              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-            />
-            <ChartTooltip cursor={{ fill: 'var(--muted)', opacity: 0.5 }} content={<ChartTooltipContent hideLabel={false} />} />
-            <Bar dataKey="value" fill="var(--color-value)" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-              <LabelList
-                dataKey="value"
-                content={({ x, y, width, height, value }) => (
-                  <text
-                    x={Number(x) + Number(width) + 8}
-                    y={Number(y) + Number(height) / 2}
-                    dominantBaseline="middle"
-                    className="fill-foreground text-sm tabular-nums"
-                  >
-                    {value}
-                  </text>
-                )}
-              />
-            </Bar>
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ChartCard
+      title="Karyawan per Department"
+      description={`Total ${total.toLocaleString('id-ID')} karyawan aktif`}
+      className="h-full"
+    >
+      <BarChartSimple
+        data={data}
+        dataKey="value"
+        categoryKey="dept"
+        config={config}
+        layout="horizontal"
+        height={300}
+      />
+    </ChartCard>
   )
 }

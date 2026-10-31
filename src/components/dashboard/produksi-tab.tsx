@@ -2,34 +2,23 @@ import { useMemo } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
-  MinusCircle,
   PlusCircle,
-  TrendingUp,
   Users,
   Target,
   Percent,
   UserMinus,
   Briefcase,
+  TrendingDown,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { Button } from '@/components/ui/button'
-import { ChartContainer, ChartTooltip, type ChartConfig } from '@/components/ui/chart'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ComposedChart,
-  Line,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-} from 'recharts'
-import { ROSTER, type RosterEmployee } from '@/data/employees'
+import { StatCard } from '@/components/dashboard/stat-card'
+import { ChartCard, BarChartGrouped, LineChartCompare } from '@/components/charts'
+import type { ChartConfig } from '@/components/ui/chart'
+import { ROSTER } from '@/data/employees'
 import { MANPOWER_STANDARDS } from '@/data/master/manpower-standards'
 import { JOBS, terisi } from '@/data/recruitment/jobs'
-import { OFFS } from '@/data/offboarding'
 import { DEMO_TODAY } from '@/lib/today'
 import type { CurrentUser } from '@/data/users'
 import type { PageId } from '@/App'
@@ -44,7 +33,7 @@ type Props = {
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
-export function ProduksiTab({ user, year, section, onNavigate }: Props) {
+export function ProduksiTab({ user, section, onNavigate }: Props) {
   useMaster()
 
   const isSupervisor = user.role === 'supervisor'
@@ -195,173 +184,85 @@ export function ProduksiTab({ user, year, section, onNavigate }: Props) {
     <div className="space-y-6">
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Manpower Existing</CardTitle>
-            <Users className="size-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums">{totalExisting}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Karyawan aktif {effectiveSection !== 'Semua Section' ? `section ${effectiveSection}` : 'Produksi'}
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Manpower Existing"
+          value={String(totalExisting)}
+          categoryIcon={Users}
+          summary="Karyawan aktif saat ini"
+          description={effectiveSection !== 'Semua Section' ? `Section ${effectiveSection}` : 'Departemen Produksi'}
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Standar Tenaga Kerja</CardTitle>
-            <Target className="size-4 text-info" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums">{totalStandar}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total kebutuhan sesuai master standar
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Standar Tenaga Kerja"
+          value={String(totalStandar)}
+          categoryIcon={Target}
+          summary="Target master standar"
+          description="Total kebutuhan manpower formasi"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pemenuhan</CardTitle>
-            <Percent className="size-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums">
-              {pemenuhanPct.toFixed(1).replace('.', ',')}%
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Rasio existing dibanding standar
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Pemenuhan"
+          value={`${pemenuhanPct.toFixed(1).replace('.', ',')}%`}
+          delta={pemenuhanPct >= 100 ? 'Tercapai' : 'Di bawah standar'}
+          trend={pemenuhanPct >= 100 ? 'up' : 'neutral'}
+          categoryIcon={Percent}
+          summary="Rasio existing vs standar"
+          description="Tingkat keterisian formasi"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kekurangan</CardTitle>
-            <UserMinus className="size-4 text-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tabular-nums text-warning">{totalKurang} orang</div>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">
-              {openJobNeeds} sudah ada lowongan dibuka
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Kekurangan"
+          value={`${totalKurang} orang`}
+          delta={totalKurang > 0 ? `-${totalKurang}` : '0'}
+          trend={totalKurang > 0 ? 'down' : 'neutral'}
+          deltaIcon={totalKurang > 0 ? TrendingDown : undefined}
+          categoryIcon={UserMinus}
+          summary={`${openJobNeeds} lowongan dibuka`}
+          description="Selisih kebutuhan belum terisi"
+        />
       </div>
 
       {/* Grid: Standar vs Existing per Section & Tren Headcount Produksi */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Standar vs Existing per Section (Grouped Bar Horizontal) */}
-        <Card className="lg:col-span-6">
-          <CardHeader>
-            <CardTitle>Standar vs Existing per Section</CardTitle>
-            <CardDescription>Perbandingan kebutuhan standar dan jumlah aktual</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="aspect-auto h-65 w-full">
-              <BarChart
-                data={sectionChartData}
-                layout="vertical"
-                margin={{ left: 20, right: 30, top: 10, bottom: 10 }}
-              >
-                <CartesianGrid horizontal={false} stroke="var(--border)" />
-                <XAxis type="number" tickLine={false} axisLine={false} tick={{ fill: 'var(--muted-foreground)' }} />
-                <YAxis
-                  dataKey="section"
-                  type="category"
-                  tickLine={false}
-                  axisLine={false}
-                  width={90}
-                  tick={{ fill: 'var(--foreground)', fontSize: 12 }}
-                />
-                <ChartTooltip
-                  formatter={(value, name) => [
-                    `${value} orang`,
-                    name === 'standar' ? 'Standar' : 'Existing',
-                  ]}
-                />
-                <Bar dataKey="standar" fill="var(--chart-2)" radius={[0, 4, 4, 0]} name="standar" />
-                <Bar dataKey="existing" fill="var(--chart-1)" radius={[0, 4, 4, 0]} name="existing" />
-              </BarChart>
-            </ChartContainer>
-            <div className="flex items-center justify-center gap-6 pt-3 text-xs">
-              <span className="flex items-center gap-2">
-                <span className="size-3 rounded-[2px]" style={{ backgroundColor: 'var(--chart-2)' }} />
-                Standar
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="size-3 rounded-[2px]" style={{ backgroundColor: 'var(--chart-1)' }} />
-                Existing
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Standar vs Existing per Section"
+          description="Perbandingan kebutuhan standar dan jumlah aktual"
+          className="lg:col-span-6"
+        >
+          <BarChartGrouped
+            layout="horizontal"
+            data={sectionChartData}
+            series={[
+              { key: 'standar', label: 'Standar' },
+              { key: 'existing', label: 'Existing' },
+            ]}
+            categoryKey="section"
+            config={chartConfig}
+            height={260}
+          />
+        </ChartCard>
 
         {/* Tren Headcount Produksi */}
-        <Card className="lg:col-span-6">
-          <CardHeader>
-            <CardTitle>Tren Headcount Produksi</CardTitle>
-            <CardDescription>
-              Perbandingan headcount bulanan 2025 vs 2026 {effectiveSection !== 'Semua Section' ? `(${effectiveSection})` : ''}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                y2025: { label: '2025', color: 'var(--chart-2)' },
-                y2026: { label: '2026', color: 'var(--chart-1)' },
-              }}
-              className="aspect-auto h-65 w-full"
-            >
-              <ComposedChart data={trendData} margin={{ left: 0, right: 8, top: 8 }}>
-                <CartesianGrid vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="bulan" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: 'var(--muted-foreground)' }} />
-                <YAxis
-                  domain={['dataMin - 2', 'dataMax + 2']}
-                  tickLine={false}
-                  axisLine={false}
-                  width={35}
-                  tick={{ fill: 'var(--muted-foreground)' }}
-                />
-                <ChartTooltip
-                  formatter={(value, name) => [
-                    value !== null ? `${value} orang` : 'Belum ada data',
-                    name === 'y2026' ? '2026' : '2025',
-                  ]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="y2025"
-                  stroke="var(--chart-2)"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  dot={{ r: 3 }}
-                  name="y2025"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="y2026"
-                  stroke="var(--chart-1)"
-                  strokeWidth={2.5}
-                  dot={{ r: 3 }}
-                  connectNulls={false}
-                  name="y2026"
-                />
-              </ComposedChart>
-            </ChartContainer>
-            <div className="flex items-center justify-center gap-6 pt-3 text-xs">
-              <span className="flex items-center gap-2">
-                <span className="h-0.5 w-4 border-b-2 border-dashed" style={{ borderColor: 'var(--chart-2)' }} />
-                2025
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="h-0.5 w-4 border-b-2" style={{ borderColor: 'var(--chart-1)' }} />
-                2026
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartCard
+          title="Tren Headcount Produksi"
+          description={`Perbandingan headcount bulanan 2025 vs 2026 ${effectiveSection !== 'Semua Section' ? `(${effectiveSection})` : ''}`}
+          className="lg:col-span-6"
+        >
+          <LineChartCompare
+            data={trendData}
+            series={[
+              { key: 'y2026', label: '2026' },
+              { key: 'y2025', label: '2025', dashed: true },
+            ]}
+            categoryKey="bulan"
+            config={{
+              y2026: { label: '2026', color: 'var(--chart-1)' },
+              y2025: { label: '2025', color: 'var(--chart-2)' },
+            }}
+            height={260}
+          />
+        </ChartCard>
       </div>
 
       {/* Rincian per Posisi */}

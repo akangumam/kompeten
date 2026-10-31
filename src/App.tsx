@@ -76,7 +76,7 @@ import { completeScenario, periodFinalized, type PeriodId } from '@/data/payroll
 import { usePayroll } from '@/data/payroll/store'
 import { enrollNewHire } from '@/data/payroll/bpjs-membership'
 
-export type PageId = 'dashboard' | 'recruitment' | 'recruitment-jobs' | 'recruitment-form' | 'recruitment-tests' | 'employees' | 'payroll-components' | 'salary-change' | 'payroll-run' | 'payslips' | 'payments' | 'payroll-recon' | 'coop-members' | 'coop-withdrawals' | 'coop-cash-advance' | 'coop-loans' | 'coop-payroll-deductions' | 'coop-budget' | 'coop-shu' | 'coop-settings' | 'coop-trading' | 'employee-draft' | 'employee-transactions' | 'industrial-relations' | 'final-pay' | 'attendance' | 'leave' | 'shift-swap' | 'overtime' | 'master-data'
+export type PageId = 'dashboard' | 'dashboard-produksi' | 'dashboard-presensi' | 'recruitment' | 'recruitment-jobs' | 'recruitment-form' | 'recruitment-tests' | 'employees' | 'payroll-components' | 'salary-change' | 'payroll-run' | 'payslips' | 'payments' | 'payroll-recon' | 'coop-members' | 'coop-withdrawals' | 'coop-cash-advance' | 'coop-loans' | 'coop-payroll-deductions' | 'coop-budget' | 'coop-shu' | 'coop-settings' | 'coop-trading' | 'employee-draft' | 'employee-transactions' | 'industrial-relations' | 'final-pay' | 'attendance' | 'leave' | 'shift-swap' | 'overtime' | 'master-data'
 
 type Profile = { kind: 'draft'; id: string } | { kind: 'roster'; nik: string } | { kind: 'exited'; nik: string }
 
@@ -342,8 +342,19 @@ export default function App() {
         />
         <DirectoryNavContext.Provider value={{ openDirectory, openEmployee, openOffboarding, openDiscipline, openFinalPay }}>
         <main ref={mainRef} className="flex-1 overflow-y-auto">
-          {activePage === 'dashboard' && (
-            <DashboardPage user={USERS[role]} records={attendance.state.records} requests={leave.requests} onNavigate={(p, id) => guarded(() => go(p, id ?? null))} />
+          {(activePage === 'dashboard' || activePage === 'dashboard-produksi' || activePage === 'dashboard-presensi') && (
+            <DashboardPage
+              user={USERS[role]}
+              records={attendance.state.records}
+              requests={leave.requests}
+              activeTab={activePage === 'dashboard-produksi' ? 'produksi' : activePage === 'dashboard-presensi' ? 'presensi' : 'umum'}
+              onTabChange={(tab) => {
+                if (tab === 'produksi') setActivePage('dashboard-produksi')
+                else if (tab === 'presensi') setActivePage('dashboard-presensi')
+                else setActivePage('dashboard')
+              }}
+              onNavigate={(p, id) => guarded(() => go(p, id ?? null))}
+            />
           )}
           {activePage === 'recruitment' && (
             <RecruitmentPage

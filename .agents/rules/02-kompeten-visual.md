@@ -40,15 +40,8 @@ Time-based urgency (e.g. "Sisa Hari" kontrak): ≤ 14 hari = danger, 15–30 har
 
 Use `destructive` only for destructive buttons and input error states, not for badge text.
 
-## 7. Charts (shadcn ChartContainer + Recharts)
-- Current period = `chart-1` (strongest); comparison period = `chart-2`. Categories use `chart-1` → `chart-5` in order, max 5, rest grouped as "Lainnya".
-- Bar charts always start at 0. For trends where differences are small, use a line chart (current: solid `chart-1`; comparison: dashed `chart-2`).
-- Future/missing periods are `null` (not drawn), never 0.
-- Bar value labels: set `isAnimationActive={false}` on the Bar and render labels with a custom `LabelList content` function (text at `x + width + 8`, `fill-foreground text-sm tabular-nums`). Leave right margin ≥ 40.
-- No grid lines on an axis that is hidden. Grid lines use `var(--border)`, axis text `var(--muted-foreground)`.
-- Legend always shows text labels.
-- Tooltip: `ChartTooltip` with `ChartTooltipContent` (Indonesian labels) by default. A custom tooltip content is allowed only when it needs a computed row (e.g. "Selisih"); it must reuse the ChartTooltipContent look (`rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl`, color indicator per series).
-- An `Area` under a line needs `ComposedChart` (`Area` does not render inside `LineChart`).
+## 7. Charts
+Semua chart memakai komponen di `src/components/charts/` (ChartCard, BarChartSimple, BarChartGrouped, LineChartCompare, DonutChart). Dilarang menulis `<BarChart>`/`<LineChart>`/`<PieChart>` langsung di halaman. Resep shadcn: `ChartConfig` per seri dengan `color: 'var(--chart-n)'`, isi memakai `var(--color-{key})`, `ChartContainer` + `accessibilityLayer`, `CartesianGrid vertical={false}`, sumbu kategori `tickLine={false} axisLine={false} tickMargin={10}`, sumbu nilai disembunyikan (nilai ditampilkan lewat `LabelList className="fill-foreground" fontSize={12}`), `ChartTooltip cursor={false} content={<ChartTooltipContent />}`, legend `ChartLegendContent`, Bar `radius={8}` (horizontal `radius={5}`), garis `type="natural" strokeWidth={2}`. Periode berjalan = `chart-1`, pembanding = `chart-2`, kategori `chart-1…5`. Periode mendatang = `null`, bukan 0.
 
 ## 9. Responsive
 - ≥ 1024px: sidebar expanded. 768–1023px: sidebar collapsed to icons. < 768px: sidebar becomes a Sheet.
