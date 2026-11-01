@@ -1,97 +1,65 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import { barLabel, categoryAxisWidth, fmtNum, labelRoom } from './shared'
 
-type Props = {
-  data: Record<string, unknown>[]
-  dataKey: string      // nilai
-  categoryKey: string  // label sumbu
+/**
+ * Bar satu seri. `layout="vertical"` = kolom tegak (kategori di sumbu X); `layout="horizontal"` = batang mendatar
+ * (kategori di sumbu Y, lebar sumbu menyesuaikan label terpanjang).
+ */
+export function BarChartSimple({
+  data, dataKey, categoryKey, config, layout = 'vertical', height, valueFormatter, unit, labelFormatter, showLabels = true, activeCategory, className,
+}: {
+  data: readonly object[]
+  dataKey: string
+  categoryKey: string
   config: ChartConfig
   layout?: 'vertical' | 'horizontal'
-  /** tinggi container dalam px, default 240 */
   height?: number
+  /** Format angka untuk label nilai dan tooltip. */
+  valueFormatter?: (n: number) => string
+  /** Satuan tooltip bila tidak memakai valueFormatter, mis. "orang". */
+  unit?: string
+  labelFormatter?: (label: unknown, payload: readonly unknown[]) => React.ReactNode
   showLabels?: boolean
-}
-
-export function BarChartSimple({
-  data,
-  dataKey,
-  categoryKey,
-  config,
-  layout = 'vertical',
-  height = 240,
-  showLabels = true,
-}: Props) {
-  const isHorizontal = layout === 'horizontal'
-
-  // Lebar sumbu kategori otomatis dari panjang label terpanjang
-  const maxLabelLen = data.length > 0 ? Math.max(...data.map((d) => String(d[categoryKey] ?? '').length)) : 10
-  const yAxisWidth = Math.min(Math.max(maxLabelLen * 6.5, 60), 160)
-
+  /** Kategori yang disorot; yang lain diredupkan. */
+  activeCategory?: string
+  className?: string
+}) {
+  const fmt = valueFormatter ?? fmtNum
+  const tipFmt = valueFormatter ?? (unit ? (n: number) => `${fmtNum(n)} ${unit}` : undefined)
+  const horizontal = layout === 'horizontal'
+  const h = height ?? (horizontal ? data.length * 40 + 16 : 240)
+  const bar = (
+    <Bar dataKey={dataKey} fill={`var(--color-${dataKey})`} radius={horizontal ? 5 : 8} maxBarSize={horizontal ? 32 : undefined} isAnimationActive={false}>
+      {activeCategory != null && data.map((d, i) => (
+        <Cell key={i} fillOpacity={(d as Record<string, unknown>)[categoryKey] === activeCategory ? 1 : 0.55} />
+      ))}
+      {showLabels && (
+        <LabelList dataKey={dataKey} position={horizontal ? 'right' : 'top'} offset={horizontal ? 8 : 10} className="fill-foreground tabular-nums" fontSize={12} formatter={barLabel(fmt)} />
+      )}
+    </Bar>
+  )
+  const tooltip = (
+    <ChartTooltip cursor={false} content={<ChartTooltipContent valueFormatter={tipFmt} labelFormatter={labelFormatter as never} />} />
+  )
   return (
-    <ChartContainer config={config} style={{ height }}>
-      <BarChart
-        data={data}
-        layout={isHorizontal ? 'vertical' : 'horizontal'}
-        accessibilityLayer
-        margin={isHorizontal ? { left: 4, right: 40 } : { top: 20, right: 16 }}
-      >
-        <CartesianGrid
-          vertical={isHorizontal}
-          horizontal={!isHorizontal}
-          stroke="var(--border)"
-        />
-        {isHorizontal ? (
-          <>
-            <YAxis
-              dataKey={categoryKey}
-              type="category"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-              width={yAxisWidth}
-            />
-            <XAxis type="number" hide />
-          </>
-        ) : (
-          <>
-            <XAxis
-              dataKey={categoryKey}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-            />
-            <YAxis hide />
-          </>
-        )}
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <Bar
-          dataKey={dataKey}
-          fill={`var(--color-${dataKey})`}
-          radius={isHorizontal ? 5 : 8}
-        >
-          {showLabels && (
-            <LabelList
-              dataKey={dataKey}
-              position={isHorizontal ? 'right' : 'top'}
-              className="fill-foreground"
-              fontSize={12}
-              formatter={((v: any) => (v === 0 ? '' : v)) as any}
-            />
-          )}
-        </Bar>
-      </BarChart>
+    <ChartContainer config={config} className={`aspect-auto w-full ${className ?? ''}`} style={{ height: h }}>
+      {horizontal ? (
+        <BarChart accessibilityLayer data={data as object[]} layout="vertical" margin={{ left: 0, right: showLabels ? labelRoom(data, [dataKey], fmt) : 8, top: 0, bottom: 0 }}>
+          <XAxis type="number" hide domain={[(min: number) => Math.min(0, min), 'dataMax']} />
+          <YAxis type="category" dataKey={categoryKey} tickLine={false} axisLine={false} tickMargin={10} interval={0} width={categoryAxisWidth(data, categoryKey)} />
+          {tooltip}
+          {bar}
+        </BarChart>
+      ) : (
+        <BarChart accessibilityLayer data={data as object[]} margin={{ left: 0, right: 0, top: showLabels ? 24 : 8, bottom: 0 }}>
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey={categoryKey} tickLine={false} axisLine={false} tickMargin={10} interval={0} />
+          <YAxis hide domain={[(min: number) => Math.min(0, min), 'dataMax']} />
+          {tooltip}
+          {bar}
+        </BarChart>
+      )}
     </ChartContainer>
   )
 }

@@ -113,9 +113,9 @@ export default function PayslipsPage({ user, ctx, initialPeriod, onNavigate }: P
 
           <div className={KPI_GRID}>
             <StatCard label="Slip terbit" value={rows.length.toLocaleString('id-ID')} icon={FileText} hint={`Payroll ${period.label} final`} />
-            <StatCard label="Terkirim" value={nTerkirim.toLocaleString('id-ID')} icon={CircleCheck} iconClass="text-success" hint="Email dan WhatsApp" />
-            <StatCard label="Gagal kirim" value={nGagal.toLocaleString('id-ID')} icon={TriangleAlert} iconClass="text-danger" hint="Perlu kontak diperbarui" />
-            <StatCard label="Belum dikirim" value={nBelum.toLocaleString('id-ID')} icon={Clock} iconClass="text-warning" hint="Menunggu pengiriman" />
+            <StatCard label="Terkirim" value={nTerkirim.toLocaleString('id-ID')} icon={CircleCheck} hint="Email dan WhatsApp" />
+            <StatCard label="Gagal kirim" value={nGagal.toLocaleString('id-ID')} icon={TriangleAlert} hint="Perlu kontak diperbarui" />
+            <StatCard label="Belum dikirim" value={nBelum.toLocaleString('id-ID')} icon={Clock} hint="Menunggu pengiriman" />
           </div>
 
           <Card>

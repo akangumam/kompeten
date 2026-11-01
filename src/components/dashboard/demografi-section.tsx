@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { ChartCard, BarChartSimple, DonutChart } from '@/components/charts'
+import { BarChartSimple, ChartCard, DonutChart } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
-import { ROSTER } from '@/data/employees'
+import { ROSTER, type RosterEmployee } from '@/data/employees'
 import { rosterForm } from '@/data/profiles'
 import { TENURE_TIERS, AGE_TIERS } from '@/data/master/tier-ranges'
 import { DEMO_TODAY } from '@/lib/today'
@@ -31,33 +31,10 @@ function getTenureYears(joinDate: string, today = DEMO_TODAY) {
   return Math.max(0, years)
 }
 
+const valueConfig = { value: { label: 'Pegawai', color: 'var(--chart-1)' } } satisfies ChartConfig
 const genderConfig = {
-  'Laki-laki': { label: 'Laki-laki', color: 'var(--chart-1)' },
-  Perempuan: { label: 'Perempuan', color: 'var(--chart-2)' },
-} satisfies ChartConfig
-
-const jenisConfig = {
-  count: { label: 'Jumlah', color: 'var(--chart-1)' },
-} satisfies ChartConfig
-
-const statusKerjaConfig = {
-  count: { label: 'Jumlah', color: 'var(--chart-2)' },
-} satisfies ChartConfig
-
-const groupKerjaConfig = {
-  count: { label: 'Jumlah', color: 'var(--chart-3)' },
-} satisfies ChartConfig
-
-const pendidikanConfig = {
-  count: { label: 'Jumlah', color: 'var(--chart-4)' },
-} satisfies ChartConfig
-
-const tenureConfig = {
-  count: { label: 'Masa Kerja', color: 'var(--chart-1)' },
-} satisfies ChartConfig
-
-const ageConfig = {
-  count: { label: 'Usia', color: 'var(--chart-2)' },
+  lk: { label: 'Laki-laki', color: 'var(--chart-1)' },
+  pr: { label: 'Perempuan', color: 'var(--chart-2)' },
 } satisfies ChartConfig
 
 export function DemografiSection({ user, dept }: Props) {
@@ -90,7 +67,7 @@ export function DemografiSection({ user, dept }: Props) {
   }, [scopedEmployees])
 
   // 1. Gender (Donut)
-  const genderChartData = useMemo(() => {
+  const genderData = useMemo(() => {
     let lk = 0
     let pr = 0
     profiles.forEach((p) => {
@@ -98,8 +75,8 @@ export function DemografiSection({ user, dept }: Props) {
       else lk++
     })
     return [
-      { name: 'Laki-laki', value: lk },
-      { name: 'Perempuan', value: pr },
+      { key: 'lk', value: lk },
+      { key: 'pr', value: pr },
     ]
   }, [profiles])
 
@@ -117,7 +94,7 @@ export function DemografiSection({ user, dept }: Props) {
       else if (counts[j] !== undefined) counts[j]++
       else counts.Organik++
     })
-    return Object.entries(counts).map(([name, count]) => ({ name, count }))
+    return Object.entries(counts).map(([name, value]) => ({ name, value }))
   }, [profiles])
 
   // 3. Status Kerja (Bar)
@@ -129,8 +106,8 @@ export function DemografiSection({ user, dept }: Props) {
       else kontrak++
     })
     return [
-      { name: 'Tetap', count: tetap },
-      { name: 'Kontrak', count: kontrak },
+      { name: 'Tetap', value: tetap },
+      { name: 'Kontrak', value: kontrak },
     ]
   }, [profiles])
 
@@ -144,7 +121,7 @@ export function DemografiSection({ user, dept }: Props) {
     const order = ['Non Staff', 'Staff', 'Harian', 'Outsourcing', 'Magang']
     return order
       .filter((k) => counts[k] !== undefined)
-      .map((name) => ({ name, count: counts[name] || 0 }))
+      .map((name) => ({ name, value: counts[name] || 0 }))
   }, [profiles])
 
   // 5. Pendidikan Terakhir (Bar, maksimal 5 + Lainnya)
@@ -157,17 +134,17 @@ export function DemografiSection({ user, dept }: Props) {
 
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1])
     if (sorted.length <= 5) {
-      return sorted.map(([name, count]) => ({ name, count }))
+      return sorted.map(([name, value]) => ({ name, value }))
     }
     const top5 = sorted.slice(0, 5)
     const rest = sorted.slice(5).reduce((a, b) => a + b[1], 0)
     return [
-      ...top5.map(([name, count]) => ({ name, count })),
-      { name: 'Lainnya', count: rest },
+      ...top5.map(([name, value]) => ({ name, value })),
+      { name: 'Lainnya', value: rest },
     ]
   }, [profiles])
 
-  // 6. Tier Masa Kerja (Bar Horizontal)
+  // 6. Tier Masa Kerja (Bar horizontal)
   const tenureTierData = useMemo(() => {
     return TENURE_TIERS.map((t) => {
       const count = profiles.filter((p) => {
@@ -175,13 +152,13 @@ export function DemografiSection({ user, dept }: Props) {
         return p.tenure >= t.min && p.tenure <= t.max
       }).length
       return {
-        tier: t.label,
-        count,
+        name: t.label,
+        value: count,
       }
     })
-  }, [profiles])
+  }, [profiles, TENURE_TIERS])
 
-  // 7. Tier Usia (Bar Horizontal)
+  // 7. Tier Usia (Bar horizontal)
   const ageTierData = useMemo(() => {
     return AGE_TIERS.map((t) => {
       const count = profiles.filter((p) => {
@@ -189,11 +166,11 @@ export function DemografiSection({ user, dept }: Props) {
         return p.age >= t.min && p.age <= t.max
       }).length
       return {
-        tier: t.label,
-        count,
+        name: t.label,
+        value: count,
       }
     })
-  }, [profiles])
+  }, [profiles, AGE_TIERS])
 
   const totalDesc = `Total: ${totalEmployees} pegawai`
 
@@ -206,85 +183,36 @@ export function DemografiSection({ user, dept }: Props) {
         </p>
       </div>
 
-      {/* Row 1: Gender (donut), Jenis Karyawan (bar), Status Kerja (bar) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Gender */}
+      {/* Baris 1: Gender (donut), Jenis Karyawan, Status Kerja */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <ChartCard title="Gender" description={totalDesc}>
-          <DonutChart data={genderChartData} config={genderConfig} centerLabel="Pegawai" height={220} />
+          <DonutChart data={genderData} config={genderConfig} centerLabel="Karyawan" unit="orang" />
         </ChartCard>
-
-        {/* Jenis Karyawan */}
         <ChartCard title="Jenis Karyawan" description={totalDesc}>
-          <BarChartSimple
-            layout="vertical"
-            data={jenisData}
-            dataKey="count"
-            categoryKey="name"
-            config={jenisConfig}
-            height={220}
-          />
+          <BarChartSimple data={jenisData} dataKey="value" categoryKey="name" config={valueConfig} unit="orang" />
         </ChartCard>
-
-        {/* Status Kerja */}
         <ChartCard title="Status Kerja" description={totalDesc}>
-          <BarChartSimple
-            layout="vertical"
-            data={statusKerjaData}
-            dataKey="count"
-            categoryKey="name"
-            config={statusKerjaConfig}
-            height={220}
-          />
+          <BarChartSimple data={statusKerjaData} dataKey="value" categoryKey="name" config={valueConfig} unit="orang" />
         </ChartCard>
       </div>
 
-      {/* Row 2: Group Kerja (bar), Pendidikan Terakhir (bar) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* Baris 2: Group Kerja, Pendidikan Terakhir */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChartCard title="Group Kerja" description={totalDesc}>
-          <BarChartSimple
-            layout="vertical"
-            data={groupKerjaData}
-            dataKey="count"
-            categoryKey="name"
-            config={groupKerjaConfig}
-            height={220}
-          />
+          <BarChartSimple data={groupKerjaData} dataKey="value" categoryKey="name" config={valueConfig} unit="orang" />
         </ChartCard>
-
         <ChartCard title="Pendidikan Terakhir" description={totalDesc}>
-          <BarChartSimple
-            layout="vertical"
-            data={pendidikanData}
-            dataKey="count"
-            categoryKey="name"
-            config={pendidikanConfig}
-            height={220}
-          />
+          <BarChartSimple data={pendidikanData} dataKey="value" categoryKey="name" config={valueConfig} unit="orang" />
         </ChartCard>
       </div>
 
-      {/* Row 3: Tier Masa Kerja (bar) & Tier Usia (bar) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* Baris 3: Tier Masa Kerja & Tier Usia (horizontal supaya label tidak miring) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChartCard title="Tier Masa Kerja" description={`${totalDesc} · Master rentang Primaplast`}>
-          <BarChartSimple
-            layout="horizontal"
-            data={tenureTierData}
-            dataKey="count"
-            categoryKey="tier"
-            config={tenureConfig}
-            height={220}
-          />
+          <BarChartSimple data={tenureTierData} dataKey="value" categoryKey="name" config={valueConfig} layout="horizontal" unit="orang" />
         </ChartCard>
-
         <ChartCard title="Tier Usia" description={`${totalDesc} · Master rentang Primaplast`}>
-          <BarChartSimple
-            layout="horizontal"
-            data={ageTierData}
-            dataKey="count"
-            categoryKey="tier"
-            config={ageConfig}
-            height={220}
-          />
+          <BarChartSimple data={ageTierData} dataKey="value" categoryKey="name" config={valueConfig} layout="horizontal" unit="orang" />
         </ChartCard>
       </div>
     </div>

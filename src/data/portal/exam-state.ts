@@ -59,11 +59,14 @@ export function startExam(assignId: string): ExamSession {
     startedAt: Date.now(),
     submitted: false,
   }
-  // Mark assignment as in-progress on HR side
-  const assign = ASSIGNS.find((x) => x.id === assignId)
-  if (assign && assign.status === 'Dijadwalkan') { assign.status = 'Sedang dikerjakan'; bump() }
   saveExamSession(session)
   return session
+}
+
+/** Tandai penugasan sedang dikerjakan di sisi HR. Memicu pembaruan store, jadi panggil dari efek, bukan saat render. */
+export function markExamInProgress(assignId: string) {
+  const assign = ASSIGNS.find((x) => x.id === assignId)
+  if (assign && assign.status === 'Dijadwalkan') { assign.status = 'Sedang dikerjakan'; bump() }
 }
 
 export function saveAnswer(session: ExamSession, soalId: string, answer: ExamAnswer) {

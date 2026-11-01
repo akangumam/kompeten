@@ -2,23 +2,24 @@ import { useMemo } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
+  MinusCircle,
   PlusCircle,
   Users,
   Target,
   Percent,
   UserMinus,
   Briefcase,
-  TrendingDown,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { StatCard } from '@/components/dashboard/stat-card'
-import { ChartCard, BarChartGrouped, LineChartCompare } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
-import { ROSTER } from '@/data/employees'
+import { BarChartGrouped, ChartCard, LineChartCompare } from '@/components/charts'
+import { StatCard } from '@/components/dashboard/stat-card'
+import { ROSTER, type RosterEmployee } from '@/data/employees'
 import { MANPOWER_STANDARDS } from '@/data/master/manpower-standards'
 import { JOBS, terisi } from '@/data/recruitment/jobs'
+import { OFFS } from '@/data/offboarding'
 import { DEMO_TODAY } from '@/lib/today'
 import type { CurrentUser } from '@/data/users'
 import type { PageId } from '@/App'
@@ -33,7 +34,7 @@ type Props = {
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
-export function ProduksiTab({ user, section, onNavigate }: Props) {
+export function ProduksiTab({ user, year, section, onNavigate }: Props) {
   useMaster()
 
   const isSupervisor = user.role === 'supervisor'
@@ -176,8 +177,13 @@ export function ProduksiTab({ user, section, onNavigate }: Props) {
   }, [effectiveSection])
 
   const chartConfig = {
-    standar: { label: 'Standar', color: 'var(--chart-2)' },
     existing: { label: 'Existing', color: 'var(--chart-1)' },
+    standar: { label: 'Standar', color: 'var(--chart-2)' },
+  } satisfies ChartConfig
+
+  const trendConfig = {
+    y2026: { label: '2026', color: 'var(--chart-1)' },
+    y2025: { label: '2025', color: 'var(--chart-2)' },
   } satisfies ChartConfig
 
   return (
@@ -186,81 +192,55 @@ export function ProduksiTab({ user, section, onNavigate }: Props) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Manpower Existing"
-          value={String(totalExisting)}
-          categoryIcon={Users}
-          summary="Karyawan aktif saat ini"
-          description={effectiveSection !== 'Semua Section' ? `Section ${effectiveSection}` : 'Departemen Produksi'}
+          value={totalExisting}
+          icon={Users}
+          hint={`Karyawan aktif ${effectiveSection !== 'Semua Section' ? `section ${effectiveSection}` : 'Produksi'}`}
         />
-
-        <StatCard
-          label="Standar Tenaga Kerja"
-          value={String(totalStandar)}
-          categoryIcon={Target}
-          summary="Target master standar"
-          description="Total kebutuhan manpower formasi"
-        />
-
+        <StatCard label="Standar Tenaga Kerja" value={totalStandar} icon={Target} hint="Total kebutuhan sesuai master standar" />
         <StatCard
           label="Pemenuhan"
           value={`${pemenuhanPct.toFixed(1).replace('.', ',')}%`}
-          delta={pemenuhanPct >= 100 ? 'Tercapai' : 'Di bawah standar'}
-          trend={pemenuhanPct >= 100 ? 'up' : 'neutral'}
-          categoryIcon={Percent}
-          summary="Rasio existing vs standar"
-          description="Tingkat keterisian formasi"
+          icon={Percent}
+          hint="Rasio existing dibanding standar"
         />
-
         <StatCard
           label="Kekurangan"
           value={`${totalKurang} orang`}
-          delta={totalKurang > 0 ? `-${totalKurang}` : '0'}
-          trend={totalKurang > 0 ? 'down' : 'neutral'}
-          deltaIcon={totalKurang > 0 ? TrendingDown : undefined}
-          categoryIcon={UserMinus}
-          summary={`${openJobNeeds} lowongan dibuka`}
-          description="Selisih kebutuhan belum terisi"
+          icon={UserMinus}
+          hint={`${openJobNeeds} sudah ada lowongan dibuka`}
         />
       </div>
 
-      {/* Grid: Standar vs Existing per Section & Tren Headcount Produksi */}
+      {/* Standar vs Existing per Section & Tren Headcount Produksi */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Standar vs Existing per Section (Grouped Bar Horizontal) */}
         <ChartCard
+          className="lg:col-span-6"
           title="Standar vs Existing per Section"
           description="Perbandingan kebutuhan standar dan jumlah aktual"
-          className="lg:col-span-6"
         >
           <BarChartGrouped
-            layout="horizontal"
             data={sectionChartData}
-            series={[
-              { key: 'standar', label: 'Standar' },
-              { key: 'existing', label: 'Existing' },
-            ]}
+            keys={['existing', 'standar']}
             categoryKey="section"
             config={chartConfig}
-            height={260}
+            layout="horizontal"
+            unit="orang"
+            height={Math.max(220, sectionChartData.length * 72 + 56)}
           />
         </ChartCard>
 
-        {/* Tren Headcount Produksi */}
         <ChartCard
-          title="Tren Headcount Produksi"
-          description={`Perbandingan headcount bulanan 2025 vs 2026 ${effectiveSection !== 'Semua Section' ? `(${effectiveSection})` : ''}`}
           className="lg:col-span-6"
+          title="Tren Headcount Produksi"
+          description={`Perbandingan headcount bulanan 2025 vs 2026${effectiveSection !== 'Semua Section' ? ` (${effectiveSection})` : ''}`}
         >
           <LineChartCompare
             data={trendData}
-            series={[
-              { key: 'y2026', label: '2026' },
-              { key: 'y2025', label: '2025', dashed: true },
-            ]}
             categoryKey="bulan"
-            config={{
-              y2026: { label: '2026', color: 'var(--chart-1)' },
-              y2025: { label: '2025', color: 'var(--chart-2)' },
-            }}
-            height={260}
+            config={trendConfig}
+            height={Math.max(220, sectionChartData.length * 72 + 56)}
+            valueFormatter={(n) => `${n} orang`}
+            series={[{ key: 'y2025', dashed: true }, { key: 'y2026', dots: true }]}
           />
         </ChartCard>
       </div>

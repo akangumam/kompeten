@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { assignOf, paketOf } from '@/data/recruitment/tests'
 import { tampilkanNilaiTes } from '@/data/master/recruitment'
-import { loadExamSession, recordPageLeave, saveAnswer, startExam, submitExam, type ExamSession } from '@/data/portal/exam-state'
+import { loadExamSession, markExamInProgress, recordPageLeave, saveAnswer, startExam, submitExam, type ExamSession } from '@/data/portal/exam-state'
 import { cn } from '@/lib/utils'
 
 type Props = { assignId: string; onDone: () => void }
@@ -23,6 +23,8 @@ export function PortalUjian({ assignId, onDone }: Props) {
   const assign = assignOf(assignId)
   const paket = assign ? paketOf(assign.paketId) : null
   const [session, setSession] = useState<ExamSession>(() => startExam(assignId))
+  // Pembaruan store milik App tidak boleh terjadi saat render PortalUjian.
+  useEffect(() => { markExamInProgress(assignId) }, [assignId])
   const [current, setCurrent] = useState(0)
   const [navSheet, setNavSheet] = useState(false)
   const [confirmSubmit, setConfirmSubmit] = useState(false)
@@ -31,6 +33,7 @@ export function PortalUjian({ assignId, onDone }: Props) {
   const [announcement, setAnnouncement] = useState('')
   const announced5 = useRef(false)
   const announced1 = useRef(false)
+  const submittedRef = useRef(false)
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([])
 
   const durasi = paket?.durasi ?? 0
@@ -45,19 +48,25 @@ export function PortalUjian({ assignId, onDone }: Props) {
     toast.info('Waktu habis. Jawaban Anda telah dikumpulkan otomatis.')
   }, [assignId, session])
 
+  // Timer hanya mengurangi detik. Pengumuman dan auto-submit berjalan di efek terpisah supaya
+  // tidak memanggil setState milik komponen lain dari dalam updater (memicu warning React).
   useEffect(() => {
-    if (durasi === 0) return
-    const id = setInterval(() => {
-      setRemaining((r) => {
-        const next = Math.max(0, r - 1)
-        if (next <= 300 && !announced5.current) { announced5.current = true; setAnnouncement('Sisa waktu 5 menit') }
-        if (next <= 60 && !announced1.current) { announced1.current = true; setAnnouncement('Sisa waktu 1 menit') }
-        if (next === 0) { clearInterval(id); handleAutoSubmit() }
-        return next
-      })
-    }, 1000)
+    if (durasi === 0 || doneScreen) return
+    const id = setInterval(() => setRemaining((r) => Math.max(0, r - 1)), 1000)
     return () => clearInterval(id)
-  }, [durasi, handleAutoSubmit])
+  }, [durasi, doneScreen])
+
+  useEffect(() => {
+    if (remaining <= 300 && !announced5.current) { announced5.current = true; setAnnouncement('Sisa waktu 5 menit') }
+    if (remaining <= 60 && !announced1.current) { announced1.current = true; setAnnouncement('Sisa waktu 1 menit') }
+  }, [remaining])
+
+  // Waktu habis: kumpulkan sekali saja (guard ref juga mencegah dobel setelah pengumpulan manual).
+  useEffect(() => {
+    if (durasi === 0 || remaining > 0 || submittedRef.current) return
+    submittedRef.current = true
+    handleAutoSubmit()
+  }, [remaining, durasi, handleAutoSubmit])
 
   useEffect(() => {
     const onVis = () => { if (document.hidden) { setSession((s) => { const updated = { ...s, pageLeaveCount: s.pageLeaveCount + 1 }; recordPageLeave(updated); return updated }) } }
@@ -103,6 +112,7 @@ export function PortalUjian({ assignId, onDone }: Props) {
   }, [current, session, doneScreen, confirmSubmit, navSheet, pickOption])
 
   const handleManualSubmit = () => {
+    submittedRef.current = true
     const score = submitExam(session)
     setFinalScore(score)
     setDoneScreen(true)

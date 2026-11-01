@@ -134,50 +134,23 @@ export default function OvertimePage({
       <TransitionAlert period={period} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Jam Lembur Tervalidasi"
-          value={`${fj(jamValid)} jam`}
-          categoryIcon={Clock}
-          summary={`${validated.length} lembur tervalidasi`}
-          description="Total jam lembur efektif yang disetujui"
-        />
+        <StatCard label="Jam Lembur Tervalidasi" value={`${fj(jamValid)} jam`} icon={Clock} hint={`${validated.length} lembur tervalidasi`} />
         <StatCard
           label="Menunggu Validasi"
           value={String(waiting)}
-          delta={waiting ? `${waiting} antrean` : '0 antrean'}
-          trend={waiting ? 'down' : 'neutral'}
-          categoryIcon={Hourglass}
-          summary={waiting ? 'Perlu divalidasi atasan' : 'Tidak ada antrean'}
-          description="Realisasi lembur yang menunggu persetujuan"
+          icon={Hourglass}
+          hint={waiting ? 'Perlu divalidasi atasan' : 'Tidak ada antrean'}
           active={tab === 'validasi'}
           onClick={() => {
             setView('lembur')
             setTab((t) => (t === 'validasi' ? 'all' : 'validasi'))
           }}
         />
-        <StatCard
-          label="Lembur Terjadwal"
-          value={`${scheduled} SPL`}
-          categoryIcon={CalendarClock}
-          summary="Belum dilaksanakan"
-          description="Surat Perintah Lembur yang terbit"
-        />
+        <StatCard label="Lembur Terjadwal" value={`${scheduled} SPL`} icon={CalendarClock} hint="Belum dilaksanakan" />
         {showPay ? (
-          <StatCard
-            label="Biaya Lembur Tervalidasi"
-            value={rp(biaya)}
-            categoryIcon={Wallet}
-            summary="Periode terpilih"
-            description="Estimasi biaya upah lembur"
-          />
+          <StatCard label="Biaya Lembur Tervalidasi" value={rp(biaya)} icon={Wallet} hint="Periode terpilih" />
         ) : (
-          <StatCard
-            label="Pegawai Lembur"
-            value={`${people} orang`}
-            categoryIcon={Users}
-            summary="Dengan lembur tervalidasi"
-            description="Jumlah pegawai yang melaksanakan lembur"
-          />
+          <StatCard label="Pegawai Lembur" value={`${people} orang`} icon={Users} hint="Dengan lembur tervalidasi" />
         )}
       </div>
 

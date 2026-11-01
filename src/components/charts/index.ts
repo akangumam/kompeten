@@ -1,5 +1,5 @@
 export { ChartCard } from './chart-card'
 export { BarChartSimple } from './bar-chart-simple'
 export { BarChartGrouped } from './bar-chart-grouped'
-export { LineChartCompare } from './line-chart-compare'
+export { LineChartCompare, type LineSeries } from './line-chart-compare'
 export { DonutChart } from './donut-chart'

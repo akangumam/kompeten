@@ -1,7 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Paperclip, Plus, Scale, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { ChartCard, BarChartSimple } from '@/components/charts'
+import { BarChartSimple, ChartCard } from '@/components/charts'
 import { DatePicker } from '@/components/employee/date-picker'
 import { descId, Field } from '@/components/employee/field'
 import { AlasanField, alasanOk, MoneyField, rp, SHEET_W } from '@/components/koperasi/shared'
@@ -56,23 +56,14 @@ export default function CoopTradingPage({ user }: { user: CurrentUser }) {
       {!isBend && <Alert variant="info"><AlertDescription>Mode baca. Transaksi dicatat Bendahara.</AlertDescription></Alert>}
 
       <div className={KPI_GRID}>
-        <StatCard label="Uang masuk" value={rp(masuk(bulan))} icon={ArrowDownLeft} iconClass="text-success" hint={monthName(bulan)} />
+        <StatCard label="Uang masuk" value={rp(masuk(bulan))} icon={ArrowDownLeft} hint={monthName(bulan)} />
         <StatCard label="Uang keluar" value={rp(keluar(bulan))} icon={ArrowUpRight} hint={monthName(bulan)} />
-        <StatCard label="Selisih bulan ini" value={<span className={cn(sel < 0 && 'text-danger')}>{signed(sel)}</span>} icon={Scale} iconClass={sel < 0 ? 'text-danger' : 'text-info'} hint="Masuk − keluar" />
-        <StatCard label={`Selisih tahun berjalan (${year})`} value={<span className={cn(tahun < 0 && 'text-danger')}>{signed(tahun)}</span>} icon={TrendingUp} iconClass="text-success" hint="Pendapatan unit dagang untuk SHU" />
+        <StatCard label="Selisih bulan ini" value={signed(sel)} icon={Scale} hint="Masuk − keluar" />
+        <StatCard label={`Selisih tahun berjalan (${year})`} value={signed(tahun)} icon={TrendingUp} hint="Pendapatan unit dagang untuk SHU" />
       </div>
 
-      <ChartCard
-        title="Selisih per bulan 2026"
-        description="Januari – Oktober"
-      >
-        <BarChartSimple
-          data={chart}
-          dataKey="selisih"
-          categoryKey="bulan"
-          config={config}
-          height={240}
-        />
+      <ChartCard title="Selisih per bulan 2026" description="Januari – Oktober">
+        <BarChartSimple data={chart} dataKey="selisih" categoryKey="bulan" config={config} height={260} valueFormatter={rp} />
       </ChartCard>
 
       <Card>

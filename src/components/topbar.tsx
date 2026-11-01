@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { PageId } from '@/App'
+import { markRead, notifsFor, useNotifs } from '@/data/notifications'
 import { USERS, type CurrentUser, type Role } from '@/data/users'
 import type { PortalPersona } from '@/components/portal/portal-shell'
 
@@ -40,7 +41,9 @@ const soon = () => toast.info('Dibuat di tahap berikutnya')
 type Draft = { nama: string; activated: boolean; from: 'directory' | 'recruitment' }
 type Crumb = { label: string; to?: PageId }
 
-function crumbsFor(activePage: PageId, draft?: Draft, ksb = false): Crumb[] {
+const DASH_CRUMB: Record<string, string> = { umum: 'Umum & Rekrutmen', produksi: 'Produksi', presensi: 'Presensi' }
+
+function crumbsFor(activePage: PageId, draft?: Draft, ksb = false, dashTab = 'umum'): Crumb[] {
   const c = (...labels: string[]): Crumb[] => labels.map((label) => ({ label }))
   if (activePage === 'recruitment') return c('Recruitment', 'Daftar Kandidat')
   if (activePage === 'recruitment-jobs') return c('Recruitment', 'Lowongan')
@@ -56,6 +59,9 @@ function crumbsFor(activePage: PageId, draft?: Draft, ksb = false): Crumb[] {
   if (activePage === 'industrial-relations') return c('Data Pegawai', 'Hubungan Industrial')
   if (activePage === 'employee-transactions') return c('Data Pegawai', 'Transaksi Kepegawaian')
   if (activePage === 'master-data') return c('Data Pegawai', 'Data Master')
+  if (activePage === 'dev-competency') return c('People Development', 'Kompetensi')
+  if (activePage === 'dev-training') return c('People Development', 'Training')
+  if (activePage === 'dev-kpi') return c('People Development', 'KPI')
   if (activePage === 'payroll-components') return c('Payroll', 'Komponen Gaji')
   if (activePage === 'payroll-run') return c('Payroll', 'Proses & Closing')
   if (activePage === 'coop-members') return c('Koperasi', 'Anggota & Simpanan')
@@ -75,13 +81,12 @@ function crumbsFor(activePage: PageId, draft?: Draft, ksb = false): Crumb[] {
   if (activePage === 'leave') return c('Kehadiran', 'Cuti, Izin, Sakit & Dinas')
   if (activePage === 'shift-swap') return c('Kehadiran', 'Tukar Shift')
   if (activePage === 'overtime') return c('Kehadiran', 'Input & Slip Overtime')
-  if (activePage === 'dashboard-produksi') return c('Dashboard', 'Produksi')
-  if (activePage === 'dashboard-presensi') return c('Dashboard', 'Presensi')
-  return ksb ? c('Dashboard', 'Koperasi') : c('Dashboard', 'Umum & Rekrutmen')
+  return ksb ? c('Dashboard', 'Koperasi') : c('Dashboard', DASH_CRUMB[dashTab] ?? 'Umum & Rekrutmen')
 }
 
 export function Topbar({
   activePage,
+  dashTab,
   draft,
   user,
   onUserChange,
@@ -93,6 +98,7 @@ export function Topbar({
   onFinishPayroll,
 }: {
   activePage: PageId
+  dashTab?: string
   draft?: Draft
   user: CurrentUser
   onUserChange: (role: Role) => void
@@ -103,7 +109,10 @@ export function Topbar({
   payrollFinal: boolean
   onFinishPayroll: () => void
 }) {
-  const crumbs = crumbsFor(activePage, draft, user.role === 'ketua' || user.role === 'sekretaris' || user.role === 'bendahara')
+  useNotifs()
+  const notes = notifsFor(user.role)
+  const unread = notes.filter((n) => !n.read).length
+  const crumbs = crumbsFor(activePage, draft, user.role === 'ketua' || user.role === 'sekretaris' || user.role === 'bendahara', dashTab)
   return (
     <header className="z-20 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
       <SidebarTrigger aria-label="Buka/tutup sidebar" />
@@ -138,11 +147,25 @@ export function Topbar({
 
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="size-4" />
-          <span aria-hidden className="absolute right-2 top-2 size-2 rounded-full bg-danger ring-2 ring-background" />
-          <span className="sr-only">3 notifikasi baru</span>
-        </Button>
+        <DropdownMenu onOpenChange={(o) => { if (!o && unread) markRead(user.role) }}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `${unread} notifikasi baru` : 'Notifikasi'}>
+              <Bell className="size-4" />
+              {unread > 0 && <span aria-hidden className="absolute right-2 top-2 size-2 rounded-full bg-danger ring-2 ring-background" />}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel>Notifikasi</DropdownMenuLabel>
+            {notes.length === 0 && <p className="px-2 py-4 text-center text-sm text-muted-foreground">Tidak ada notifikasi.</p>}
+            {notes.map((n) => (
+              <DropdownMenuItem key={n.id} className="flex-col items-start gap-0.5" onSelect={() => onNavigate(n.page)}>
+                <span className="text-sm font-medium">{n.title}{!n.read && <span className="sr-only"> (baru)</span>}</span>
+                <span className="text-xs text-muted-foreground">{n.body}</span>
+                <span className="text-xs tabular-nums text-muted-foreground">{n.at}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

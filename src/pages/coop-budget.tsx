@@ -1,7 +1,7 @@
 import { Banknote, Paperclip, PiggyBank, Plus, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { ChartCard, BarChartGrouped } from '@/components/charts'
+import { BarChartGrouped, ChartCard } from '@/components/charts'
 import { DatePicker } from '@/components/employee/date-picker'
 import { descId, Field } from '@/components/employee/field'
 import { AlasanField, alasanOk, MoneyField, ReviewSheet, rp, SHEET_W } from '@/components/koperasi/shared'
@@ -129,9 +129,9 @@ function BudgetTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBend: b
       </div>
       <div className={KPI_GRID}>
         <StatCard label="Total budget" value={rp(total)} icon={Wallet} hint={monthName(bulan)} />
-        <StatCard label="Realisasi" value={rp(real)} icon={Banknote} iconClass="text-info" hint="Pengeluaran Tercatat" />
-        <StatCard label="Sisa" value={rp(total - real - wait)} icon={PiggyBank} iconClass="text-success" hint="Budget − realisasi − menunggu" />
-        <StatCard label="Serapan" value={pctText(total ? (real / total) * 100 : 0)} icon={TrendingUp} iconClass="text-warning" hint="Realisasi ÷ budget" />
+        <StatCard label="Realisasi" value={rp(real)} icon={Banknote} hint="Pengeluaran Tercatat" />
+        <StatCard label="Sisa" value={rp(total - real - wait)} icon={PiggyBank} hint="Budget − realisasi − menunggu" />
+        <StatCard label="Serapan" value={pctText(total ? (real / total) * 100 : 0)} icon={TrendingUp} hint="Realisasi ÷ budget" />
       </div>
       <Card>
         <CardContent>
@@ -181,22 +181,8 @@ function BudgetTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBend: b
           </div>
         </CardContent>
       </Card>
-      <ChartCard
-        title="Budget dan realisasi per pos"
-        description={monthName(bulan)}
-      >
-        <BarChartGrouped
-          data={data}
-          series={[
-            { key: 'budget', label: 'Budget' },
-            { key: 'realisasi', label: 'Realisasi' },
-          ]}
-          categoryKey="pos"
-          config={chartConfig}
-          layout="horizontal"
-          height={260}
-          showLabels={false}
-        />
+      <ChartCard title="Budget dan realisasi per pos" description={monthName(bulan)}>
+        <BarChartGrouped data={data} keys={['budget', 'realisasi']} categoryKey="pos" config={chartConfig} layout="horizontal" valueFormatter={rp} height={Math.max(260, data.length * 72 + 56)} />
       </ChartCard>
 
       <AlertDialog open={confirm} onOpenChange={setConfirm}>

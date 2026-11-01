@@ -10,22 +10,9 @@ import { KELOMPOK_LIST } from '@/data/master/levels'
 import type { PeriodId } from '@/data/payroll/runs'
 import { cn } from '@/lib/utils'
 
-import { StatCard as UnifiedStatCard } from '@/components/dashboard/stat-card'
-
 export const idr = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
 
-/** Kartu KPI untuk halaman hilir payroll; mengikuti pola shadcn StatCard. */
-export function StatCard({ label, value, icon: Icon, iconClass, hint }: { label: string; value: ReactNode; icon: LucideIcon; iconClass?: string; hint?: string }) {
-  return (
-    <UnifiedStatCard
-      label={label}
-      value={value}
-      categoryIcon={Icon}
-      description={hint}
-      className="h-full"
-    />
-  )
-}
+export { StatCard } from '@/components/dashboard/stat-card'
 
 export const KPI_GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'
 

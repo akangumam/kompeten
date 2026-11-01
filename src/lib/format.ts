@@ -32,7 +32,3 @@ export function terbilang(n: number) {
   const words = n === 0 ? 'nol' : say(Math.abs(Math.round(n)))
   return `${n < 0 ? 'Minus ' : ''}${words.charAt(0).toUpperCase()}${words.slice(1)} rupiah`.replace('Minus M', 'Minus m')
 }
-
-export const pct = (n: number, d = 1) => `${n.toFixed(d).replace('.', ',')}%`
-export const num = (n: number) => n.toLocaleString('id-ID')
-

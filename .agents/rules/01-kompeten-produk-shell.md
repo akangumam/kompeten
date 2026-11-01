@@ -11,10 +11,11 @@ Proyek: KOMPETEN — HRIS & Koperasi untuk PT Primaplast Indonesia. Aturan ini b
 ## 2. App shell (reuse, never rebuild)
 - Always reuse the existing `AppSidebar`, `Topbar`, `SidebarProvider` / `SidebarInset` setup and the sidebar logic in `src/App.tsx`. Do not create a second sidebar or topbar.
 - When adding a screen, only set the active sidebar item and the breadcrumb.
+- Navigasi: submenu sidebar hanya untuk **halaman yang berbeda**. Tampilan alternatif dari satu halaman (mis. Dashboard Umum/Produksi/Presensi, Hubungan Industrial Disiplin/Pegawai Keluar) memakai **Tabs** di halaman itu, bukan submenu. Item sidebar tanpa submenu tidak memakai chevron. Dashboard adalah satu item; klik item itu membuka tab yang terakhir dibuka di sesi ini (default Umum & Rekrutmen).
 - Sidebar groups behave as an accordion: only one group is expanded at a time. Opening a group closes the previously open one; navigating to a page expands that page's group. When the active page's group is collapsed, its parent item stays highlighted (`isActive`) so the user still sees where they are.
-- Payroll menu: visible for Payroll Officer and HR & GA Manager (and Finance for Slip Gaji & Daftar Pembayaran); hidden for Admin HRD and Supervisor.
+- Payroll menu: Payroll Officer dan HR & GA Manager melihat semua halaman Payroll. Finance melihat Daftar Pembayaran, Rekonsiliasi Potongan, dan Kompensasi & Pesangon. Admin HRD hanya melihat Kompensasi & Pesangon (baca saja, termasuk nominal). Supervisor tidak melihat menu Payroll.
 - Today is one constant, `DEMO_TODAY` = 26 Okt 2026, in `src/lib/today.ts`. Every page reads it; no page uses `new Date()` for business logic.
-- Payroll access per persona: Mira Andriani (Payroll Officer) — all Payroll pages; Lestari Wulandari (HR & GA Manager) — all Payroll pages, read-only except Approval; Yohanes Kristanto (Finance) — Daftar Pembayaran and Rekonsiliasi Potongan only.
+- Payroll access per persona: Mira Andriani (Payroll Officer) — all Payroll pages; Lestari Wulandari (HR & GA Manager) — all Payroll pages, read-only except Approval; Yohanes Kristanto (Finance) — lihat aturan Payroll menu di atas.
 - Koperasi menu: visible only for the KSB personas (Ratna Dewi · Sekretaris, Nina Marlina · Bendahara, Rudi Hartanto · Ketua). Koperasi is a separate entity; HR and Payroll personas never see Koperasi balances.
 - Dashboard tabs by role: Admin HRD & HR & GA Manager → Umum & Rekrutmen · Produksi · Presensi. Supervisor (Atasan) → Umum & Rekrutmen · Presensi, scoped to direct reports. Payroll & Finance → Umum & Rekrutmen. KSB personas → Dashboard shows only Koperasi (no tab list). HR and Payroll personas never see the Koperasi tab.
 - Data Master: editable by Admin HRD, read-only for HR & GA Manager, hidden for Supervisor.

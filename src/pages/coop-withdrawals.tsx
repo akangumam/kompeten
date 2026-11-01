@@ -72,10 +72,10 @@ export default function CoopWithdrawalsPage({ user }: { user: CurrentUser }) {
       </PageHeader>
 
       <div className={KPI_GRID}>
-        <StatCard label="Menunggu Ketua" value={count('menunggu-ketua').toLocaleString('id-ID')} icon={Hourglass} iconClass="text-info" hint="Menunggu persetujuan" />
-        <StatCard label="Menunggu pencairan" value={count('disetujui').toLocaleString('id-ID')} icon={Clock} iconClass="text-info" hint="Disetujui, menunggu Bendahara" />
-        <StatCard label="Dicairkan bulan ini" value={rp(disbursedThisMonth())} icon={Banknote} iconClass="text-success" hint="Oktober 2026" />
-        <StatCard label="Saldo dipesan" value={rp(dipesanTotal)} icon={HandCoins} iconClass="text-warning" hint="Belum dicairkan atau dilepas" />
+        <StatCard label="Menunggu Ketua" value={count('menunggu-ketua').toLocaleString('id-ID')} icon={Hourglass} hint="Menunggu persetujuan" />
+        <StatCard label="Menunggu pencairan" value={count('disetujui').toLocaleString('id-ID')} icon={Clock} hint="Disetujui, menunggu Bendahara" />
+        <StatCard label="Dicairkan bulan ini" value={rp(disbursedThisMonth())} icon={Banknote} hint="Oktober 2026" />
+        <StatCard label="Saldo dipesan" value={rp(dipesanTotal)} icon={HandCoins} hint="Belum dicairkan atau dilepas" />
       </div>
 
       <Card>

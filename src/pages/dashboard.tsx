@@ -1,10 +1,12 @@
-import { BadgeCheck, CalendarClock, Download, FileText, TrendingUp, Users } from 'lucide-react'
+import { BadgeCheck, CalendarClock, Download, FileText, Users } from 'lucide-react'
 import { ContractsTable } from '@/components/dashboard/contracts-table'
 import { DepartmentChart } from '@/components/dashboard/department-chart'
 import { EmployeeTrendChart } from '@/components/dashboard/employee-trend-chart'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KoperasiTab } from '@/components/dashboard/koperasi-tab'
 import { PresensiTab } from '@/components/dashboard/presensi-tab'
@@ -23,13 +25,26 @@ import { funnel } from '@/data/candidates'
 import { useRecruitment } from '@/data/recruitment/store'
 import { useDirectoryNav } from '@/lib/directory-nav'
 import type { PageId } from '@/App'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { expiringContracts, useTrx } from '@/data/transactions'
 
 const DEPARTMENTS = [
   'Semua Department', 'Produksi', 'Quality Assurance', 'Maintenance', 'PPIC', 'Warehouse',
   'Engineering', 'HR & GA', 'Finance', 'IT', 'Purchasing',
 ]
+
+function Placeholder() {
+  return (
+    <Card>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <p className="text-sm text-muted-foreground">Konten tab ini dibuat di tahap berikutnya</p>
+      </CardContent>
+    </Card>
+  )
+}
 
 export type TabId = 'umum' | 'produksi' | 'presensi' | 'koperasi'
 const TAB_LABEL: Record<TabId, string> = { umum: 'Umum & Rekrutmen', produksi: 'Produksi', presensi: 'Presensi', koperasi: 'Koperasi' }
@@ -42,19 +57,15 @@ export function tabsFor(role: Role): TabId[] {
 }
 
 export default function DashboardPage({
-  user,
-  records,
-  requests,
-  onNavigate,
-  activeTab,
-  onTabChange,
+  user, records, requests, onNavigate, tab, onTabChange,
 }: {
+  /** Tab aktif; state-nya dimiliki App supaya sidebar, breadcrumb, dan judul tab browser ikut sinkron. */
+  tab: TabId
+  onTabChange: (tab: TabId) => void
   user: CurrentUser
   records: DayRecord[]
   requests: LeaveRequest[]
   onNavigate: (page: PageId, id?: string | null) => void
-  activeTab?: TabId
-  onTabChange?: (tab: TabId) => void
 }) {
   const { openDirectory } = useDirectoryNav()
   useTrx()
@@ -62,35 +73,6 @@ export default function DashboardPage({
   const fun = funnel()
   const tabs = tabsFor(user.role)
   const ksb = isKsbRole(user.role)
-
-  const [internalTab, setInternalTab] = useState<TabId>(activeTab ?? tabs[0])
-  const currentTab = activeTab ?? internalTab
-
-  // Ganti persona: pertahankan tab aktif bila masih diizinkan, jika tidak pilih tab pertama.
-  const active: TabId = tabs.includes(currentTab) ? currentTab : tabs[0]
-
-  const handleTabChange = (nextTab: TabId) => {
-    setInternalTab(nextTab)
-    onTabChange?.(nextTab)
-  }
-
-  useEffect(() => {
-    if (active !== currentTab) {
-      handleTabChange(active)
-    }
-  }, [active, currentTab])
-
-  // Sinkronkan document.title dengan tab aktif
-  useEffect(() => {
-    const titles: Record<TabId, string> = {
-      umum: ksb ? 'Dashboard Koperasi' : 'Dashboard',
-      produksi: 'Produksi',
-      presensi: 'Presensi',
-      koperasi: 'Dashboard Koperasi',
-    }
-    document.title = `${titles[active]} \u00B7 KOMPETEN HRIS & Koperasi`
-  }, [active, ksb])
-
   const [tahun, setTahun] = useState('2026')
   const [dept, setDept] = useState('Semua Department')
   const [presPeriod, setPresPeriod] = useState('2026-10')
@@ -98,6 +80,8 @@ export default function DashboardPage({
   const [coopMonth, setCoopMonth] = useState(DEFAULT_COOP_MONTH)
   const [prodYear, setProdYear] = useState('2026')
   const [prodSection, setProdSection] = useState(user.role === 'supervisor' ? 'Injection' : 'Semua Section')
+  // Ganti persona: pertahankan tab aktif bila masih diizinkan, jika tidak pilih tab pertama.
+  const active: TabId = tabs.includes(tab) ? tab : tabs[0]
 
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 p-6">
@@ -178,8 +162,8 @@ export default function DashboardPage({
         </div>
       </div>
 
-      <Tabs value={active} onValueChange={(v) => handleTabChange(v as TabId)} className="gap-6">
-        {!ksb && (
+      <Tabs value={active} onValueChange={(v) => onTabChange(v as TabId)} className="gap-6">
+        {tabs.length > 1 && (
           <TabsList className="h-auto max-w-full flex-wrap justify-start">
             {tabs.map((t) => <TabsTrigger key={t} value={t}>{TAB_LABEL[t]}</TabsTrigger>)}
           </TabsList>
@@ -187,53 +171,26 @@ export default function DashboardPage({
 
         {tabs.includes('umum') && (
           <TabsContent value="umum" className="space-y-6">
-            <p className="text-sm text-muted-foreground">
-              Menampilkan 248 karyawan aktif di semua department per Oktober 2026, termasuk {expiringContracts().length} karyawan dengan kontrak berakhir dalam 45 hari.
-            </p>
+          <p className="text-sm text-muted-foreground">
+            Menampilkan 248 karyawan aktif di semua department per Oktober 2026, termasuk {expiringContracts().length} karyawan dengan kontrak berakhir dalam 45 hari.
+          </p>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                label="Karyawan Aktif"
-                value="248"
-                delta="+12%"
-                trend="up"
-                deltaIcon={TrendingUp}
-                summary="+12% dari tahun lalu"
-                description="248 pegawai aktif semua departemen"
-                onClick={() => openDirectory({ tab: 'aktif' })}
-              />
-              <StatCard
-                label="Pelamar"
-                value={String(fun['Seleksi Administrasi'])}
-                categoryIcon={FileText}
-                summary="Semua lamaran yang masuk"
-                description="Tahap seleksi berkas administrasi"
-              />
-              <StatCard
-                label="Interview"
-                value={String(fun.Interview)}
-                categoryIcon={CalendarClock}
-                summary="Tahap Interview aktif"
-                description="Pernah mencapai tahap Interview"
-              />
-              <StatCard
-                label="Lolos"
-                value={String(fun.Diterima)}
-                categoryIcon={BadgeCheck}
-                summary="Penawaran diterima kandidat"
-                description="Tahap penawaran & verifikasi lolos"
-              />
-            </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard label="Karyawan Aktif" value="248" icon={Users} delta="+12%" trend="up" summary="Naik dari tahun lalu" onClick={() => openDirectory({ tab: 'aktif' })} />
+            <StatCard label="Pelamar" value={String(fun['Seleksi Administrasi'])} icon={FileText} hint="Semua lamaran yang masuk" />
+            <StatCard label="Interview" value={String(fun.Interview)} icon={CalendarClock} hint="Pernah mencapai tahap Interview" />
+            <StatCard label="Lolos" value={String(fun.Diterima)} icon={BadgeCheck} hint="Penawaran diterima kandidat" />
+          </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-              <div className="lg:col-span-7"><EmployeeTrendChart /></div>
-              <div className="lg:col-span-5"><DepartmentChart /></div>
-            </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-7"><EmployeeTrendChart /></div>
+            <div className="lg:col-span-5"><DepartmentChart /></div>
+          </div>
 
-            <ContractsTable user={user} leaves={requests} />
+          <ContractsTable user={user} leaves={requests} />
 
-            <DemografiSection user={user} dept={dept} />
-            <PergerakanSection user={user} dept={dept} onNavigate={onNavigate} />
+          <DemografiSection user={user} dept={dept} />
+          <PergerakanSection user={user} dept={dept} onNavigate={onNavigate} />
           </TabsContent>
         )}
         {tabs.includes('produksi') && (

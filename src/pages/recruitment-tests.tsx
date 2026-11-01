@@ -2,6 +2,7 @@ import { MoreHorizontal, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { PagedFooter, pageSlice } from '@/components/recruitment/pager'
+import { TrainingResultsTable, trainingResults } from '@/components/recruitment/training-results'
 import { PaketSheet } from '@/components/recruitment/paket-sheet'
 import { LulusBadge, Row, StageBadge, TestBadge } from '@/components/recruitment/shared'
 import { ResendDialog, ScoreDialog, nilaiCell } from '@/components/recruitment/tests-parts'
@@ -29,6 +30,7 @@ export default function RecruitmentTestsPage({ user, onOpenCandidate }: { user: 
   useRecruitment()
   const admin = user.role === 'admin'
   const [tab, setTab] = useState('paket')
+  const [sumber, setSumber] = useState<'Rekrutmen' | 'Training'>('Rekrutmen')
   const [paketSheet, setPaketSheet] = useState<{ paket?: PaketTes; ro: boolean } | null>(null)
   const [q, setQ] = useState('')
   const [fPaket, setFPaket] = useState(ALL)
@@ -58,7 +60,7 @@ export default function RecruitmentTestsPage({ user, onOpenCandidate }: { user: 
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="gap-6">
-        <TabsList><TabsTrigger value="paket">Paket Tes ({PAKET.length})</TabsTrigger><TabsTrigger value="hasil">Hasil Tes ({ASSIGNS.length})</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="paket">Paket Tes ({PAKET.length})</TabsTrigger><TabsTrigger value="hasil">Hasil Tes ({ASSIGNS.length + trainingResults().length})</TabsTrigger></TabsList>
 
         <TabsContent value="paket">
           <Card>
@@ -111,6 +113,11 @@ export default function RecruitmentTestsPage({ user, onOpenCandidate }: { user: 
           <Card>
             <CardHeader><CardTitle>Hasil Tes</CardTitle></CardHeader>
             <CardContent className="space-y-4">
+              <Select value={sumber} onValueChange={(v) => setSumber(v as 'Rekrutmen' | 'Training')}>
+                <SelectTrigger aria-label="Sumber" className="w-[190px]"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="Rekrutmen">Sumber: Rekrutmen</SelectItem><SelectItem value="Training">Sumber: Training</SelectItem></SelectContent>
+              </Select>
+              {sumber === 'Training' ? <TrainingResultsTable /> : <>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative w-full sm:w-80">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
@@ -166,8 +173,9 @@ export default function RecruitmentTestsPage({ user, onOpenCandidate }: { user: 
                   })}
                 </TableBody>
               </Table>
+              </>}
             </CardContent>
-            <PagedFooter total={hasil.length} page={page} perPage={perPage} setPage={setPage} setPerPage={setPerPage} />
+            {sumber === 'Rekrutmen' && <PagedFooter total={hasil.length} page={page} perPage={perPage} setPage={setPage} setPerPage={setPerPage} />}
           </Card>
         </TabsContent>
       </Tabs>

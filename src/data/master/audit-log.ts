@@ -1,7 +1,7 @@
 import { DEMO_TODAY, nowTimeWIB } from '@/lib/today'
 
-export type AuditGroup = 'Organisasi' | 'Posisi & Level' | 'Grade' | 'Shift & Pola Kerja' | 'Kalender Libur' | 'Aturan Cuti' | 'Industrial' | 'Penyetuju' | 'Rekrutmen' | 'Dashboard'
-export const AUDIT_GROUPS: AuditGroup[] = ['Organisasi', 'Posisi & Level', 'Grade', 'Shift & Pola Kerja', 'Kalender Libur', 'Aturan Cuti', 'Industrial', 'Penyetuju', 'Rekrutmen', 'Dashboard']
+export type AuditGroup = 'Organisasi' | 'Posisi & Level' | 'Grade' | 'Shift & Pola Kerja' | 'Kalender Libur' | 'Aturan Cuti' | 'Industrial' | 'Penyetuju' | 'Rekrutmen' | 'Dashboard' | 'Kompetensi' | 'KPI'
+export const AUDIT_GROUPS: AuditGroup[] = ['Organisasi', 'Posisi & Level', 'Grade', 'Shift & Pola Kerja', 'Kalender Libur', 'Aturan Cuti', 'Industrial', 'Penyetuju', 'Rekrutmen', 'Dashboard', 'Kompetensi', 'KPI']
 
 export type AuditEntry = {
   id: string

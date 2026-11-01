@@ -236,42 +236,32 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
         <StatCard
           label="Pegawai Aktif"
           value={kpi.aktif.toLocaleString('id-ID')}
-          categoryIcon={Users}
-          summary={`Per ${formatDate(DEMO_TODAY)}`}
-          description="Total pegawai organik & kontrak aktif"
+          icon={Users}
+          hint={`Per ${formatDate(DEMO_TODAY)}`}
           active={tab === 'aktif' && filters.statusKerja === ALL && !filters.kontrak45}
           onClick={() => apply({ tab: 'aktif' })}
         />
         <StatCard
           label="Tetap"
           value={kpi.tetap.toLocaleString('id-ID')}
-          delta={`${kpi.aktif ? Math.round((kpi.tetap / kpi.aktif) * 100) : 0}%`}
-          trend="neutral"
-          categoryIcon={BadgeCheck}
-          summary={`${kpi.aktif ? Math.round((kpi.tetap / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
-          description="Status pegawai perjanjian kerja waktu tidak tertentu"
+          icon={BadgeCheck}
+          hint={`${kpi.aktif ? Math.round((kpi.tetap / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
           active={filters.statusKerja === 'Tetap'}
           onClick={() => apply({ tab: 'aktif', statusKerja: 'Tetap' })}
         />
         <StatCard
           label="Kontrak"
           value={kpi.pkwt.toLocaleString('id-ID')}
-          delta={`${kpi.aktif ? Math.round((kpi.pkwt / kpi.aktif) * 100) : 0}%`}
-          trend="neutral"
-          categoryIcon={FileClock}
-          summary={`${kpi.aktif ? Math.round((kpi.pkwt / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
-          description="Status perjanjian kerja waktu tertentu (PKWT)"
+          icon={FileClock}
+          hint={`${kpi.aktif ? Math.round((kpi.pkwt / kpi.aktif) * 100) : 0}% dari pegawai aktif`}
           active={filters.statusKerja === 'Kontrak' && !filters.kontrak45}
           onClick={() => apply({ tab: 'aktif', statusKerja: 'Kontrak' })}
         />
         <StatCard
           label="Kontrak ≤ 45 hari"
           value={kpi.kontrak.toLocaleString('id-ID')}
-          delta={kpi.kontrak ? `${kpi.kontrak} segera berakhir` : 'Aman'}
-          trend={kpi.kontrak ? 'down' : 'neutral'}
-          categoryIcon={CalendarClock}
-          summary="Perlu ditindaklanjuti"
-          description="Evaluasi perpanjangan atau selesai kontrak"
+          icon={CalendarClock}
+          hint="Perlu ditindaklanjuti"
           active={filters.kontrak45}
           onClick={() => apply({ tab: 'aktif', kontrak45: true })}
         />

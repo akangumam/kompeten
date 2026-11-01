@@ -11,28 +11,18 @@ const data = BULAN.map((bulan, i) => ({ bulan, y2024: Y2024[i], y2025: Y2025[i],
 const config = {
   y2026: { label: '2026', color: 'var(--chart-1)' },
   y2025: { label: '2025', color: 'var(--chart-2)' },
-  y2024: { label: '2024', color: 'var(--chart-5)' },
+  y2024: { label: '2024', color: 'var(--chart-3)' },
 } satisfies ChartConfig
-
-const series = [
-  { key: 'y2026', label: '2026' },
-  { key: 'y2025', label: '2025', dashed: true },
-  { key: 'y2024', label: '2024', dashed: true },
-]
 
 export function EmployeeTrendChart() {
   return (
-    <ChartCard
-      title="Tren Karyawan Aktif"
-      description="Perbandingan bulanan 2024, 2025, dan 2026"
-      className="h-full"
-    >
+    <ChartCard className="h-full" title="Tren Karyawan Aktif" description="Perbandingan bulanan 2024, 2025, dan 2026">
       <LineChartCompare
         data={data}
-        series={series}
         categoryKey="bulan"
         config={config}
         height={300}
+        series={[{ key: 'y2024', dashed: true }, { key: 'y2025', dashed: true }, { key: 'y2026', dots: true, area: true }]}
       />
     </ChartCard>
   )

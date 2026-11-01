@@ -162,45 +162,10 @@ export default function EmployeeTransactionsPage({ user, leaves, periodId, onCle
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Menunggu approval"
-          value={String(kpi.menunggu)}
-          delta={kpi.menunggu ? `${kpi.menunggu} antrean` : '0 antrean'}
-          trend={kpi.menunggu ? 'down' : 'neutral'}
-          categoryIcon={Hourglass}
-          summary="Perlu keputusan penyetuju"
-          description="Persetujuan atasan dan HRD"
-          onClick={() => pickStatus('menunggu')}
-          active={status === 'menunggu'}
-        />
-        <StatCard
-          label="Terjadwal"
-          value={String(kpi.terjadwal)}
-          categoryIcon={CalendarClock}
-          summary="Disetujui, belum berlaku"
-          description="Efektif pada tanggal mendatang"
-          onClick={() => pickStatus('terjadwal')}
-          active={status === 'terjadwal'}
-        />
-        <StatCard
-          label="Berlaku bulan ini"
-          value={String(kpi.bulan)}
-          categoryIcon={CircleCheck}
-          summary="Efektif Oktober 2026"
-          description="Transaksi kepegawaian aktif"
-          onClick={() => pickStatus('bulan')}
-          active={status === 'bulan'}
-        />
-        <StatCard
-          label="Kontrak ≤ 45 hari"
-          value={String(kpi.kontrak)}
-          delta={kpi.kontrak ? `${kpi.kontrak} kontrak` : 'Aman'}
-          trend={kpi.kontrak ? 'down' : 'neutral'}
-          categoryIcon={Clock}
-          summary="Lihat daftar tindakan"
-          description="Evaluasi perpanjangan kontrak"
-          onClick={() => expiringRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-        />
+        <StatCard label="Menunggu approval" value={String(kpi.menunggu)} icon={Hourglass} hint="Perlu keputusan penyetuju" onClick={() => pickStatus('menunggu')} active={status === 'menunggu'} />
+        <StatCard label="Terjadwal" value={String(kpi.terjadwal)} icon={CalendarClock} hint="Disetujui, belum berlaku" onClick={() => pickStatus('terjadwal')} active={status === 'terjadwal'} />
+        <StatCard label="Berlaku bulan ini" value={String(kpi.bulan)} icon={CircleCheck} hint="Efektif Oktober 2026" onClick={() => pickStatus('bulan')} active={status === 'bulan'} />
+        <StatCard label="Kontrak ≤ 45 hari" value={String(kpi.kontrak)} icon={Clock} hint="Lihat daftar tindakan" onClick={() => expiringRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
       </div>
 
       <div ref={expiringRef} className="scroll-mt-6">

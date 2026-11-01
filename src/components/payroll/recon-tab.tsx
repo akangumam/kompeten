@@ -103,8 +103,8 @@ export function ReconPanel({ user, ctx, onNavigate, initialPeriod }: Props) {
           <div className={KPI_GRID}>
             <StatCard label="Ditagihkan Koperasi" value={idr(ditagih)} icon={Landmark} hint={`Tagihan ${period.label}`} />
             <StatCard label="Dipotong di payroll" value={idr(dipotong)} icon={Wallet} hint="Dari payroll final" />
-            <StatCard label="Selisih" value={idr(dipotong - ditagih)} icon={Scale} iconClass={dipotong === ditagih ? 'text-success' : 'text-warning'} hint={dipotong === ditagih ? 'Tidak ada selisih' : 'Perlu dicek'} />
-            <StatCard label="Status" value={status.value} icon={CircleCheck} iconClass="text-info" hint={status.hint} />
+            <StatCard label="Selisih" value={idr(dipotong - ditagih)} icon={Scale} hint={dipotong === ditagih ? 'Tidak ada selisih' : 'Perlu dicek'} />
+            <StatCard label="Status" value={status.value} icon={CircleCheck} hint={status.hint} />
           </div>
 
           <Card>

@@ -3,14 +3,15 @@ import { ArrowRight, UserMinus } from 'lucide-react'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { StatCard } from '@/components/dashboard/stat-card'
-import { ChartCard, BarChartGrouped } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
+import { BarChartGrouped, ChartCard } from '@/components/charts'
+import { StatCard } from '@/components/dashboard/stat-card'
 import { OFFS, turnoverStats, personOf } from '@/data/offboarding'
 import { HEADCOUNT } from '@/data/headcount'
 import { ROSTER } from '@/data/employees'
 import { formatTenure } from '@/data/directory'
 import { formatDate } from '@/lib/format'
+import { DEMO_TODAY } from '@/lib/today'
 import type { CurrentUser } from '@/data/users'
 import type { PageId } from '@/App'
 
@@ -23,11 +24,6 @@ type Props = {
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 export function PergerakanSection({ user, dept, onNavigate }: Props) {
-  // Atasan (Hendra) tidak melihat card Pergerakan Pegawai
-  if (user.role === 'supervisor') {
-    return null
-  }
-
   // Turnover tahun berjalan dari Hubungan Industrial (seluruh perusahaan: 1,3%)
   const tov = turnoverStats()
 
@@ -100,6 +96,9 @@ export function PergerakanSection({ user, dept, onNavigate }: Props) {
     keluar: { label: 'Keluar', color: 'var(--chart-2)' },
   } satisfies ChartConfig
 
+  // Atasan (Hendra) tidak melihat card Pergerakan Pegawai
+  if (user.role === 'supervisor') return null
+
   return (
     <div className="space-y-4 pt-4">
       <div>
@@ -109,38 +108,24 @@ export function PergerakanSection({ user, dept, onNavigate }: Props) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-stretch">
-        {/* Masuk vs Keluar per Bulan (Grouped Bar) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <ChartCard
+          className="lg:col-span-8"
           title="Masuk vs Keluar per Bulan 2026"
           description={`${dept !== 'Semua Department' ? `Department ${dept}` : 'Seluruh perusahaan'} · Jan–Okt 2026`}
-          className="lg:col-span-8"
         >
-          <BarChartGrouped
-            layout="vertical"
-            data={movementData}
-            series={[
-              { key: 'masuk', label: 'Masuk' },
-              { key: 'keluar', label: 'Keluar' },
-            ]}
-            categoryKey="bulan"
-            config={chartConfig}
-            height={260}
-          />
+          <BarChartGrouped data={movementData} keys={['masuk', 'keluar']} categoryKey="bulan" config={chartConfig} unit="orang" height={260} />
         </ChartCard>
 
-        {/* Small KPI: Turnover Tahun Berjalan */}
-        <div className="lg:col-span-4 flex flex-col">
-          <StatCard
-            label="Turnover Tahun Berjalan"
-            value={`${tov.pct.toFixed(1).replace('.', ',')}%`}
-            delta={`${tov.keluar} keluar`}
-            categoryIcon={UserMinus}
-            summary={`Rata-rata headcount ${tov.avg.toLocaleString('id-ID')} (${tov.awal} → ${tov.akhir})`}
-            description={dept !== 'Semua Department' ? 'Angka berlaku seluruh perusahaan' : 'Rasio keluar per rata-rata headcount'}
-            className="h-full"
-          />
-        </div>
+        <StatCard
+          className="h-auto self-start lg:col-span-4"
+          label="Turnover Tahun Berjalan"
+          value={`${tov.pct.toFixed(1).replace('.', ',')}%`}
+          delta={`${tov.keluar} keluar`}
+          icon={UserMinus}
+          summary={`Rata-rata headcount ${tov.avg.toLocaleString('id-ID')} (${tov.awal} → ${tov.akhir})`}
+          hint={dept !== 'Semua Department' ? 'Angka berlaku seluruh perusahaan' : 'Rasio keluar per rata-rata headcount'}
+        />
       </div>
 
       {/* Tabel Preview Keluar Terakhir */}
@@ -149,66 +134,56 @@ export function PergerakanSection({ user, dept, onNavigate }: Props) {
           <CardTitle>Keluar Terakhir</CardTitle>
           <CardDescription>Daftar pegawai yang baru saja menyelesaikan proses offboarding</CardDescription>
           <CardAction>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1.5 text-xs font-medium"
-              onClick={() => onNavigate?.('industrial-relations')}
-            >
-              <span>Lihat semua</span>
-              <ArrowRight className="size-3.5" />
+            <Button variant="ghost" size="sm" onClick={() => onNavigate?.('industrial-relations')}>
+              Lihat semua
+              <ArrowRight aria-hidden />
             </Button>
           </CardAction>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead>Pegawai</TableHead>
-                  <TableHead>Alasan</TableHead>
-                  <TableHead>Tanggal Keluar</TableHead>
-                  <TableHead>Masa Kerja</TableHead>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Pegawai</TableHead>
+                <TableHead>Alasan</TableHead>
+                <TableHead>Tanggal Keluar</TableHead>
+                <TableHead>Masa Kerja</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {lastExits.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
+                    Tidak ada data pegawai keluar pada filter ini.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {lastExits.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-6 text-sm text-muted-foreground">
-                      Tidak ada data pegawai keluar pada filter ini.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  lastExits.map((o) => {
-                    const masukDate = o.person?.tanggalMasuk ?? '2024-01-01'
-                    const tenure = formatTenure(masukDate, o.tanggalKeluar)
-                    return (
-                      <TableRow key={o.no}>
-                        <TableCell>
-                          <div className="font-medium text-foreground">{o.person?.nama ?? o.nik}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {o.nik} · {o.person?.department} {o.person?.section ? `(${o.person.section})` : ''}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium text-sm">{o.reason}</TableCell>
-                        <TableCell className="text-sm tabular-nums text-muted-foreground">
-                          {formatDate(o.tanggalKeluar)}
-                        </TableCell>
-                        <TableCell className="text-sm tabular-nums text-muted-foreground">
-                          {tenure}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+              ) : (
+                lastExits.map((o) => {
+                  const masukDate = o.person?.tanggalMasuk ?? '2024-01-01'
+                  const tenure = formatTenure(masukDate, o.tanggalKeluar)
+                  return (
+                    <TableRow key={o.no}>
+                      <TableCell>
+                        <div className="font-medium text-foreground">{o.person?.nama ?? o.nik}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {o.nik} · {o.person?.department} {o.person?.section ? `(${o.person.section})` : ''}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">{o.reason}</TableCell>
+                      <TableCell className="text-sm tabular-nums text-muted-foreground">{formatDate(o.tanggalKeluar)}</TableCell>
+                      <TableCell className="text-sm tabular-nums text-muted-foreground">{tenure}</TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
-        <CardFooter className="text-xs text-muted-foreground pt-4 border-t">
+        <CardFooter className="text-sm text-muted-foreground">
           Menampilkan {lastExits.length} dari {completedOffs.length} data
         </CardFooter>
       </Card>
     </div>
   )
 }
+

@@ -141,8 +141,8 @@ export default function PaymentsPage({ user, ctx, initialPeriod, onNavigate }: P
           <div className={KPI_GRID}>
             <StatCard label="Total transfer" value={idr(total + vendorTotal)} icon={Wallet} hint={vendorItems.length ? `Bank ${idr(total)} + vendor ${idr(vendorTotal)}` : 'Total neto payroll final'} />
             <StatCard label="Pegawai" value={everyone.length.toLocaleString('id-ID')} icon={Users} hint={`${(nStatus('ditransfer') + (vendorDeposit(periodId) ? vendorItems.length : 0)).toLocaleString('id-ID')} sudah dibayar`} />
-            <StatCard label="Ditunda" value={nStatus('ditunda').toLocaleString('id-ID')} icon={Ban} iconClass="text-warning" hint="Rekening belum ada" />
-            <StatCard label="Gagal" value={nStatus('gagal').toLocaleString('id-ID')} icon={TriangleAlert} iconClass="text-danger" hint="Perlu transfer ulang" />
+            <StatCard label="Ditunda" value={nStatus('ditunda').toLocaleString('id-ID')} icon={Ban} hint="Rekening belum ada" />
+            <StatCard label="Gagal" value={nStatus('gagal').toLocaleString('id-ID')} icon={TriangleAlert} hint="Perlu transfer ulang" />
           </div>
 
           {vendorItems.length > 0 && (

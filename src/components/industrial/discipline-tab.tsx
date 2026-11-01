@@ -69,10 +69,10 @@ export function DisciplineTab({ user, intent, onIntentDone, openToken = 0 }: { u
     <div className="space-y-6">
       {team && <p className="text-sm text-muted-foreground">Menampilkan tim Anda: {team.department} · {team.section}</p>}
       <div className={KPI_GRID}>
-        <StatCard label="SP aktif" value={k.spAktif} icon={FileWarning} iconClass="text-danger" hint="SP1, SP2, SP3 yang masih berlaku" />
-        <StatCard label="Menunggu approval" value={k.menunggu} icon={Hourglass} iconClass="text-info" hint="Perlu keputusan HR & GA Manager" />
-        <StatCard label="Kedaluwarsa ≤ 30 hari" value={k.kedaluwarsa30} icon={CalendarClock} iconClass="text-warning" hint="Masa berlaku segera berakhir" />
-        <StatCard label="Surat Panggilan terbuka" value={k.panggilan} icon={Mail} iconClass="text-info" hint="Belum ditanggapi" />
+        <StatCard label="SP aktif" value={k.spAktif} icon={FileWarning} hint="SP1, SP2, SP3 yang masih berlaku" />
+        <StatCard label="Menunggu approval" value={k.menunggu} icon={Hourglass} hint="Perlu keputusan HR & GA Manager" />
+        <StatCard label="Kedaluwarsa ≤ 30 hari" value={k.kedaluwarsa30} icon={CalendarClock} hint="Masa berlaku segera berakhir" />
+        <StatCard label="Surat Panggilan terbuka" value={k.panggilan} icon={Mail} hint="Belum ditanggapi" />
       </div>
       <Card>
         <CardContent className="space-y-4">

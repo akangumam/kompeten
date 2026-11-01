@@ -261,40 +261,32 @@ export default function AttendancePage({ api, user, otPending = 0, verifItems = 
         <StatCard
           label="Tingkat Kehadiran"
           value={`${stats.rate.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
-          categoryIcon={CalendarCheck}
-          summary="Dari hari kerja efektif"
-          description="Rasio kehadiran pegawai"
+          icon={CalendarCheck}
+          hint="Dari hari kerja efektif"
           active={statusTab === 'hadir'}
           onClick={() => kpiFilter('hadir')}
         />
         <StatCard
           label="Telat"
           value={`${stats.telat.toLocaleString('id-ID')} kali`}
-          categoryIcon={Clock}
-          summary="Sepanjang periode"
-          description="Total kejadian keterlambatan"
+          icon={Clock}
+          hint="Sepanjang periode"
           active={statusTab === 'telat'}
           onClick={() => kpiFilter('telat')}
         />
         <StatCard
           label="Anomali"
           value={String(stats.anomali)}
-          delta={stats.anomali ? `${stats.anomali} perlu tindakan` : 'Selesai'}
-          trend={stats.anomali ? 'down' : 'up'}
-          categoryIcon={TriangleAlert}
-          summary={stats.anomali ? 'Perlu tindakan sebelum closing' : 'Semua anomali selesai'}
-          description="Penyelesaian anomali presensi"
+          icon={TriangleAlert}
+          hint={stats.anomali ? 'Perlu tindakan sebelum closing' : 'Semua anomali selesai'}
           active={statusTab === 'anomali'}
           onClick={() => kpiFilter('anomali')}
         />
         <StatCard
           label="Menunggu Approval"
           value={String(stats.pending)}
-          delta={stats.pending ? `${stats.pending} antrean` : '0 antrean'}
-          trend={stats.pending ? 'down' : 'neutral'}
-          categoryIcon={Hourglass}
-          summary={stats.pending ? 'Menunggu persetujuan atasan' : 'Tidak ada antrean'}
-          description="Koreksi dan permohonan tertunda"
+          icon={Hourglass}
+          hint={stats.pending ? 'Menunggu persetujuan atasan' : 'Tidak ada antrean'}
           active={statusTab === 'pending'}
           onClick={() => kpiFilter('pending')}
         />

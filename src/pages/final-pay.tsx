@@ -88,10 +88,10 @@ export default function FinalPayPage({ user, leaves, focus, onFocusDone }: { use
       {user.role === 'admin' && <p className="text-sm text-muted-foreground">Mode baca: perhitungan oleh Payroll Officer, persetujuan oleh HR & GA Manager.</p>}
 
       <div className={KPI_GRID}>
-        <StatCard label="Perlu dihitung" value={k.hitung} icon={Calculator} iconClass="text-warning" hint="Menunggu Payroll Officer" />
-        <StatCard label="Menunggu approval" value={k.menunggu} icon={Hourglass} iconClass="text-info" hint="HR & GA Manager" />
-        <StatCard label="Dibayar tahun ini" value={rp(k.dibayar)} icon={Banknote} iconClass="text-success" hint="Total neto hak akhir" />
-        <StatCard label="Kompensasi PKWT bulan ini" value={rp(k.pkwtBulanIni)} icon={FileClock} iconClass="text-info" hint="Periode payroll berjalan" />
+        <StatCard label="Perlu dihitung" value={k.hitung} icon={Calculator} hint="Menunggu Payroll Officer" />
+        <StatCard label="Menunggu approval" value={k.menunggu} icon={Hourglass} hint="HR & GA Manager" />
+        <StatCard label="Dibayar tahun ini" value={rp(k.dibayar)} icon={Banknote} hint="Total neto hak akhir" />
+        <StatCard label="Kompensasi PKWT bulan ini" value={rp(k.pkwtBulanIni)} icon={FileClock} hint="Periode payroll berjalan" />
       </div>
 
       <Card>

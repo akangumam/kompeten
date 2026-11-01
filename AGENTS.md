@@ -13,7 +13,7 @@ React + Vite + Tailwind v4 + shadcn/ui (`src/index.css` = sumber token). Target 
    - `pnpm exec tsc -b` dan `pnpm build` lulus.
    - Tidak ada import ke file yang tidak ada.
    - Jalankan cek di bagian **Checks** prompt lewat browser (lebar 1440px untuk HR; 390×844 untuk Portal/mobile) dan pastikan tidak ada error di console.
-5. **Commit & push** setelah cek lulus: `git add -A && git commit -m "prompt {kode}: {ringkasan}" && git push` (contoh: `prompt 09f: portal pelamar`). Remote: `github.com/akangumam/kompeten`, branch `main`. Satu prompt = satu commit, supaya mudah di-rollback. Jangan pernah `--force` push. Jangan commit `.env*`, token, atau dokumen klien asli.
+5. **Commit** setelah cek lulus: `git add -A && git commit -m "prompt {kode}: {ringkasan}"` (contoh: `prompt 09f: portal pelamar`). Push ke `github.com/akangumam/kompeten` hanya bila remote dan autentikasi tersedia; kalau tidak, lewati push dan sebutkan di laporan. Jangan pernah `--force`. Satu prompt = satu commit, supaya mudah di-rollback. Jangan commit `.env*`, token, atau dokumen klien asli.
 6. Laporan dalam Bahasa Indonesia, ringkas:
    - Hasil tiap cek (lulus/gagal + angka yang terlihat).
    - Keputusan yang Anda ambil sendiri (data/aturan yang tidak disebut prompt).

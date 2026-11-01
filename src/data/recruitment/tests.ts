@@ -94,12 +94,31 @@ const QC_GEN: ((n: number) => Q)[] = [
 
 const sample = (prefix: string, hand: Q[], gen: ((n: number) => Q)[], total: number) => build(prefix, hand, gen, total)
 
+const K3_HAND: Q[] = [
+  ['APD yang wajib dipakai operator di area mesin injection adalah ...', 'Sepatu safety, sarung tangan, dan penutup telinga', ['Sandal dan topi', 'Hanya masker kain', 'Tanpa APD bila berpengalaman']],
+  ['Warna rambu K3 untuk larangan adalah ...', 'Merah', ['Biru', 'Hijau', 'Kuning']],
+  ['Bila terjadi kebakaran kecil di area kerja, tindakan pertama yang benar adalah ...', 'Memadamkan dengan APAR yang sesuai dan melapor', ['Meninggalkan area tanpa memberi tahu', 'Menyiram dengan air pada api listrik', 'Menunggu api padam sendiri']],
+  ['Jalur evakuasi harus selalu ...', 'Bebas dari penghalang', ['Dipakai untuk menyimpan palet', 'Dikunci saat shift malam', 'Ditutup terpal']],
+  ['Titik kumpul dipakai untuk ...', 'Menghitung seluruh pekerja setelah evakuasi', ['Beristirahat', 'Parkir kendaraan', 'Makan siang']],
+  ['Kecelakaan kerja ringan wajib ...', 'Dilaporkan kepada atasan dan dicatat', ['Disembunyikan agar tidak ada audit', 'Diabaikan bila tidak ada luka berat', 'Dilaporkan setelah sebulan']],
+  ['Sebelum membersihkan mesin, langkah yang benar adalah ...', 'Mematikan mesin dan menerapkan lock out tag out', ['Membersihkan saat mesin berjalan', 'Cukup menurunkan kecepatan', 'Meminta rekan menjaga tombol']],
+  ['Penanda lantai berwarna kuning di pabrik umumnya menandakan ...', 'Area lalu lintas atau peringatan', ['Area makan', 'Area parkir tamu', 'Area bebas APD']],
+  ['Cairan kimia harus disimpan ...', 'Pada wadah berlabel dan area yang ditentukan', ['Di botol minuman bekas', 'Di dekat jalur evakuasi', 'Tanpa label agar hemat waktu']],
+  ['Cara mengangkat beban berat yang benar adalah ...', 'Menekuk lutut dan menjaga punggung tetap lurus', ['Membungkuk dengan lutut lurus', 'Mengangkat sambil memutar badan', 'Mengangkat dengan satu tangan']],
+  ['Safety Data Sheet (SDS) berisi ...', 'Informasi bahaya dan penanganan bahan kimia', ['Jadwal shift', 'Daftar gaji', 'Harga bahan baku']],
+  ['Alat pemadam api ringan (APAR) harus ...', 'Diperiksa berkala dan mudah dijangkau', ['Disimpan di gudang terkunci', 'Dilepas segelnya untuk dipajang', 'Dipindahkan sesuka hati']],
+  ['Bunyi alarm evakuasi berarti ...', 'Segera menuju titik kumpul lewat jalur evakuasi', ['Melanjutkan pekerjaan', 'Mengambil barang pribadi dulu', 'Menunggu perintah tertulis']],
+  ['Pekerja yang melihat kondisi tidak aman sebaiknya ...', 'Melapor dan menghentikan pekerjaan bila perlu', ['Mengabaikannya', 'Menunggu terjadi kecelakaan', 'Memfoto untuk media sosial']],
+  ['Pemakaian earplug wajib di area dengan ...', 'Kebisingan di atas batas yang ditentukan', ['Pencahayaan terang', 'Suhu dingin', 'Lantai licin']],
+]
+
 export const PAKET: PaketTes[] = [
   { id: 'PKT-001', nama: 'Tes Pengetahuan Umum', jenis: 'online', durasi: 30, passing: 60, soal: sample('UMM', UMUM_HAND, UMUM_GEN, 30), acak: true, status: 'Aktif' },
   { id: 'PKT-002', nama: 'Tes Teknis Operator', jenis: 'online', durasi: 25, passing: 60, soal: sample('OPR', OPERATOR_HAND, OPERATOR_GEN, 20), acak: true, status: 'Aktif' },
   { id: 'PKT-003', nama: 'Tes Teknis QC', jenis: 'online', durasi: 30, passing: 65, soal: sample('QC', QC_HAND, QC_GEN, 25), acak: true, status: 'Aktif' },
   { id: 'PKT-004', nama: 'Psikotes', jenis: 'psikotes', durasi: 0, passing: null, soal: [], acak: false, status: 'Aktif', catatan: 'Dilaksanakan lembaga eksternal; HR mengunggah laporan dan rekomendasi.' },
   { id: 'PKT-005', nama: 'Tes Praktik Mesin', jenis: 'praktik', durasi: 0, passing: 70, soal: [], acak: false, status: 'Aktif', catatan: 'Praktik langsung di area produksi; nilai dimasukkan manual oleh HR.' },
+  { id: 'PKT-006', nama: 'Tes K3 Dasar', jenis: 'online', durasi: 20, passing: 70, soal: sample('K3', K3_HAND, [], 15), acak: true, status: 'Aktif' },
 ]
 export const paketOf = (id: string) => PAKET.find((p) => p.id === id)
 

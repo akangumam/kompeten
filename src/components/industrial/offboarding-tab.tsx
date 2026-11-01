@@ -67,10 +67,10 @@ export function OffboardingTab({ user, intent, onIntentDone, onFinished, openTok
       {team && <p className="text-sm text-muted-foreground">Menampilkan tim Anda: {team.department} · {team.section}</p>}
       {user.role === 'payroll' && <p className="text-sm text-muted-foreground">Daftar hanya-baca untuk menyiapkan hak akhir.</p>}
       <div className={KPI_GRID}>
-        <StatCard label="Proses keluar berjalan" value={kpi.berjalan} icon={DoorOpen} iconClass="text-info" hint="Belum selesai" />
-        <StatCard label="Keluar bulan ini" value={kpi.bulanIni} icon={CalendarClock} iconClass="text-warning" hint="Tanggal keluar Oktober 2026" />
-        <StatCard label="Mendekati pensiun" value={near.length} icon={UserMinus} iconClass="text-warning" hint="≤ 6 bulan" />
-        <StatCard label="Turnover tahun berjalan" value={pctText(tov.pct)} icon={Percent} iconClass="text-foreground" hint={`${tov.keluar} keluar ÷ rata-rata ${Math.round(tov.avg).toLocaleString('id-ID')} pegawai`} />
+        <StatCard label="Proses keluar berjalan" value={kpi.berjalan} icon={DoorOpen} hint="Belum selesai" />
+        <StatCard label="Keluar bulan ini" value={kpi.bulanIni} icon={CalendarClock} hint="Tanggal keluar Oktober 2026" />
+        <StatCard label="Mendekati pensiun" value={near.length} icon={UserMinus} hint="≤ 6 bulan" />
+        <StatCard label="Turnover tahun berjalan" value={pctText(tov.pct)} icon={Percent} hint={`${tov.keluar} keluar ÷ rata-rata ${Math.round(tov.avg).toLocaleString('id-ID')} pegawai`} />
       </div>
 
       <Card>

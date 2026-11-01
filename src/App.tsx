@@ -29,7 +29,11 @@ import {
 } from '@/components/ui/alert-dialog'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
-import DashboardPage from '@/pages/dashboard'
+import CompetencyPage from '@/pages/competency'
+import TrainingPage from '@/pages/training'
+import KpiPage from '@/pages/kpi'
+import { canAccessCompetency } from '@/data/competency/assessments'
+import DashboardPage, { tabsFor, type TabId as DashTab } from '@/pages/dashboard'
 import EmployeeDraftPage from '@/pages/employee-draft'
 import EmployeeTransactionsPage from '@/pages/employee-transactions'
 import IndustrialRelationsPage, { type IrIntent } from '@/pages/industrial-relations'
@@ -76,7 +80,7 @@ import { completeScenario, periodFinalized, type PeriodId } from '@/data/payroll
 import { usePayroll } from '@/data/payroll/store'
 import { enrollNewHire } from '@/data/payroll/bpjs-membership'
 
-export type PageId = 'dashboard' | 'dashboard-produksi' | 'dashboard-presensi' | 'recruitment' | 'recruitment-jobs' | 'recruitment-form' | 'recruitment-tests' | 'employees' | 'payroll-components' | 'salary-change' | 'payroll-run' | 'payslips' | 'payments' | 'payroll-recon' | 'coop-members' | 'coop-withdrawals' | 'coop-cash-advance' | 'coop-loans' | 'coop-payroll-deductions' | 'coop-budget' | 'coop-shu' | 'coop-settings' | 'coop-trading' | 'employee-draft' | 'employee-transactions' | 'industrial-relations' | 'final-pay' | 'attendance' | 'leave' | 'shift-swap' | 'overtime' | 'master-data'
+export type PageId = 'dashboard' | 'recruitment' | 'recruitment-jobs' | 'recruitment-form' | 'recruitment-tests' | 'employees' | 'payroll-components' | 'salary-change' | 'payroll-run' | 'payslips' | 'payments' | 'payroll-recon' | 'coop-members' | 'coop-withdrawals' | 'coop-cash-advance' | 'coop-loans' | 'coop-payroll-deductions' | 'coop-budget' | 'coop-shu' | 'coop-settings' | 'coop-trading' | 'employee-draft' | 'employee-transactions' | 'industrial-relations' | 'final-pay' | 'attendance' | 'leave' | 'shift-swap' | 'overtime' | 'master-data' | 'dev-competency' | 'dev-training' | 'dev-kpi'
 
 type Profile = { kind: 'draft'; id: string } | { kind: 'roster'; nik: string } | { kind: 'exited'; nik: string }
 
@@ -86,6 +90,8 @@ const COOP_PAGES: PageId[] = ['coop-members', 'coop-withdrawals', 'coop-cash-adv
 export default function App() {
   const [open, setOpen] = useState(true)
   const [activePage, setActivePage] = useState<PageId>('dashboard')
+  // Satu state tab Dashboard menggerakkan tab, breadcrumb, dan judul tab browser.
+  const [dashTabState, setDashTab] = useState<DashTab>('umum')
   useRecruitment()
   const candidates = CANDIDATES
   const [drafts, setDrafts] = useState<Record<string, DraftRecord>>({})
@@ -115,6 +121,8 @@ export default function App() {
   const [trxPeriod, setTrxPeriod] = useState<string | undefined>(undefined)
   const [payPeriod, setPayPeriod] = useState<PeriodId | undefined>(undefined)
   const [finishing, setFinishing] = useState(false)
+  const dashTabs = tabsFor(role)
+  const dashTab: DashTab = dashTabs.includes(dashTabState) ? dashTabState : dashTabs[0]
 
   useEffect(() => {
     const mql = window.matchMedia('(min-width: 1024px)')
@@ -192,6 +200,8 @@ export default function App() {
     if (ksb && activePage !== 'dashboard' && !COOP_PAGES.includes(activePage)) return setActivePage('dashboard')
     if (!ksb && COOP_PAGES.includes(activePage)) return setActivePage('dashboard')
     const noMaster = role === 'supervisor' || role === 'payroll' || role === 'finance'
+    // People Development: Admin HRD, HR & GA Manager, dan Atasan; Payroll, Finance, dan KSB tidak punya akses.
+    const noDev = !canAccessCompetency(role) && activePage.startsWith('dev-')
     const noPayroll = role === 'admin' || role === 'supervisor'
     // Kompensasi & Pesangon: Admin HRD membaca (jumlah terlihat); Atasan tidak pernah.
     const payrollPage = PAYROLL_PAGES.includes(activePage) && !(activePage === 'final-pay' && role === 'admin')
@@ -199,6 +209,7 @@ export default function App() {
     const financeBlocked = role === 'finance' && activePage !== 'dashboard' && activePage !== 'payments' && activePage !== 'payroll-recon' && activePage !== 'final-pay'
     if (
       (noMaster && activePage === 'master-data') ||
+      noDev ||
       (noPayroll && payrollPage) ||
       financeBlocked ||
       (role !== 'finance' && activePage === 'payroll-recon') ||
@@ -308,8 +319,8 @@ export default function App() {
   useEffect(() => {
     const ksb = isKsbRole(role)
     const draft = record ? { nama: record.form.nama, activated: record.status === 'aktif' } : undefined
-    document.title = formatDocTitle(pageTitleFor(activePage, draft, ksb))
-  }, [activePage, role, record, record?.form.nama, record?.status])
+    document.title = formatDocTitle(pageTitleFor(activePage, draft, ksb, dashTab))
+  }, [activePage, role, dashTab, record, record?.form.nama, record?.status])
 
   if (portalPersona !== null) {
     return (
@@ -326,10 +337,15 @@ export default function App() {
 
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
-      <AppSidebar activePage={activePage} onNavigate={(p) => guarded(() => { setTrxPeriod(undefined); setIrIntent(undefined); go(p) })} role={role} />
+      <AppSidebar
+        activePage={activePage}
+        onNavigate={(p) => guarded(() => { setTrxPeriod(undefined); setIrIntent(undefined); go(p) })}
+        role={role}
+      />
       <SidebarInset className="h-svh min-w-0 flex-col overflow-hidden">
         <Topbar
           activePage={activePage}
+          dashTab={dashTab}
           draft={record ? { nama: record.form.nama, activated: record.status === 'aktif', from: profileFrom } : undefined}
           user={USERS[role]}
           onUserChange={setRole}
@@ -342,19 +358,8 @@ export default function App() {
         />
         <DirectoryNavContext.Provider value={{ openDirectory, openEmployee, openOffboarding, openDiscipline, openFinalPay }}>
         <main ref={mainRef} className="flex-1 overflow-y-auto">
-          {(activePage === 'dashboard' || activePage === 'dashboard-produksi' || activePage === 'dashboard-presensi') && (
-            <DashboardPage
-              user={USERS[role]}
-              records={attendance.state.records}
-              requests={leave.requests}
-              activeTab={activePage === 'dashboard-produksi' ? 'produksi' : activePage === 'dashboard-presensi' ? 'presensi' : 'umum'}
-              onTabChange={(tab) => {
-                if (tab === 'produksi') setActivePage('dashboard-produksi')
-                else if (tab === 'presensi') setActivePage('dashboard-presensi')
-                else setActivePage('dashboard')
-              }}
-              onNavigate={(p, id) => guarded(() => go(p, id ?? null))}
-            />
+          {activePage === 'dashboard' && (
+            <DashboardPage user={USERS[role]} records={attendance.state.records} requests={leave.requests} tab={dashTab} onTabChange={setDashTab} onNavigate={(p, id) => guarded(() => go(p, id ?? null))} />
           )}
           {activePage === 'recruitment' && (
             <RecruitmentPage
@@ -379,6 +384,9 @@ export default function App() {
             <OvertimePage api={overtime} user={USERS[role]} scans={attendance.state.scans} leaves={leave.requests} octClosed={!!attendance.state.closed} />
           )}
           {activePage === 'master-data' && (role === 'admin' || role === 'manager') && <MasterDataPage role={role} />}
+          {activePage === 'dev-competency' && canAccessCompetency(role) && <CompetencyPage user={USERS[role]} />}
+          {activePage === 'dev-training' && canAccessCompetency(role) && <TrainingPage user={USERS[role]} />}
+          {activePage === 'dev-kpi' && canAccessCompetency(role) && <KpiPage user={USERS[role]} attendance={attendance.state.records} onNavigate={() => guarded(() => go('attendance'))} />}
           {activePage === 'payroll-run' && (role === 'payroll' || role === 'manager') && (
             <PayrollRunPage
               user={USERS[role]}

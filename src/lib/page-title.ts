@@ -8,8 +8,6 @@
 
 type PageId =
   | 'dashboard'
-  | 'dashboard-produksi'
-  | 'dashboard-presensi'
   | 'recruitment'
   | 'recruitment-jobs'
   | 'recruitment-form'
@@ -39,11 +37,12 @@ type PageId =
   | 'shift-swap'
   | 'overtime'
   | 'master-data'
+  | 'dev-competency'
+  | 'dev-training'
+  | 'dev-kpi'
 
 const PAGE_LABELS: Record<PageId, string> = {
   dashboard: 'Dashboard',
-  'dashboard-produksi': 'Produksi',
-  'dashboard-presensi': 'Presensi',
   recruitment: 'Daftar Kandidat',
   'recruitment-jobs': 'Lowongan',
   'recruitment-form': 'Form Rekrutmen',
@@ -73,6 +72,9 @@ const PAGE_LABELS: Record<PageId, string> = {
   'shift-swap': 'Tukar Shift',
   overtime: 'Overtime',
   'master-data': 'Data Master',
+  'dev-competency': 'Penilaian & Matrix Kompetensi',
+  'dev-training': 'Program & Offline Training',
+  'dev-kpi': 'Evaluasi KPI',
 }
 
 /**
@@ -85,8 +87,11 @@ export function pageTitleFor(
   page: PageId,
   draft?: { nama: string; activated: boolean },
   ksb = false,
+  dashTab?: string,
 ): string {
   if (page === 'dashboard' && ksb) return 'Dashboard Koperasi'
+  if (page === 'dashboard' && dashTab === 'produksi') return 'Produksi'
+  if (page === 'dashboard' && dashTab === 'presensi') return 'Presensi'
   if (page === 'employee-draft') {
     if (!draft?.nama) return 'Draft Pegawai Baru'
     return draft.nama

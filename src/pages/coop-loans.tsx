@@ -71,8 +71,8 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
       <div className={KPI_GRID}>
         <StatCard label="Pinjaman aktif" value={aktif.length.toLocaleString('id-ID')} icon={Landmark} hint={tab === 'koperasi' ? 'Pinjaman Koperasi' : 'Non-Koperasi'} />
         <StatCard label="Sisa pokok" value={rp(aktif.reduce((a, l) => a + sisaOf(l), 0))} icon={Wallet} hint={tab === 'koperasi' ? 'Sebelum realisasi bulan ini' : 'Sisa kewajiban'} />
-        <StatCard label="Angsuran bulan ini" value={rp(bulanIni)} icon={ListChecks} iconClass="text-warning" hint={`Payroll ${periodLabel(curMonth)}`} />
-        <StatCard label="Menunggu persetujuan" value={all.filter((l) => l.status === 'menunggu-ketua').length.toLocaleString('id-ID')} icon={Clock} iconClass="text-info" hint="Menunggu Ketua" />
+        <StatCard label="Angsuran bulan ini" value={rp(bulanIni)} icon={ListChecks} hint={`Payroll ${periodLabel(curMonth)}`} />
+        <StatCard label="Menunggu persetujuan" value={all.filter((l) => l.status === 'menunggu-ketua').length.toLocaleString('id-ID')} icon={Clock} hint="Menunggu Ketua" />
       </div>
 
       <Card>

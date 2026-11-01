@@ -89,9 +89,9 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
 
       <div className={KPI_GRID}>
         <StatCard label="Total kasbon bulan ini" value={rp(total)} icon={Banknote} hint={`${bulanName(bulan)} ${bulan.slice(0, 4)}`} />
-        <StatCard label="Menunggu Ketua" value={inMonth.filter((k) => k.status === 'menunggu-ketua').length.toLocaleString('id-ID')} icon={Hourglass} iconClass="text-info" hint="Perlu ditinjau" />
-        <StatCard label="Menunggu pencairan" value={inMonth.filter((k) => k.status === 'disetujui').length.toLocaleString('id-ID')} icon={Clock} iconClass="text-warning" hint="Disetujui, belum dicairkan" />
-        <StatCard label="Pendapatan biaya admin (terkumpul, 2026)" value={rp(adminIncome(Number(DEMO_TODAY.slice(0, 4))))} icon={HandCoins} iconClass="text-success" hint="Dari buku keuangan Koperasi, untuk SHU" />
+        <StatCard label="Menunggu Ketua" value={inMonth.filter((k) => k.status === 'menunggu-ketua').length.toLocaleString('id-ID')} icon={Hourglass} hint="Perlu ditinjau" />
+        <StatCard label="Menunggu pencairan" value={inMonth.filter((k) => k.status === 'disetujui').length.toLocaleString('id-ID')} icon={Clock} hint="Disetujui, belum dicairkan" />
+        <StatCard label="Pendapatan biaya admin (terkumpul, 2026)" value={rp(adminIncome(Number(DEMO_TODAY.slice(0, 4))))} icon={HandCoins} hint="Dari buku keuangan Koperasi, untuk SHU" />
       </div>
 
       <Card>

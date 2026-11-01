@@ -16,8 +16,8 @@
 |---|---|
 | Page title | `text-2xl font-semibold tracking-tight` |
 | Card title / description | `CardTitle` (`text-base font-semibold`) / `CardDescription` |
-| KPI value | `text-3xl font-bold tabular-nums tracking-tight` |
-| KPI label | `text-sm font-medium text-muted-foreground` |
+| KPI value (StatCard) | `text-2xl font-semibold tabular-nums @[250px]/card:text-3xl` |
+| KPI label (StatCard) | `CardDescription` |
 | Body, table cell | `text-sm` |
 | Table header | `text-xs font-medium text-muted-foreground` |
 | Form label | `text-sm font-medium` |
@@ -40,8 +40,8 @@ Time-based urgency (e.g. "Sisa Hari" kontrak): ≤ 14 hari = danger, 15–30 har
 
 Use `destructive` only for destructive buttons and input error states, not for badge text.
 
-## 7. Charts
-Semua chart memakai komponen di `src/components/charts/` (ChartCard, BarChartSimple, BarChartGrouped, LineChartCompare, DonutChart). Dilarang menulis `<BarChart>`/`<LineChart>`/`<PieChart>` langsung di halaman. Resep shadcn: `ChartConfig` per seri dengan `color: 'var(--chart-n)'`, isi memakai `var(--color-{key})`, `ChartContainer` + `accessibilityLayer`, `CartesianGrid vertical={false}`, sumbu kategori `tickLine={false} axisLine={false} tickMargin={10}`, sumbu nilai disembunyikan (nilai ditampilkan lewat `LabelList className="fill-foreground" fontSize={12}`), `ChartTooltip cursor={false} content={<ChartTooltipContent />}`, legend `ChartLegendContent`, Bar `radius={8}` (horizontal `radius={5}`), garis `type="natural" strokeWidth={2}`. Periode berjalan = `chart-1`, pembanding = `chart-2`, kategori `chart-1…5`. Periode mendatang = `null`, bukan 0.
+## 7. Charts (shadcn ChartContainer + Recharts)
+Semua chart memakai komponen di `src/components/charts/` (ChartCard, BarChartSimple, BarChartGrouped, LineChartCompare, DonutChart). Dilarang menulis `<BarChart>`/`<LineChart>`/`<PieChart>` langsung di halaman. Resep shadcn: `ChartConfig` per seri dengan `color: 'var(--chart-n)'`, isi memakai `var(--color-{key})`, `ChartContainer` + `accessibilityLayer`, `CartesianGrid vertical={false}`, sumbu kategori `tickLine={false} axisLine={false} tickMargin={10}`, sumbu nilai disembunyikan (nilai ditampilkan lewat `LabelList className="fill-foreground" fontSize={12}`), `ChartTooltip cursor={false} content={<ChartTooltipContent />}`, legend `ChartLegendContent`, Bar `radius={8}` (horizontal `radius={5}`), garis `type="monotone" strokeWidth={2}` (tidak melewati titik data; jangan `natural`). Periode berjalan = `chart-1`, pembanding = `chart-2`, kategori `chart-1…5`. Periode mendatang = `null`, bukan 0.
 
 ## 9. Responsive
 - ≥ 1024px: sidebar expanded. 768–1023px: sidebar collapsed to icons. < 768px: sidebar becomes a Sheet.

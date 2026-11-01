@@ -1,7 +1,7 @@
 # KOMPETEN — Pola Komponen & Format
 
 ## 6a. Component patterns (UI)
-- **StatCard** (satu-satunya kartu KPI, pola shadcn dashboard-01 'SectionCards'): `Card @container/card` → `CardHeader` berisi `CardDescription` (label), `CardTitle` (nilai, `text-2xl font-semibold tabular-nums @[250px]/card:text-3xl`), dan `CardAction` (Badge `variant="outline"` berisi ikon tren + delta, atau ikon kategori bila tidak ada tren) → `CardFooter flex-col items-start gap-1.5 text-sm` (baris 1 `font-medium` ringkasan, baris 2 `text-muted-foreground` keterangan). Tanpa warna latar atau nilai berwarna. Bila bisa diklik: `aria-pressed`, `hover:bg-accent/50`, `ring-2 ring-ring` saat aktif. Kartu KPI lain dilarang. Ukuran teks minimal text-xs; dilarang text-[Npx]. Header kartu dengan aksi memakai CardAction, bukan flex-row justify-between manual.
+- **StatCard** (satu-satunya kartu KPI, pola shadcn dashboard-01 'SectionCards'): `Card @container/card` → `CardHeader` berisi `CardDescription` (label), `CardTitle` (nilai, `text-2xl font-semibold tabular-nums @[250px]/card:text-3xl`), dan `CardAction` (Badge `variant="outline"` berisi ikon tren + delta, atau ikon kategori bila tidak ada tren) → `CardFooter flex-col items-start gap-1.5 text-sm` (baris 1 `font-medium` ringkasan, baris 2 `text-muted-foreground` keterangan). Tanpa warna latar atau nilai berwarna. Bila bisa diklik: `aria-pressed`, `hover:bg-accent/50`, `ring-2 ring-ring` saat aktif. Kartu KPI lain dilarang. Komponen: `src/components/dashboard/stat-card.tsx`.
 - **DataTable:** shadcn Table. No vertical lines, row `h-12`, `hover:bg-muted/50`. Number and Rupiah columns right-aligned. Name column = avatar initials + name (`font-medium`) + secondary line (NIP / nomor lamaran) in `text-xs text-muted-foreground`. Last column = ghost icon button `MoreHorizontal` with `aria-label="Aksi"` → DropdownMenu. Footer on full list pages: "Menampilkan 1 - 5 dari 12 data" left, rows-per-page Select (5/10/25/50) + Pagination right.
 - **Preview table** (a table inside a dashboard/summary card that has a "Lihat semua" CardAction): max 5 rows, footer text only ("Menampilkan 5 dari 5 data"), no rows-per-page Select and no Pagination.
 - **Filter Bar:** search Input with `Search` icon (placeholder names what is searchable) + 2–3 Selects + Button outline "Reset".
@@ -50,4 +50,4 @@
 - Money math: BPJS amounts rounded to the nearest rupiah; PPh 21 rounded down to the full rupiah; totals summed from rounded line items.
 - Use realistic Indonesian names and data. Never lorem ipsum.
 - Dummy data has one source: `src/data/<entity>.ts` (e.g. `candidates.ts`, `employees.ts`). Pages import from it; never copy the same record into a page. Data that flows between screens (candidate → draft → employee) must read from the same record so values always match.
-
+- Ukuran teks minimal `text-xs`; dilarang `text-[Npx]`. Header kartu dengan aksi memakai `CardAction`, bukan `flex-row justify-between` manual.

@@ -1,27 +1,23 @@
 import { HandCoins, Landmark, PiggyBank, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { StatCard } from '@/components/dashboard/stat-card'
-import { ChartCard, BarChartSimple, BarChartGrouped } from '@/components/charts'
+import { BarChartGrouped, BarChartSimple, ChartCard } from '@/components/charts'
+import { StatCard, num } from '@/components/dashboard/stat-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { ChartConfig } from '@/components/ui/chart'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { budgetVsRealisasi, circulation, coopKpi, lastConfirmedPeriod, todos, udMonthly, type Cell as CircCell } from '@/data/dashboard-koperasi'
 import { bulanName, periodLabel, rp } from '@/data/koperasi/loans'
 import { useKoperasi } from '@/data/koperasi/store'
-import { formatDate, num } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import { DEMO_TODAY } from '@/lib/today'
 import type { PageId } from '@/App'
 
 const head = 'text-xs font-medium text-muted-foreground'
-const budgetConfig = {
-  budget: { label: 'Budget', color: 'var(--chart-2)' },
-  realisasi: { label: 'Realisasi', color: 'var(--chart-1)' },
-} satisfies ChartConfig
-const udConfig = {
-  selisih: { label: 'Selisih Unit Dagang', color: 'var(--chart-1)' },
-} satisfies ChartConfig
+const budgetConfig = { budget: { label: 'Budget', color: 'var(--chart-2)' }, realisasi: { label: 'Realisasi', color: 'var(--chart-1)' } } satisfies ChartConfig
+const udConfig = { selisih: { label: 'Selisih Unit Dagang', color: 'var(--chart-1)' } } satisfies ChartConfig
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 function CircCellView({ c, money = true }: { c: CircCell | null; money?: boolean }) {
@@ -54,43 +50,33 @@ export function KoperasiTab({ bulan, onNavigate }: { bulan: string; onNavigate: 
       </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Anggota aktif"
-          value={num(kpi.anggota)}
-          categoryIcon={Users}
-          summary="Anggota dengan status aktif"
-          description="Koperasi Karyawan KSB"
-        />
+        <StatCard label="Anggota aktif" icon={Users} value={num(kpi.anggota)} hint="Anggota dengan status aktif" />
         <StatCard
           label="Dana tersimpan"
+          icon={PiggyBank}
           value={rp(kpi.tersimpan)}
-          categoryIcon={PiggyBank}
-          summary={`Pokok ${rp(kpi.pokok)} · Wajib ${rp(kpi.wajib)}`}
-          description={`Sukarela ${rp(kpi.sukarela)}`}
+          hint={<span className="block whitespace-nowrap tabular-nums">Pokok {rp(kpi.pokok)}<br />Wajib {rp(kpi.wajib)}<br />Sukarela {rp(kpi.sukarela)}</span>}
         />
         <StatCard
           label="Dana terutang"
+          icon={HandCoins}
           value={rp(kpi.terutang)}
-          categoryIcon={HandCoins}
-          summary={`Pinjaman ${rp(kpi.pinjaman)}`}
-          description={`Kasbon ${rp(kpi.kasbon)}`}
+          hint={<span className="block whitespace-nowrap tabular-nums">Pinjaman {rp(kpi.pinjaman)}<br />Kasbon {rp(kpi.kasbon)}</span>}
         />
         <StatCard
           label="SHU berjalan"
+          icon={Landmark}
           value={rp(kpi.shu)}
-          delta={!kpi.shuFinal ? 'Sementara' : 'Final'}
-          trend={!kpi.shuFinal ? 'neutral' : 'up'}
-          categoryIcon={Landmark}
-          summary={`Tahun buku ${DEMO_TODAY.slice(0, 4)}`}
-          description="Klik untuk membuka rincian SHU"
-          onClick={() => onNavigate('coop-shu')}
+          hint={`${kpi.shuFinal ? 'Final' : 'Sementara'} · tahun buku ${DEMO_TODAY.slice(0, 4)}`}
+          footer={<button type="button" className="font-medium text-primary underline underline-offset-4 hover:no-underline" onClick={() => onNavigate('coop-shu')}>Lihat SHU</button>}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <ChartCard
+          className="lg:col-span-7"
           title="Budget vs Realisasi"
-          description={`${mode === 'bulan' ? periodLabel(bulan) : `Januari – ${bulanName(bulan)} ${bulan.slice(0, 4)}`} · Budget ${rp(totals.budget)} · Realisasi ${rp(totals.realisasi)}`}
+          description={<span className="tabular-nums">{mode === 'bulan' ? periodLabel(bulan) : `Januari – ${bulanName(bulan)} ${bulan.slice(0, 4)}`} · Budget {rp(totals.budget)} · Realisasi {rp(totals.realisasi)}</span>}
           action={
             <Tabs value={mode} onValueChange={(v) => setMode(v as 'bulan' | 'tahun')}>
               <TabsList>
@@ -99,18 +85,16 @@ export function KoperasiTab({ bulan, onNavigate }: { bulan: string; onNavigate: 
               </TabsList>
             </Tabs>
           }
-          className="lg:col-span-7"
         >
           <BarChartGrouped
-            layout="horizontal"
             data={bars}
-            series={[
-              { key: 'budget', label: 'Budget' },
-              { key: 'realisasi', label: 'Realisasi' },
-            ]}
+            keys={['budget', 'realisasi']}
             categoryKey="kode"
             config={budgetConfig}
-            height={Math.max(220, bars.length * 60 + 40)}
+            layout="horizontal"
+            valueFormatter={rp}
+            labelFormatter={(_, p) => { const r = (p[0] as { payload?: { kode: string; nama: string } } | undefined)?.payload; return r ? `${r.kode} · ${r.nama}` : '' }}
+            height={Math.max(220, bars.length * 78 + 40)}
           />
         </ChartCard>
 
@@ -129,14 +113,7 @@ export function KoperasiTab({ bulan, onNavigate }: { bulan: string; onNavigate: 
             </dl>
             <div>
               <p className="mb-2 text-xs font-medium text-muted-foreground">Selisih Unit Dagang per bulan</p>
-              <BarChartSimple
-                data={ud}
-                dataKey="selisih"
-                categoryKey="label"
-                config={udConfig}
-                layout="vertical"
-                height={130}
-              />
+              <BarChartSimple data={ud} dataKey="selisih" categoryKey="label" config={udConfig} height={120} showLabels={false} valueFormatter={rp} activeCategory={MON[Number(bulan.slice(5)) - 1]} />
             </div>
           </CardContent>
         </Card>
@@ -156,7 +133,7 @@ export function KoperasiTab({ bulan, onNavigate }: { bulan: string; onNavigate: 
                   <TableHead className={head}>Diajukan</TableHead>
                   <TableHead className={head}>Disetujui</TableHead>
                   <TableHead className={head}>Dicairkan</TableHead>
-                  <TableHead className={head}>Ditolak</TableHead>
+                  <TableHead className={head}>Ditolak/Dibatalkan</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -166,56 +143,60 @@ export function KoperasiTab({ bulan, onNavigate }: { bulan: string; onNavigate: 
                     <TableCell><CircCellView c={r.diajukan} /></TableCell>
                     <TableCell><CircCellView c={r.disetujui} /></TableCell>
                     <TableCell><CircCellView c={r.dicairkan} /></TableCell>
-                    <TableCell><CircCellView c={r.ditolak} money={false} /></TableCell>
+                    <TableCell><CircCellView c={r.ditolak} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
+          <p className="border-t pt-3 text-sm text-muted-foreground tabular-nums">
+            Pinjaman Non-Koperasi aktif: <b className="text-foreground">{num(circ.nonCount)}</b> pinjaman, sisa angsuran <b className="text-foreground">{rp(circ.nonSisa)}</b>. Bukan dana Koperasi.
+          </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Antrean tindakan ({list.length})</CardTitle>
-          <CardDescription>Transaksi simpanan, kasbon, dan pinjaman yang menunggu keputusan atau pencairan</CardDescription>
+          <CardTitle>Menunggu tindakan</CardTitle>
+          <CardDescription>{list.length ? `${num(list.length)} pengajuan menunggu keputusan atau pencairan` : 'Tidak ada pengajuan yang menunggu'}</CardDescription>
+          {list.length > 0 && (
+            <CardAction>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate(list[0].page)}>Lihat semua</Button>
+            </CardAction>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className={head}>No.</TableHead>
-                  <TableHead className={head}>Jenis</TableHead>
-                  <TableHead className={head}>Anggota</TableHead>
-                  <TableHead className={head}>Nominal</TableHead>
-                  <TableHead className={head}>Menunggu</TableHead>
-                  <TableHead className={head}>Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {shown.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">Tidak ada transaksi yang menunggu tindakan.</TableCell></TableRow>
-                ) : (
-                  shown.map((t) => (
+        <CardContent>
+          {shown.length ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className={head}>No.</TableHead>
+                    <TableHead className={head}>Jenis</TableHead>
+                    <TableHead className={head}>Anggota</TableHead>
+                    <TableHead className={`text-right ${head}`}>Nominal</TableHead>
+                    <TableHead className={head}>Menunggu</TableHead>
+                    <TableHead className={`text-right ${head}`}>Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {shown.map((t) => (
                     <TableRow key={t.key}>
-                      <TableCell className="font-medium">{t.no}</TableCell>
+                      <TableCell className="tabular-nums">{t.no}</TableCell>
                       <TableCell>{t.jenis}</TableCell>
-                      <TableCell>{t.anggota}</TableCell>
-                      <TableCell className="tabular-nums">{t.nominal ? rp(t.nominal) : '—'}</TableCell>
-                      <TableCell>{t.menunggu}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => onNavigate(t.page, t.key)}>
-                          Buka
-                        </Button>
-                      </TableCell>
+                      <TableCell className="font-medium">{t.anggota}</TableCell>
+                      <TableCell className="text-right tabular-nums">{t.nominal == null ? '—' : rp(t.nominal)}</TableCell>
+                      <TableCell><StatusBadge variant={t.menunggu === 'Ketua' ? 'info' : 'warning'}>{t.menunggu}</StatusBadge></TableCell>
+                      <TableCell className="text-right"><Button variant="outline" size="sm" onClick={() => onNavigate(t.page, t.no)}>{t.menunggu === 'Ketua' ? 'Tinjau' : 'Proses'}</Button></TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          <p className="text-xs text-muted-foreground">Menampilkan {shown.length} dari {list.length} data</p>
+                  ))}
+                </TableBody>
+              </Table>
+              <p className="pt-3 text-sm text-muted-foreground">Menampilkan {shown.length} dari {list.length} data</p>
+            </div>
+          ) : (
+            <p className="py-10 text-center text-sm text-muted-foreground">Semua pengajuan sudah ditindaklanjuti.</p>
+          )}
         </CardContent>
       </Card>
     </div>

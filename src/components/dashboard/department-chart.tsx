@@ -1,7 +1,7 @@
 import { ROSTER } from '@/data/employees'
 import { hasLeft } from '@/data/offboarding'
 import { DEMO_TODAY } from '@/lib/today'
-import { ChartCard, BarChartSimple } from '@/components/charts'
+import { BarChartSimple, ChartCard } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
 
 /** Jumlah pegawai aktif per department, dibaca dari roster (berubah mengikuti Mutasi yang sudah berlaku). */
@@ -17,19 +17,8 @@ export function DepartmentChart() {
   const data = departmentCounts()
   const total = data.reduce((a, d) => a + d.value, 0)
   return (
-    <ChartCard
-      title="Karyawan per Department"
-      description={`Total ${total.toLocaleString('id-ID')} karyawan aktif`}
-      className="h-full"
-    >
-      <BarChartSimple
-        data={data}
-        dataKey="value"
-        categoryKey="dept"
-        config={config}
-        layout="horizontal"
-        height={300}
-      />
+    <ChartCard className="h-full" title="Karyawan per Department" description={`Total ${total.toLocaleString('id-ID')} karyawan aktif`}>
+      <BarChartSimple data={data} dataKey="value" categoryKey="dept" config={config} layout="horizontal" height={300} unit="orang" />
     </ChartCard>
   )
 }

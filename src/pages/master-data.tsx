@@ -1,7 +1,8 @@
-import { Briefcase, CalendarCheck, CalendarDays, Clock, History, Layers, LayoutDashboard, Network, Scale, UserCheck, UserSearch, type LucideIcon } from 'lucide-react'
+import { Award, Briefcase, CalendarCheck, CalendarDays, Clock, History, Layers, LayoutDashboard, Network, Scale, UserCheck, UserSearch, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { AuditSheet } from '@/components/master/audit-sheet'
 import { ApproverTab } from '@/components/master/approver-tab'
+import { CompetencyTab } from '@/components/master/competency-tab'
 import { DashboardTab } from '@/components/master/dashboard-tab'
 import { GradeTab } from '@/components/master/grade-tab'
 import { HolidayTab } from '@/components/master/holiday-tab'
@@ -14,6 +15,7 @@ import { ShiftTab } from '@/components/master/shift-tab'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { COMPETENCIES } from '@/data/master/competencies'
 import { APPROVER_RULES } from '@/data/master/approvers'
 import { EXIT_REASONS } from '@/data/master/exit-reasons'
 import { GRADES } from '@/data/master/grades'
@@ -26,7 +28,7 @@ import { POLA_DEFS, SHIFT_DEFS } from '@/data/master/shifts'
 import { AGE_TIERS, TENURE_TIERS } from '@/data/master/tier-ranges'
 import type { Role } from '@/data/users'
 
-type TabId = 'org' | 'pos' | 'grade' | 'shift' | 'holiday' | 'leave' | 'approver' | 'industrial' | 'recruit' | 'dashboard'
+type TabId = 'org' | 'pos' | 'grade' | 'shift' | 'holiday' | 'leave' | 'approver' | 'industrial' | 'recruit' | 'dashboard' | 'competency'
 
 export default function MasterDataPage({ role }: { role: Role }) {
   const [tab, setTab] = useState<TabId>('org')
@@ -45,6 +47,7 @@ export default function MasterDataPage({ role }: { role: Role }) {
     { id: 'industrial', label: 'Industrial', icon: Scale, count: EXIT_REASONS.length },
     { id: 'recruit', label: 'Rekrutmen', icon: UserSearch, count: 5 },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: TENURE_TIERS.length + AGE_TIERS.length },
+    { id: 'competency', label: 'Kompetensi', icon: Award, count: COMPETENCIES.length },
   ]
   const onHistory = (q: string) => {
     setQuery(q)
@@ -57,7 +60,7 @@ export default function MasterDataPage({ role }: { role: Role }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Data Master</h1>
-          <p className="text-sm text-muted-foreground">Struktur organisasi, posisi, grade, jadwal kerja, kalender libur, aturan cuti, penyetuju, alasan keluar, dan parameter rekrutmen</p>
+          <p className="text-sm text-muted-foreground">Struktur organisasi, posisi, grade, jadwal kerja, kalender libur, aturan cuti, penyetuju, alasan keluar, parameter rekrutmen, dan standar kompetensi</p>
         </div>
         <Button variant="outline" onClick={() => onHistory('')}>
           <History /> Riwayat Perubahan
@@ -100,6 +103,7 @@ export default function MasterDataPage({ role }: { role: Role }) {
           {tab === 'industrial' && <IndustrialTab {...props} />}
           {tab === 'recruit' && <RecruitmentTab {...props} />}
           {tab === 'dashboard' && <DashboardTab {...props} />}
+          {tab === 'competency' && <CompetencyTab {...props} />}
         </div>
       </div>
       <AuditSheet open={hist} onOpenChange={setHist} query={query} onQuery={setQuery} />

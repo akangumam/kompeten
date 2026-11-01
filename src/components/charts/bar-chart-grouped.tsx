@@ -1,102 +1,55 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import { barLabel, categoryAxisWidth, fmtNum, labelRoom, sortLegend } from './shared'
 
-type SeriesDef = { key: string; label: string }
-
-type Props = {
-  data: Record<string, unknown>[]
-  series: [SeriesDef, SeriesDef] | SeriesDef[]
+/** Bar dua seri berdampingan (mis. Standar vs Existing, Masuk vs Keluar) dengan legend. */
+export function BarChartGrouped({
+  data, keys, categoryKey, config, layout = 'vertical', height, valueFormatter, unit, labelFormatter, className,
+}: {
+  data: readonly object[]
+  /** Dua kunci seri yang digambar. Urutan batang dan legend mengikuti urutan kunci di `config`. */
+  keys: [string, string]
   categoryKey: string
   config: ChartConfig
   layout?: 'vertical' | 'horizontal'
   height?: number
-  showLabels?: boolean
-}
-
-export function BarChartGrouped({
-  data,
-  series,
-  categoryKey,
-  config,
-  layout = 'vertical',
-  height = 280,
-  showLabels = true,
-}: Props) {
-  const isHorizontal = layout === 'horizontal'
-  const maxLabelLen = data.length > 0 ? Math.max(...data.map((d) => String(d[categoryKey] ?? '').length)) : 10
-  const yAxisWidth = Math.min(Math.max(maxLabelLen * 6.5, 60), 160)
-
+  valueFormatter?: (n: number) => string
+  unit?: string
+  labelFormatter?: (label: unknown, payload: readonly unknown[]) => React.ReactNode
+  className?: string
+}) {
+  const fmt = valueFormatter ?? fmtNum
+  const tipFmt = valueFormatter ?? (unit ? (n: number) => `${fmtNum(n)} ${unit}` : undefined)
+  const horizontal = layout === 'horizontal'
+  const h = height ?? (horizontal ? data.length * 72 + 56 : 260)
+  const order = Object.keys(config).filter((k) => keys.includes(k))
+  const bars = order.map((k) => (
+    <Bar key={k} dataKey={k} fill={`var(--color-${k})`} radius={horizontal ? 5 : 8} maxBarSize={horizontal ? 32 : undefined} isAnimationActive={false}>
+      <LabelList dataKey={k} position={horizontal ? 'right' : 'top'} offset={horizontal ? 8 : 10} className="fill-foreground tabular-nums" fontSize={12} formatter={barLabel(fmt)} />
+    </Bar>
+  ))
+  const tooltip = <ChartTooltip cursor={false} content={<ChartTooltipContent valueFormatter={tipFmt} labelFormatter={labelFormatter as never} />} />
+  const legend = <ChartLegend content={(p) => <ChartLegendContent payload={sortLegend(p.payload, order)} verticalAlign={p.verticalAlign} />} />
   return (
-    <ChartContainer config={config} style={{ height }}>
-      <BarChart
-        data={data}
-        layout={isHorizontal ? 'vertical' : 'horizontal'}
-        accessibilityLayer
-        margin={isHorizontal ? { left: 4, right: 40 } : { top: 20, right: 16 }}
-      >
-        <CartesianGrid
-          vertical={isHorizontal}
-          horizontal={!isHorizontal}
-          stroke="var(--border)"
-        />
-        {isHorizontal ? (
-          <>
-            <YAxis
-              dataKey={categoryKey}
-              type="category"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-              width={yAxisWidth}
-            />
-            <XAxis type="number" hide />
-          </>
-        ) : (
-          <>
-            <XAxis
-              dataKey={categoryKey}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-            />
-            <YAxis hide />
-          </>
-        )}
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <ChartLegend content={<ChartLegendContent />} />
-        {series.map((s) => (
-          <Bar
-            key={s.key}
-            dataKey={s.key}
-            fill={`var(--color-${s.key})`}
-            radius={isHorizontal ? 5 : 8}
-          >
-            {showLabels && (
-              <LabelList
-                dataKey={s.key}
-                position={isHorizontal ? 'right' : 'top'}
-                className="fill-foreground"
-                fontSize={12}
-                formatter={((v: any) => (v === 0 ? '' : v)) as any}
-              />
-            )}
-          </Bar>
-        ))}
-      </BarChart>
+    <ChartContainer config={config} className={`aspect-auto w-full ${className ?? ''}`} style={{ height: h }}>
+      {horizontal ? (
+        <BarChart accessibilityLayer data={data as object[]} layout="vertical" barGap={4} margin={{ left: 0, right: labelRoom(data, order, fmt), top: 0, bottom: 0 }}>
+          <XAxis type="number" hide domain={[(min: number) => Math.min(0, min), 'dataMax']} />
+          <YAxis type="category" dataKey={categoryKey} tickLine={false} axisLine={false} tickMargin={10} interval={0} width={categoryAxisWidth(data, categoryKey)} />
+          {tooltip}
+          {legend}
+          {bars}
+        </BarChart>
+      ) : (
+        <BarChart accessibilityLayer data={data as object[]} margin={{ left: 0, right: 0, top: 24, bottom: 0 }}>
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey={categoryKey} tickLine={false} axisLine={false} tickMargin={10} interval={0} />
+          <YAxis hide domain={[(min: number) => Math.min(0, min), 'dataMax']} />
+          {tooltip}
+          {legend}
+          {bars}
+        </BarChart>
+      )}
     </ChartContainer>
   )
 }

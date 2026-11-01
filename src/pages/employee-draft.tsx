@@ -18,6 +18,8 @@ import {
 } from '@/data/employees'
 import { formatTenure } from '@/data/directory'
 import type { CurrentUser } from '@/data/users'
+import { PengembanganTab } from '@/components/employee/pengembangan-tab'
+import { canAccessCompetency } from '@/data/competency/assessments'
 import { KepegawaianTab } from '@/components/employee/kepegawaian-tab'
 import { RiwayatTab } from '@/components/employee/riwayat-tab'
 import { PersonalTab } from '@/components/employee/personal-tab'
@@ -328,7 +330,11 @@ export default function EmployeeDraftPage({
                   </TabsContent>
                 )}
                 <TabsContent value="pengembangan">
-                  <EmptyTab activated={activated} icon={GraduationCap} title="Matrix kompetensi, pelatihan, dan evaluasi KPI akan muncul di sini." />
+                  {activated && record.nik && canAccessCompetency(user.role) ? (
+                    <PengembanganTab nik={record.nik} user={user} />
+                  ) : (
+                    <EmptyTab activated={activated} icon={GraduationCap} title="Kompetensi, riwayat training, dan evaluasi KPI akan muncul di sini." />
+                  )}
                 </TabsContent>
                 <TabsContent value="kehadiran">
                   <EmptyTab activated={activated} icon={CalendarCheck} title="Rekap absensi, saldo cuti, dan riwayat izin akan muncul di sini." />

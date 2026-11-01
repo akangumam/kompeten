@@ -75,10 +75,10 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
       </PageHeader>
 
       <div className={KPI_GRID}>
-        <StatCard label="Anggota aktif" value={aktif.length.toLocaleString('id-ID')} icon={Users} iconClass="text-success" hint={nonaktif.length ? `${nonaktif.length} anggota nonaktif` : 'Semua aktif'} />
-        <StatCard label="Total simpanan" value={rp(totalSimpanan())} icon={PiggyBank} iconClass="text-info" hint="Pokok + Wajib + Sukarela anggota aktif" />
-        <StatCard label="Pendaftaran menunggu" value={nReg.toLocaleString('id-ID')} icon={UserPlus} iconClass="text-warning" hint="Menunggu persetujuan Ketua" />
-        <StatCard label="Perubahan setoran menunggu" value={nChg.toLocaleString('id-ID')} icon={ArrowLeftRight} iconClass="text-warning" hint="Diproses Sekretaris" />
+        <StatCard label="Anggota aktif" value={aktif.length.toLocaleString('id-ID')} icon={Users} hint={nonaktif.length ? `${nonaktif.length} anggota nonaktif` : 'Semua aktif'} />
+        <StatCard label="Total simpanan" value={rp(totalSimpanan())} icon={PiggyBank} hint="Pokok + Wajib + Sukarela anggota aktif" />
+        <StatCard label="Pendaftaran menunggu" value={nReg.toLocaleString('id-ID')} icon={UserPlus} hint="Menunggu persetujuan Ketua" />
+        <StatCard label="Perubahan setoran menunggu" value={nChg.toLocaleString('id-ID')} icon={ArrowLeftRight} hint="Diproses Sekretaris" />
       </div>
 
       <Alert>

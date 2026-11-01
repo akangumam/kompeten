@@ -36,7 +36,6 @@ import {
 type NavItem = { title: string; icon: LucideIcon; items: string[] }
 
 const NAV: NavItem[] = [
-  { title: 'Dashboard', icon: LayoutDashboard, items: ['Umum & Rekrutmen', 'Produksi', 'Presensi'] },
   { title: 'Recruitment', icon: UserPlus, items: ['Daftar Kandidat', 'Lowongan', 'Form DICAP', 'Menu Tes'] },
   {
     title: 'Data Pegawai',
@@ -51,7 +50,7 @@ const NAV: NavItem[] = [
   {
     title: 'People Development',
     icon: GraduationCap,
-    items: ['Matrix Kompetensi', 'Offline Training', 'Evaluasi KPI'],
+    items: ['Kompetensi', 'Training', 'KPI'],
   },
   {
     title: 'Payroll',
@@ -66,9 +65,6 @@ const NAV: NavItem[] = [
 ]
 
 const PAGES: Record<string, PageId> = {
-  'Dashboard/Umum & Rekrutmen': 'dashboard',
-  'Dashboard/Produksi': 'dashboard-produksi',
-  'Dashboard/Presensi': 'dashboard-presensi',
   'Recruitment/Daftar Kandidat': 'recruitment',
   'Recruitment/Lowongan': 'recruitment-jobs',
   'Recruitment/Form DICAP': 'recruitment-form',
@@ -77,6 +73,9 @@ const PAGES: Record<string, PageId> = {
   'Data Pegawai/Transaksi Kepegawaian': 'employee-transactions',
   'Data Pegawai/Hubungan Industrial': 'industrial-relations',
   'Data Pegawai/Data Master': 'master-data',
+  'People Development/Kompetensi': 'dev-competency',
+  'People Development/Training': 'dev-training',
+  'People Development/KPI': 'dev-kpi',
   'Payroll/Proses & Closing': 'payroll-run',
   'Payroll/Komponen & Potongan': 'payroll-components',
   'Payroll/Perubahan Gaji': 'salary-change',
@@ -171,23 +170,23 @@ function hiddenFor(role: Role): { groups: string[]; items: string[]; showSystemS
       // Admin HRD hanya membaca Kompensasi & Pesangon di menu Payroll.
       return { groups: ['Koperasi'], items: ['Payroll/Proses & Closing', 'Payroll/Komponen & Potongan', 'Payroll/Perubahan Gaji', 'Payroll/Slip Gaji', 'Payroll/Daftar Pembayaran', 'Payroll/Rekonsiliasi Potongan'], showSystemSettings: true }
     case 'supervisor':
-      return { groups: ['Payroll', 'Koperasi'], items: ['Data Pegawai/Data Master', 'Dashboard/Produksi', 'Recruitment/Lowongan', 'Recruitment/Form DICAP', 'Recruitment/Menu Tes'], showSystemSettings: false }
+      return { groups: ['Payroll', 'Koperasi'], items: ['Data Pegawai/Data Master', 'Recruitment/Lowongan', 'Recruitment/Form DICAP', 'Recruitment/Menu Tes'], showSystemSettings: false }
     case 'payroll':
       return {
         groups: ['Recruitment', 'People Development', 'Koperasi'],
-        items: ['Dashboard/Produksi', 'Dashboard/Presensi', 'Data Pegawai/Data Master', 'Payroll/Rekonsiliasi Potongan'],
+        items: ['Data Pegawai/Data Master', 'Payroll/Rekonsiliasi Potongan'],
         showSystemSettings: false,
       }
     case 'sekretaris':
     case 'bendahara':
     case 'ketua':
       // Pengurus koperasi (KSB) hanya melihat Dashboard Koperasi dan menu Koperasi; saldo Koperasi tidak pernah tampil untuk persona HR dan Payroll.
-      return { groups: ['Dashboard', 'Recruitment', 'Data Pegawai', 'Kehadiran', 'People Development', 'Payroll'], items: [], showSystemSettings: false }
+      return { groups: ['Recruitment', 'Data Pegawai', 'Kehadiran', 'People Development', 'Payroll'], items: [], showSystemSettings: false }
     case 'finance':
       // Finance melihat Daftar Pembayaran, Rekonsiliasi Potongan, dan Kompensasi & Pesangon (transfer terpisah); tanpa data pegawai, kehadiran, atau gaji.
       return {
         groups: ['Recruitment', 'Data Pegawai', 'Kehadiran', 'People Development', 'Koperasi'],
-        items: ['Dashboard/Produksi', 'Dashboard/Presensi', 'Payroll/Proses & Closing', 'Payroll/Komponen & Potongan', 'Payroll/Perubahan Gaji', 'Payroll/Slip Gaji'],
+        items: ['Payroll/Proses & Closing', 'Payroll/Komponen & Potongan', 'Payroll/Perubahan Gaji', 'Payroll/Slip Gaji'],
         showSystemSettings: false,
       }
     default:
@@ -199,7 +198,6 @@ function hiddenFor(role: Role): { groups: string[]; items: string[]; showSystemS
 export function AppSidebar({ activePage, onNavigate, role }: NavProps) {
   const hide = hiddenFor(role)
   const hideSystemSettings = !hide.showSystemSettings
-  const isKsb = role === 'ketua' || role === 'sekretaris' || role === 'bendahara'
   const [openGroup, setOpenGroup] = useState<string | null>(() => groupOf(activePage))
   useEffect(() => setOpenGroup(groupOf(activePage)), [activePage])
   return (
@@ -214,14 +212,13 @@ export function AppSidebar({ activePage, onNavigate, role }: NavProps) {
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarMenu>
-            {isKsb && (
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Dashboard" isActive={activePage === 'dashboard'} onClick={() => onNavigate('dashboard')}>
-                  <LayoutDashboard className="size-4" />
-                  <span>Dashboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
+            {/* Dashboard: satu item tanpa submenu dan tanpa chevron; tab (Umum/Produksi/Presensi) ada di halamannya. */}
+            <SidebarMenuItem>
+              <SidebarMenuButton tooltip="Dashboard" isActive={activePage === 'dashboard'} onClick={() => onNavigate('dashboard')}>
+                <LayoutDashboard className="size-4" />
+                <span>Dashboard</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             {NAV.filter((entry) => !hide.groups.includes(entry.title)).map((entry) => (
               <NavGroup
                 key={entry.title}
