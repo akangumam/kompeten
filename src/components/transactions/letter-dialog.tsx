@@ -1,3 +1,4 @@
+import { DocumentPaper } from '@/components/document-paper'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { contractsOf } from '@/data/contracts'
@@ -53,13 +54,8 @@ export function LetterDialog({ data, onClose }: { data: LetterData | null; onClo
           <DialogDescription>{data?.jenis === 'Perpanjangan Kontrak' ? 'Perjanjian Kerja Waktu Tertentu' : 'Surat Keputusan'} · {data?.suratNo}</DialogDescription>
         </DialogHeader>
         {data && emp && (
-          <div className="relative overflow-hidden rounded-md border bg-card p-8 text-sm leading-relaxed text-foreground" aria-label="Pratinjau surat">
-            {!data.disetujui && (
-              <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="-rotate-[30deg] select-none text-8xl font-bold tracking-widest text-muted-foreground/20">DRAFT</span>
-              </div>
-            )}
-            <div className="relative space-y-5">
+          <DocumentPaper draft={!data.disetujui} className="space-y-5 leading-relaxed" aria-label="Pratinjau surat">
+            <div className="space-y-5">
               <header className="border-b pb-3 text-center">
                 <p className="text-base font-semibold tracking-wide">PT PRIMAPLAST INDONESIA</p>
                 <p className="text-xs text-muted-foreground">Human Resources & General Affairs</p>
@@ -86,7 +82,7 @@ export function LetterDialog({ data, onClose }: { data: LetterData | null; onClo
                 <p className="text-center text-xs text-muted-foreground">Pihak Kedua: {emp.nama} ({emp.nik}) menandatangani rangkap dua bermeterai.</p>
               )}
             </div>
-          </div>
+          </DocumentPaper>
         )}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Tutup</Button>

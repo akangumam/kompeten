@@ -20,7 +20,7 @@ import {
   type KpiRecord, type KpiRow,
 } from '@/data/kpi/records'
 import type { CurrentUser } from '@/data/users'
-import { validAlasan } from '@/lib/validators'
+import { ALASAN_ERROR, validAlasan } from '@/lib/validators'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/format'
 
@@ -79,7 +79,7 @@ function Body({ row, bulan, user, attendance, onClose, onNavigate }: { row: KpiR
   }
   const approve = () => { approveKpi(row, bulan, user); toast.success(wakil ? `KPI disetujui mewakili ${wakil}` : 'KPI disetujui dan dikunci'); onClose() }
   const kembalikan = () => {
-    if (!validAlasan(alasan)) { setAlasanErr('Alasan minimal 10 karakter'); return }
+    if (!validAlasan(alasan)) { setAlasanErr(ALASAN_ERROR); return }
     returnKpi(row, user, alasan.trim())
     toast.success('KPI dikembalikan ke Atasan')
     setKembali(false)

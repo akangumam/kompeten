@@ -1,3 +1,4 @@
+import { DocumentPaper } from '@/components/document-paper'
 import { Download, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { Logo } from '@/components/brand/logo'
@@ -41,7 +42,7 @@ export function SlipDialog({ row, period, onClose }: { row: PayRow | null; perio
           <DialogDescription>{row?.nama} · {period.label}</DialogDescription>
         </DialogHeader>
         {row && doc && (
-          <article className="slip-print mx-auto w-full max-w-[560px] space-y-4 rounded-md border bg-card p-6 text-sm">
+          <DocumentPaper as="article" paperClassName="mx-auto w-full max-w-[560px] p-6" className="space-y-4">
             <header className="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
               <div className="flex items-center gap-3">
                 <Logo />
@@ -92,7 +93,7 @@ export function SlipDialog({ row, period, onClose }: { row: PayRow | null; perio
             <footer className="border-t pt-3 text-xs text-muted-foreground">
               Dokumen dibuat oleh sistem, tidak memerlukan tanda tangan · Dicetak {nowStamp()}
             </footer>
-          </article>
+          </DocumentPaper>
         )}
         <DialogFooter className="print:hidden">
           <Button variant="outline" onClick={() => toast.info('Dibuat di tahap berikutnya')}><Download className="size-4" />Unduh PDF</Button>

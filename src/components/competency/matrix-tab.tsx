@@ -35,7 +35,6 @@ export function MatrixTab({ rows, posisi, periodId, periodLabel, onOpen }: { row
   }
   const pcts = scores.map((s) => s.sc.pct).filter((x): x is number => x != null)
   const avgPct = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : null
-  const wide = cols.length > 10
 
   return (
     <Card>
@@ -50,15 +49,15 @@ export function MatrixTab({ rows, posisi, periodId, periodLabel, onOpen }: { row
         {rows.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">Tidak ada pegawai pada posisi ini di cakupan Anda.</p>
         ) : (
-          <div className={cn(wide && 'overflow-x-auto')}>
+          <div>
             <Table className="border-separate border-spacing-0">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead rowSpan={2} className={cn(head, 'sticky left-0 z-10 min-w-52 border-r bg-card align-bottom')}>Pegawai</TableHead>
+                  <TableHead rowSpan={2} className={cn(head, 'sticky left-0 z-10 min-w-44 border-r bg-card align-bottom')}>Pegawai</TableHead>
                   {groups.map((g) => (
                     <TableHead key={g.cat} colSpan={g.n} className={cn(head, 'border-b border-l bg-muted/40 text-center')}>{g.cat}</TableHead>
                   ))}
-                  <TableHead rowSpan={2} className={cn(head, 'min-w-24 border-l text-center align-bottom')}>Pemenuhan</TableHead>
+                  <TableHead rowSpan={2} className={cn(head, 'sticky right-0 z-10 min-w-24 border-l bg-card text-center align-bottom')}>Pemenuhan</TableHead>
                 </TableRow>
                 <TableRow className="hover:bg-transparent">
                   {cols.map((c, i) => (
@@ -80,10 +79,7 @@ export function MatrixTab({ rows, posisi, periodId, periodLabel, onOpen }: { row
                 {scores.map(({ r, sc }) => (
                   <TableRow key={r.emp.nik} className="group cursor-pointer" onClick={() => onOpen(r)}>
                     <TableCell className="sticky left-0 z-10 border-r bg-card group-hover:bg-muted">
-                      <div className="flex items-center justify-between gap-2">
-                        <PersonCell nama={r.emp.nama} nik={r.emp.nik} />
-                        {statusOf(r) !== 'final' && <AssessBadge status={statusOf(r)} />}
-                      </div>
+                      <PersonCell nama={r.emp.nama} nik={r.emp.nik} extra={<AssessBadge status={statusOf(r)} />} />
                     </TableCell>
                     {cols.map((c, i) => {
                       const it = sc.items.find((x) => x.kode === c.kode)
@@ -93,7 +89,7 @@ export function MatrixTab({ rows, posisi, periodId, periodLabel, onOpen }: { row
                         </TableCell>
                       )
                     })}
-                    <TableCell className="border-l text-center font-semibold tabular-nums">{pctText(sc.pct)}</TableCell>
+                    <TableCell className="sticky right-0 z-10 border-l bg-card text-center font-semibold tabular-nums group-hover:bg-muted">{pctText(sc.pct)}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -109,7 +105,7 @@ export function MatrixTab({ rows, posisi, periodId, periodLabel, onOpen }: { row
                       </TableCell>
                     )
                   })}
-                  <TableCell className="border-l text-center font-semibold tabular-nums">{pctText(avgPct)}</TableCell>
+                  <TableCell className="sticky right-0 z-10 border-l bg-muted text-center font-semibold tabular-nums">{pctText(avgPct)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

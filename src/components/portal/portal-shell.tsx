@@ -1,3 +1,4 @@
+import { DocumentPaper } from '@/components/document-paper'
 import { useEffect, useRef, useState } from 'react'
 import {
   Briefcase, Check, ChevronLeft, ChevronRight, ChevronsUpDown, ClipboardList, Clock, Download,
@@ -865,6 +866,7 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
   const [offerConfirmCheck, setOfferConfirmCheck] = useState(false)
   const [declineDialog, setDeclineDialog] = useState(false)
   const [declineAlasan, setDeclineAlasan] = useState('')
+  const [declineErr, setDeclineErr] = useState(false)
   const [questionDialog, setQuestionDialog] = useState(false)
   const [questionText, setQuestionText] = useState('')
 
@@ -1000,10 +1002,10 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
             <AlertDialogTitle>Terima Penawaran?</AlertDialogTitle>
             <AlertDialogDescription>Keputusan ini tidak dapat dibatalkan setelah dikonfirmasi.</AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex min-h-12 items-start gap-3 px-1 py-2">
+          <label htmlFor="oc-check" className="flex min-h-12 cursor-pointer items-start gap-3 px-1 py-2 text-sm">
             <Checkbox id="oc-check" checked={offerConfirmCheck} onCheckedChange={(v) => setOfferConfirmCheck(!!v)} />
-            <label htmlFor="oc-check" className="text-sm">Saya telah membaca surat penawaran dan menyetujui semua syarat dan ketentuan.</label>
-          </div>
+            Saya telah membaca surat penawaran dan menyetujui semua syarat dan ketentuan.
+          </label>
           <AlertDialogFooter>
             <AlertDialogCancel className="h-12">Batal</AlertDialogCancel>
             <AlertDialogAction className="h-12" disabled={!offerConfirmCheck} onClick={handleAcceptOffer}>Terima Penawaran</AlertDialogAction>
@@ -1017,12 +1019,12 @@ function LamaranDetail({ candId, session, go }: { candId: string; session: Porta
           <DialogHeader><DialogTitle>Tolak Penawaran</DialogTitle><DialogDescription>Mohon sampaikan alasan penolakan Anda.</DialogDescription></DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="decline-alasan">Alasan *</Label>
-            <Textarea id="decline-alasan" rows={3} value={declineAlasan} onChange={(e) => setDeclineAlasan(e.target.value)} placeholder="Minimal 10 karakter..." />
-            {declineAlasan && declineAlasan.trim().length < 10 && <p className="text-sm text-danger">Alasan minimal 10 karakter</p>}
+            <Textarea id="decline-alasan" rows={3} value={declineAlasan} aria-invalid={declineErr || undefined} aria-describedby={declineErr ? 'decline-alasan-err' : undefined} onChange={(e) => { setDeclineAlasan(e.target.value); setDeclineErr(false) }} placeholder="Minimal 10 karakter..." />
+            {declineErr && <p id="decline-alasan-err" className="text-sm text-danger">Alasan minimal 10 karakter</p>}
           </div>
           <DialogFooter>
             <Button variant="outline" className="h-12" onClick={() => setDeclineDialog(false)}>Batal</Button>
-            <Button variant="destructive" className="h-12" disabled={declineAlasan.trim().length < 10} onClick={handleDeclineOffer}>Tolak Penawaran</Button>
+            <Button variant="destructive" className="h-12" onClick={() => { if (declineAlasan.trim().length < 10) { setDeclineErr(true); return } handleDeclineOffer() }}>Tolak Penawaran</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1087,7 +1089,7 @@ function OfferSection({ offer, offerEff, candName, onAccept, onDecline, onQuesti
       <Dialog open={letterOpen} onOpenChange={setLetterOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Surat Penawaran {offer.olNo}</DialogTitle></DialogHeader>
-          <div className="space-y-3 rounded-md border p-4 text-sm leading-relaxed">
+          <DocumentPaper paperClassName="p-4" className="space-y-3 leading-relaxed">
             <p className="font-semibold">PT PRIMAPLAST INDONESIA</p>
             <p>Nomor: {offer.olNo}</p>
             <p>Kepada Yth. <span className="font-medium">{candName}</span></p>
@@ -1099,7 +1101,7 @@ function OfferSection({ offer, offerEff, candName, onAccept, onDecline, onQuesti
               <li>{offer.benefit}</li>
             </ul>
             <p className="text-muted-foreground text-xs">Penawaran ini berlaku hingga {offer.dikirim ? formatDate(offer.dikirim.batas) : '—'}.</p>
-          </div>
+          </DocumentPaper>
           <DialogFooter><Button className="h-12" onClick={() => setLetterOpen(false)}>Tutup</Button></DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1174,10 +1176,10 @@ function PreTestRules({ paket, saved, onStart }: { paket: ReturnType<typeof pake
             <li className="flex gap-2"><span className="mt-0.5 text-muted-foreground">•</span>Waktu tetap berjalan bila Anda keluar dari halaman</li>
             <li className="flex gap-2"><span className="mt-0.5 text-muted-foreground">•</span>Keluar halaman akan tercatat dan dilaporkan ke HRD</li>
           </ul>
-          <div className="flex min-h-12 items-center gap-3 rounded-md border p-3">
+          <label htmlFor="pre-ready" className="flex min-h-12 cursor-pointer items-center gap-3 rounded-md border p-3 text-sm font-medium">
             <Checkbox id="pre-ready" checked={ready} onCheckedChange={(v) => setReady(!!v)} />
-            <label htmlFor="pre-ready" className="text-sm font-medium">Saya siap memulai tes</label>
-          </div>
+            Saya siap memulai tes
+          </label>
           <DialogFooter>
             <Button variant="outline" className="h-12" onClick={() => setOpen(false)}>Kembali</Button>
             <Button className="h-12" disabled={!ready} onClick={() => { setOpen(false); onStart() }}>Mulai Tes</Button>
@@ -1232,8 +1234,8 @@ function AkunPage({ session, go, onLogout }: { session: PortalSession; go: (n: P
             <AlertDialogDescription>Permintaan akan diteruskan ke tim HR dan diproses sesuai UU PDP No. 27/2022. Data lamaran yang sudah masuk tahap Interview atau lebih lanjut tidak dapat langsung dihapus.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={() => {
+            <AlertDialogCancel className="h-12">Batal</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" className="h-12" onClick={() => {
               if (account) {
                 const candIds = account.candidateIds
                 for (const id of candIds) portalRequestDelete(id)

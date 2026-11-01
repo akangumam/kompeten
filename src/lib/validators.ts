@@ -86,5 +86,5 @@ export const RULES: Record<FormatKey, Rule> = {
 export const formatError = (key: FormatKey, stored: string) =>
   stored && !RULES[key].valid(stored) ? RULES[key].error : ''
 
-export const ALASAN_ERROR = 'Alasan minimal 10 karakter dan jelas'
+export const ALASAN_ERROR = 'Alasan minimal 10 karakter'
 export const validAlasan = (v: string) => v.trim().length >= 10 && !/^[\d\s.,-]+$/.test(v.trim())

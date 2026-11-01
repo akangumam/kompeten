@@ -1,3 +1,4 @@
+import { DocumentPaper } from '@/components/document-paper'
 import { useMemo, useState } from 'react'
 import { Ban, Check, ChevronsUpDown, CircleCheck, CircleX, FileText, Hourglass, Mail, MessageSquare, Search, TimerOff, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -125,20 +126,13 @@ export function DocDialog({ open, onClose, title, description, draft, children }
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="relative overflow-hidden rounded-md border bg-card p-8 text-sm leading-relaxed text-foreground" aria-label="Pratinjau surat">
-          {draft && (
-            <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <span className="-rotate-[30deg] select-none text-8xl font-bold tracking-widest text-muted-foreground/20">DRAFT</span>
-            </div>
-          )}
-          <div className="relative space-y-5">
-            <header className="border-b pb-3 text-center">
-              <p className="text-base font-semibold tracking-wide">PT PRIMAPLAST INDONESIA</p>
-              <p className="text-xs text-muted-foreground">Human Resources & General Affairs</p>
-            </header>
-            {children}
-          </div>
-        </div>
+        <DocumentPaper draft={draft} className="space-y-5 leading-relaxed" aria-label="Pratinjau surat">
+          <header className="border-b pb-3 text-center">
+            <p className="text-base font-semibold tracking-wide">PT PRIMAPLAST INDONESIA</p>
+            <p className="text-xs text-muted-foreground">Human Resources & General Affairs</p>
+          </header>
+          {children}
+        </DocumentPaper>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Tutup</Button>
         </DialogFooter>

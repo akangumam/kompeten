@@ -1,3 +1,4 @@
+import { DocumentPaper } from '@/components/document-paper'
 import { Award, CircleCheck, CircleX, Lock, LockOpen, Minus, Play } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
@@ -81,7 +82,7 @@ export function CertificateDialog({ no, onClose }: { no: string | null; onClose:
           <DialogDescription>Pratinjau sertifikat kelulusan uji training</DialogDescription>
         </DialogHeader>
         {cert && prog && (
-          <div className="space-y-4 rounded-lg border-2 border-double p-6 text-center">
+          <DocumentPaper paperClassName="rounded-lg border-2 border-double p-6 text-center" className="space-y-4">
             <Logo className="mx-auto" />
             <p className="text-xs tracking-widest text-muted-foreground uppercase">Sertifikat Kelulusan</p>
             <p className="text-xs tabular-nums text-muted-foreground">No. {cert.no}</p>
@@ -95,7 +96,7 @@ export function CertificateDialog({ no, onClose }: { no: string | null; onClose:
               <div className="mx-auto mt-8 w-48 border-t pt-1 font-medium">Lestari Wulandari</div>
               <p className="text-xs text-muted-foreground">HR &amp; GA Manager</p>
             </div>
-          </div>
+          </DocumentPaper>
         )}
         <DialogFooter><Button onClick={onClose}>Tutup</Button></DialogFooter>
       </DialogContent>

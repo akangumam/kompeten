@@ -20,7 +20,7 @@ import { atasanName } from '@/data/directory'
 import { CATEGORIES, LEVELS, LEVEL_NAMES, competencyOf, targetsList } from '@/data/master/competencies'
 import type { CurrentUser } from '@/data/users'
 import { formatDate } from '@/lib/format'
-import { validAlasan } from '@/lib/validators'
+import { ALASAN_ERROR, validAlasan } from '@/lib/validators'
 import { cn } from '@/lib/utils'
 
 const head = 'text-xs font-medium text-muted-foreground'
@@ -77,7 +77,7 @@ function Body({ row, periodId, user, onClose }: { row: CompRow; periodId: string
     onClose()
   }
   const kembalikan = () => {
-    if (!validAlasan(alasan)) { setAlasanErr('Alasan minimal 10 karakter'); return }
+    if (!validAlasan(alasan)) { setAlasanErr(ALASAN_ERROR); return }
     returnAssessment(periodId, row.emp.nik, user, alasan.trim())
     toast.success('Penilaian dikembalikan ke Atasan')
     setKembali(false)

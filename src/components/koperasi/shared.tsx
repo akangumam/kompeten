@@ -162,12 +162,11 @@ export function ReviewSheet({
               <AlertDialogTitle>{rejectTitle}</AlertDialogTitle>
               <AlertDialogDescription>Alasan akan terlihat oleh pengaju.</AlertDialogDescription>
             </AlertDialogHeader>
-            <AlasanField id="tolak-alasan" label="Alasan penolakan" value={alasan} onChange={setAlasan} error={err} />
+            <AlasanField id="tolak-alasan" label="Alasan penolakan" value={alasan} onChange={(v) => { setAlasan(v); setErr('') }} error={err} />
             <AlertDialogFooter>
               <AlertDialogCancel>Batal</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
-                disabled={!validAlasan(alasan)}
                 onClick={(e) => {
                   if (!validAlasan(alasan)) { e.preventDefault(); setErr(ALASAN_ERROR); return }
                   onReject(alasan.trim())

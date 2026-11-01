@@ -62,3 +62,4 @@ Semua chart memakai komponen di `src/components/charts/` (ChartCard, BarChartSim
 - Do not build screens, sections, cards or charts that the current prompt did not ask for.
 - Do not change existing screens when building a new one unless the prompt says so.
 - Do not report a visual fix as done based on type-checking only; confirm it in the rendered preview.
+- Pratinjau dokumen resmi (SK, PKWT, slip, sertifikat, surat) selalu memakai `DocumentPaper` (token terang via `.paper-light`), di mode apa pun. Dokumen belum disetujui menampilkan watermark DRAFT dan baris teks "DRAFT — belum disetujui…" (`text-danger`) yang ikut tercetak. Saat dicetak hanya kertas yang tampil.

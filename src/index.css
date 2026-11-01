@@ -135,25 +135,69 @@
   }
 }
 
-@layer base {
-  @media print {
-    body * {
-      visibility: hidden;
-    }
-    .slip-print,
-    .slip-print * {
-      visibility: visible;
-    }
-    .slip-print {
-      position: fixed;
-      inset: 0;
-      margin: 0 auto;
-      border: 0;
-    }
-    [data-slot='dialog-content'] {
-      position: static !important;
-      transform: none !important;
-      box-shadow: none !important;
-    }
+/* Kertas dokumen resmi: token terang dideklarasikan ulang, jadi seluruh isi kertas terang di mode gelap. */
+.paper-light {
+  color-scheme: light;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --border: oklch(0.87 0 0);
+  --input: oklch(0.87 0 0);
+  --success: oklch(0.5 0.13 155);
+  --info: oklch(0.5 0.17 258);
+  --warning: oklch(0.5 0.12 65);
+  --danger: oklch(0.5 0.19 27);
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+/* Logo di atas kertas selalu versi berwarna. */
+.paper-light .logo-light { display: block; }
+.paper-light .logo-dark { display: none; }
+
+@media print {
+  html,
+  body {
+    background: Canvas;
+    color: CanvasText;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .paper-sheet,
+  .paper-sheet * {
+    visibility: visible;
+  }
+  .paper-sheet {
+    position: fixed;
+    inset: 0;
+    margin: 0 auto;
+    border: 0;
+    box-shadow: none;
+    background: Canvas;
+    color: CanvasText;
+  }
+  [data-slot='dialog-overlay'] {
+    display: none !important;
+  }
+  [data-slot='dialog-content'] {
+    position: static !important;
+    transform: none !important;
+    translate: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    background: none !important;
+    border: 0 !important;
   }
 }

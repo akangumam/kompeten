@@ -1,4 +1,5 @@
 import { ArrowDownLeft, ArrowUpRight, Paperclip, Plus, Scale, TrendingUp } from 'lucide-react'
+import { ALASAN_ERROR } from '@/lib/validators'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { BarChartSimple, ChartCard } from '@/components/charts'
@@ -119,7 +120,7 @@ function TxSheet({ koreksi, bulan, actor, onClose }: { koreksi?: UdTx; bulan: st
   const e = {
     tanggal: !tanggal ? 'Tanggal wajib diisi' : tanggal > DEMO_TODAY ? 'Tanggal tidak boleh setelah hari ini' : '',
     kategori: kategori ? '' : 'Pilih kategori', nominal: nominal ? '' : 'Nominal wajib diisi',
-    ket: koreksi ? (alasanOk(alasan) ? '' : 'Alasan koreksi minimal 10 karakter dan jelas') : ket.trim().length < 10 ? 'Keterangan minimal 10 karakter' : '',
+    ket: koreksi ? (alasanOk(alasan) ? '' : ALASAN_ERROR) : ket.trim().length < 10 ? 'Keterangan minimal 10 karakter' : '',
     file: file ? '' : 'Bukti wajib diunggah',
   }
   return (

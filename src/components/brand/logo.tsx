@@ -6,8 +6,8 @@ const FULL = { light: '/assets/logo-full.svg', dark: '/assets/logo-full-white.sv
 const MARK = { light: '/assets/logo-mark.svg', dark: '/assets/logo-mark-white.svg' }
 
 // Mode gelap menukar ke versi putih; saat dicetak (kertas putih) tetap memakai versi berwarna.
-const lightCls = 'dark:hidden dark:print:block'
-const darkCls = 'hidden dark:block dark:print:hidden'
+const lightCls = 'logo-light dark:hidden dark:print:block'
+const darkCls = 'logo-dark hidden dark:block dark:print:hidden'
 
 export function Logo({ className, markOnly }: { className?: string; markOnly?: boolean }) {
   const src = markOnly ? MARK : FULL

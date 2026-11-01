@@ -1,4 +1,5 @@
 import { Info } from 'lucide-react'
+import { ALASAN_ERROR } from '@/lib/validators'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Field } from '@/components/employee/field'
@@ -98,7 +99,7 @@ function SettingSheet({ def, canEdit, user, onClose }: { def: SettingDef; canEdi
   const [sub, setSub] = useState(false)
   const n = Number(val)
   const valErr = val === '' || !Number.isFinite(n) ? 'Nilai wajib diisi' : n < def.min ? `Minimal ${def.min.toLocaleString('id-ID')}` : def.max !== undefined && n > def.max ? `Maksimal ${def.max.toLocaleString('id-ID')}` : ''
-  const alasanErr = alasanOk(alasan) ? '' : 'Alasan minimal 10 karakter dan jelas'
+  const alasanErr = alasanOk(alasan) ? '' : ALASAN_ERROR
   const berlakuErr = !berlaku ? 'Berlaku mulai wajib diisi' : berlaku < DEMO_TODAY ? 'Berlaku mulai tidak boleh di masa lalu' : ''
   const hist = [...SETTING_HISTORY[def.key]].sort((a, b) => b.berlakuMulai.localeCompare(a.berlakuMulai))
   return (

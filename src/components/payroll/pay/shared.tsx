@@ -75,7 +75,7 @@ export function PageHeader({ title, subtitle, children }: { title: string; subti
 export const initialsOf = (n: string) => n.split(' ').map((p) => p[0]).slice(0, 2).join('')
 
 /** Sel Pegawai: avatar inisial + nama + NIP. */
-export function PersonCell({ nama, nik }: { nama: string; nik: string }) {
+export function PersonCell({ nama, nik, extra }: { nama: string; nik: string; extra?: ReactNode }) {
   return (
     <div className="flex items-center gap-3">
       <Avatar className="size-8">
@@ -84,6 +84,7 @@ export function PersonCell({ nama, nik }: { nama: string; nik: string }) {
       <div className="flex flex-col leading-tight">
         <span className="whitespace-nowrap font-medium">{nama}</span>
         <span className="text-xs tabular-nums text-muted-foreground">{nik}</span>
+        {extra && <span className="mt-1 self-start">{extra}</span>}
       </div>
     </div>
   )

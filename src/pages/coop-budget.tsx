@@ -1,4 +1,5 @@
 import { Banknote, Paperclip, PiggyBank, Plus, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
+import { ALASAN_ERROR } from '@/lib/validators'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { BarChartGrouped, ChartCard } from '@/components/charts'
@@ -233,6 +234,7 @@ function PengeluaranTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBe
   const [review, setReview] = useState<Pengeluaran | null>(null)
   const [batal, setBatal] = useState<Pengeluaran | null>(null)
   const [alasan, setAlasan] = useState('')
+  const [batalErr, setBatalErr] = useState('')
   const list = PENGELUARAN.filter((p) => p.tanggal.startsWith(bulan))
   const b = budgetOf(bulan)
   const blocked = b?.status !== 'disahkan'
@@ -270,7 +272,7 @@ function PengeluaranTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBe
                     </TableCell>
                     <TableCell className="text-right">
                       {isKetua && p.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(p)}>Tinjau</Button>}
-                      {isBend && p.status === 'menunggu-ketua' && <Button variant="ghost" size="sm" onClick={() => { setAlasan(''); setBatal(p) }}>Batalkan</Button>}
+                      {isBend && p.status === 'menunggu-ketua' && <Button variant="ghost" size="sm" onClick={() => { setAlasan(''); setBatalErr(''); setBatal(p) }}>Batalkan</Button>}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -305,10 +307,10 @@ function PengeluaranTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBe
       <AlertDialog open={!!batal} onOpenChange={(o) => !o && setBatal(null)}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Batalkan {batal?.id}?</AlertDialogTitle><AlertDialogDescription>Anggaran yang dipesan langsung dilepas.</AlertDialogDescription></AlertDialogHeader>
-          <AlasanField id="pko-batal" value={alasan} onChange={setAlasan} />
+          <AlasanField id="pko-batal" label="Alasan pembatalan" value={alasan} onChange={(v) => { setAlasan(v); setBatalErr('') }} error={batalErr} />
           <AlertDialogFooter>
             <AlertDialogCancel>Kembali</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" disabled={!alasanOk(alasan)} onClick={() => { cancelPengeluaran(batal!.id, alasan.trim(), actor); toast.success(`${batal!.id} dibatalkan`) }}>Batalkan Pengeluaran</AlertDialogAction>
+            <AlertDialogAction variant="destructive" onClick={(e) => { if (!alasanOk(alasan)) { e.preventDefault(); setBatalErr(ALASAN_ERROR); return } cancelPengeluaran(batal!.id, alasan.trim(), actor); toast.success(`${batal!.id} dibatalkan`) }}>Batalkan Pengeluaran</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

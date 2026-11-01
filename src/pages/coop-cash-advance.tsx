@@ -1,4 +1,5 @@
 import { Banknote, Clock, HandCoins, Hourglass, Info, Search, TriangleAlert } from 'lucide-react'
+import { ALASAN_ERROR } from '@/lib/validators'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Field } from '@/components/employee/field'
@@ -55,6 +56,7 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
   const [tunai, setTunai] = useState<Kasbon | null>(null)
   const [batal, setBatal] = useState<Kasbon | null>(null)
   const [batalAlasan, setBatalAlasan] = useState('')
+  const [batalErr, setBatalErr] = useState('')
   const [detail, setDetail] = useState<Kasbon | null>(null)
 
   const block = kasbonBlock()
@@ -217,10 +219,10 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
             <AlertDialogTitle>Batalkan {batal?.id}?</AlertDialogTitle>
             <AlertDialogDescription>Plafon yang dipesan dikembalikan.</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlasanField id="batal-alasan" value={batalAlasan} onChange={setBatalAlasan} />
+          <AlasanField id="batal-alasan" label="Alasan pembatalan" value={batalAlasan} onChange={(v) => { setBatalAlasan(v); setBatalErr('') }} error={batalErr} />
           <AlertDialogFooter>
             <AlertDialogCancel>Kembali</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" disabled={!alasanOk(batalAlasan)} onClick={(e) => { if (!alasanOk(batalAlasan)) { e.preventDefault(); return } batalKasbon(batal!.id, batalAlasan.trim(), user.nama); toast.success(`${batal!.id} dibatalkan`); setBatal(null) }}>Batalkan Kasbon</AlertDialogAction>
+            <AlertDialogAction variant="destructive" onClick={(e) => { if (!alasanOk(batalAlasan)) { e.preventDefault(); setBatalErr(ALASAN_ERROR); return } batalKasbon(batal!.id, batalAlasan.trim(), user.nama); toast.success(`${batal!.id} dibatalkan`); setBatal(null) }}>Batalkan Kasbon</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

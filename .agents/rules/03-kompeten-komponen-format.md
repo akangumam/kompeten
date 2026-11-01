@@ -17,6 +17,7 @@
 - **Business parameters** (shift times, toleransi telat, istirahat minimal, pembulatan & batas lembur, cut-off, aturan cuti, kalender libur) are read from `src/data/master/*`. No page hard-codes them.
 - **Forms:** label above input, `grid-cols-1 md:grid-cols-2 gap-4`, required fields marked `*`, error text below the field (`text-sm text-danger`) + `aria-invalid`.
 - **File upload:** never show the native file input (its browser text is English). Use an outline Button "Pilih file" (Paperclip icon) + the chosen file name and size + a ghost "Hapus" icon button; helper text states allowed types and max size.
+- **Tolak/Kembalikan/Batalkan with a reason:** the confirm button is never `disabled` for a short reason. Clicking it with < 10 characters (or digits only) keeps the dialog open and shows `ALASAN_ERROR` ("Alasan minimal 10 karakter") under the field as `text-sm text-danger`, with `aria-invalid` on the field (use `AlasanField` + `error`); typing clears the error. Same in Portal dialogs.
 - **Approvals:** the approver never approves blind. Pending rows show one outline `size="sm"` "Tinjau" button for users allowed to approve; it opens a Sheet with: Diajukan oleh + waktu, data asli vs usulan (side by side, changed values in `font-medium`), alasan, lampiran, then footer destructive "Tolak" (reason required) + default "Setujui". No inline Setujui/Tolak buttons in table rows. If the submitter is the normal approver (self-approval), the request is escalated to the next level (HR & GA Manager) automatically and the Sheet says "Diteruskan ke HR & GA Manager karena diajukan oleh approver"; it never stays stuck.
 - **Balance reservations:** a pending request that uses a balance (cuti, plafon, saldo) reserves it immediately and shows it as "Dipesan". Reject or cancel releases it at once. Balance shown to users = Hak − Terpakai − Dipesan.
 - **Bank accounts** are always masked (bank + last 4 digits, e.g. "BCA ••••4521") on screen and in slips. Only the bank export file contains full numbers.
@@ -42,7 +43,7 @@
   | No. BPJS Kesehatan | digits only, max 13 | exactly 13 digits | "Nomor BPJS Kesehatan harus 13 digit" |
   | No. BPJS Ketenagakerjaan | digits only, max 11 | exactly 11 digits | "Nomor BPJS Ketenagakerjaan harus 11 digit" |
   | Nomor Rekening | digits only, max 20 | 6–20 digits | "Nomor rekening hanya berisi 6–20 digit angka" |
-  | Alasan (koreksi, penolakan, pembatalan) | free text | at least 10 characters, not only digits | "Alasan minimal 10 karakter dan jelas" |
+  | Alasan (koreksi, penolakan, pembatalan) | free text | at least 10 characters, not only digits | "Alasan minimal 10 karakter" |
 | Nominal Rupiah | digits only, display `Rp 1.000.000` while typing | > 0 | "Nominal harus lebih dari 0" |
 - Validate format on blur and again on save; required-field errors only on save.
 - Employee number is **NIP** (format PPI-YYYY-NNNN). "NIK" only means the KTP number and is labelled "NIK (KTP)".

@@ -152,12 +152,11 @@ export default function CoopWithdrawalsPage({ user }: { user: CurrentUser }) {
             <AlertDialogTitle>Batalkan {batal?.id}?</AlertDialogTitle>
             <AlertDialogDescription>Saldo {batal ? rp(batal.nominal) : ''} yang dipesan langsung dilepas.</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlasanField id="batal-alasan" label="Alasan pembatalan" value={alasan} onChange={setAlasan} error={err} />
+          <AlasanField id="batal-alasan" label="Alasan pembatalan" value={alasan} onChange={(v) => { setAlasan(v); setErr('') }} error={err} />
           <AlertDialogFooter>
             <AlertDialogCancel>Kembali</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              disabled={!validAlasan(alasan)}
               onClick={(e) => {
                 if (!validAlasan(alasan)) { e.preventDefault(); setErr(ALASAN_ERROR); return }
                 cancelWithdrawal(batal!.id, alasan.trim(), user.nama)

@@ -80,7 +80,7 @@ function Body({ rec, mode, user, leaves, onClose }: { rec: FinalPay; mode: Mode;
 
   const submit = () => {
     setSub(true)
-    if (potBad) return setError('Alasan potongan lain minimal 10 karakter dan jelas')
+    if (potBad) return setError(ALASAN_ERROR)
     if (bayar === 'payroll' && !periode) return setError('Pilih periode payroll')
     const e = submitCalc(rec.no, input, bayar === 'payroll' ? { mode: 'payroll', periodeId: periode } : { mode: 'transfer' }, user)
     if (e) return setError(e)
@@ -214,9 +214,9 @@ function Body({ rec, mode, user, leaves, onClose }: { rec: FinalPay; mode: Mode;
         </section>
 
         {mode === 'tinjau' && (
-          <AlasanField id="fp-tolak" label="Alasan pengembalian" required={false} value={alasan} onChange={(v) => { setAlasan(v); setError('') }} />
+          <AlasanField id="fp-tolak" label="Alasan pengembalian" required={false} value={alasan} onChange={(v) => { setAlasan(v); setError('') }} error={mode === 'tinjau' && error === ALASAN_ERROR ? error : undefined} />
         )}
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && !(mode === 'tinjau' && error === ALASAN_ERROR) && <p className="text-sm text-danger">{error}</p>}
       </div>
       <SheetFooter className="flex-row justify-end gap-2">
         <Button variant="outline" onClick={() => setBukti(true)}><FileText /> Pratinjau Bukti</Button>

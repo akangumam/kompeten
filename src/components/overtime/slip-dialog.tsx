@@ -1,3 +1,4 @@
+import { DocumentPaper } from '@/components/document-paper'
 import { Logo } from '@/components/brand/logo'
 import { Download, Printer } from 'lucide-react'
 import { toast } from 'sonner'
@@ -33,12 +34,7 @@ export function SlipDialog({
           <DialogDescription>{emp?.nama} · {period.label}</DialogDescription>
         </DialogHeader>
         {row && emp && (
-          <article className="slip-print relative mx-auto w-full max-w-xl overflow-hidden rounded-md border bg-card p-6 text-sm">
-            {!final && (
-              <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="-rotate-30 select-none text-8xl font-bold tracking-widest text-muted-foreground/20">DRAFT</span>
-              </div>
-            )}
+          <DocumentPaper as="article" draft={!final} paperClassName="mx-auto w-full max-w-xl p-6">
             <header className="flex items-start justify-between gap-4 border-b pb-4">
               <div className="flex items-center gap-3">
                 <Logo />
@@ -97,7 +93,7 @@ export function SlipDialog({
             <footer className="mt-6 border-t pt-3 text-xs text-muted-foreground tabular-nums">
               Dicetak {nowStamp()} · Dokumen dibuat oleh sistem
             </footer>
-          </article>
+          </DocumentPaper>
         )}
         <DialogFooter className="print:hidden">
           <Button variant="outline" onClick={() => toast.info('Dibuat di tahap berikutnya')}>

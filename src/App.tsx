@@ -124,13 +124,20 @@ export default function App() {
   const dashTabs = tabsFor(role)
   const dashTab: DashTab = dashTabs.includes(dashTabState) ? dashTabState : dashTabs[0]
 
+  // Sidebar: ≥1024 permanen (kecuali dilipat manual), 768–1023 mode ikon; <768 memakai Sheet (shadcn).
+  const foldedRef = useRef(false)
   useEffect(() => {
     const mql = window.matchMedia('(min-width: 1024px)')
-    setOpen(mql.matches)
-    const onChange = (e: MediaQueryListEvent) => setOpen(e.matches)
+    foldedRef.current = mql.matches && /(?:^|;\s*)sidebar_state=false/.test(document.cookie)
+    setOpen(mql.matches ? !foldedRef.current : false)
+    const onChange = (e: MediaQueryListEvent) => setOpen(e.matches ? !foldedRef.current : false)
     mql.addEventListener('change', onChange)
     return () => mql.removeEventListener('change', onChange)
   }, [])
+  const onSidebarOpenChange = (v: boolean) => {
+    if (window.matchMedia('(min-width: 1024px)').matches) foldedRef.current = !v
+    setOpen(v)
+  }
 
   // Area scroll hanya `main`; pindah halaman/profil mengembalikannya ke atas.
   const profileScrollKey = profile.kind === 'draft' ? `draft:${profile.id}` : `${profile.kind}:${profile.nik}`
@@ -336,7 +343,7 @@ export default function App() {
   }
 
   return (
-    <SidebarProvider open={open} onOpenChange={setOpen}>
+    <SidebarProvider open={open} onOpenChange={onSidebarOpenChange}>
       <AppSidebar
         activePage={activePage}
         onNavigate={(p) => guarded(() => { setTrxPeriod(undefined); setIrIntent(undefined); go(p) })}
