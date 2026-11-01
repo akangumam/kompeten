@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useEffect, useState } from 'react'
 import { FileText, Paperclip } from 'lucide-react'
 import { toast } from 'sonner'
@@ -77,8 +78,8 @@ export function TinjauSheet({
   const review = mode === 'review' && !!req && (isPending(req.status) || cancelling)
   const verify = mode === 'verify' && !!req && isVerif(req.status)
   const decide = review || verify
-  // Kategori sakit = data kesehatan: hanya Admin HRD dan HR & GA Manager yang melihat dan mengisinya.
-  const canSeeKategori = user.role === 'admin' || user.role === 'manager'
+  // Kategori sakit = data kesehatan: hanya HR Personalia dan HR & GA Manager yang melihat dan mengisinya.
+  const canSeeKategori = can(user, 'attendance.sick-category')
   const needKategori = verify && req?.jenis === 'Sakit' && canSeeKategori
   const surat = req?.jenis === 'Dinas' ? 'Surat tugas' : req?.jenis === 'Sakit' ? 'Surat dokter' : 'Lampiran'
 
@@ -279,7 +280,7 @@ export function TinjauSheet({
                       {activeSickCategories().map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Hanya terlihat Admin HRD dan HR & GA Manager.</p>
+                  <p className="text-xs text-muted-foreground">Hanya terlihat HR Personalia dan HR & GA Manager.</p>
                 </section>
               )}
               {decide && (

@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useState } from 'react'
 import { MoreHorizontal } from 'lucide-react'
 import { LeaveStatusBadge } from '@/components/leave/status'
@@ -58,9 +59,9 @@ export function RequestTable({
           {rows.map((r) => {
             const emp = empOf(r.nik)
             const canReview = (isPending(r.status) || isCancelReq(r.status)) && (user.role === 'manager' || (user.role === 'supervisor' && approverOf(r) === 'supervisor' && emp.atasanId === user.nik))
-            const canCancel = isPending(r.status) && user.role === 'admin'
-            const canVerify = isVerif(r.status) && user.role === 'admin'
-            const canAskCancel = user.role === 'admin' && canRequestCancel(r)
+            const canCancel = isPending(r.status) && can(user, 'attendance.manage')
+            const canVerify = isVerif(r.status) && can(user, 'attendance.manage')
+            const canAskCancel = can(user, 'attendance.manage') && canRequestCancel(r)
             return (
               <TableRow key={r.no} className="group h-12 hover:bg-muted/50">
                 <TableCell className={cn(stick, 'font-medium tabular-nums group-hover:bg-muted')}>{r.no}</TableCell>

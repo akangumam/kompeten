@@ -290,11 +290,11 @@ export function OfferReviewSheet({ offer, cand, onClose, by }: { offer: Offer; c
         title="Tinjau Penawaran"
         description={`${cand.nama} · ${offer.posisi} · ${offer.olNo}`}
         diajukan={offer.diajukan?.at ?? DEMO_TODAY}
-        oleh={offer.diajukan?.by ?? 'Admin HRD'}
+        oleh={offer.diajukan?.by ?? 'HR Recruitment'}
         note={offer.versi > 1 ? `Versi ${offer.versi} setelah negosiasi dengan kandidat.` : null}
         rejectTitle="Tolak penawaran?"
         onApprove={() => { approveOffer(offer.id, by); offerApproved(offer.kandidatId, by); toast.success('Penawaran disetujui'); onClose() }}
-        onReject={(alasan) => { returnOffer(offer.id, by, alasan); offerReturned(offer.kandidatId, by, alasan); toast.success('Penawaran dikembalikan ke Admin HRD'); onClose() }}
+        onReject={(alasan) => { returnOffer(offer.id, by, alasan); offerReturned(offer.kandidatId, by, alasan); toast.success('Penawaran dikembalikan ke HR Recruitment'); onClose() }}
       >
         <div className="space-y-3">
           <OfferSection offer={offer} showPay canEdit={false} onEdit={() => {}} onPreview={() => setPreview(true)} />

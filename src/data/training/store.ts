@@ -211,7 +211,7 @@ export function proposeParticipants(programKode: string, niks: string[], actor: 
     n++
   }
   if (n) {
-    notify({ to: 'admin', title: 'Usulan peserta training', body: `${actor.nama} mengusulkan ${n} pegawai untuk ${p.judul}.`, page: 'dev-training' })
+    notify({ to: 'hr_development', title: 'Usulan peserta training', body: `${actor.nama} mengusulkan ${n} pegawai untuk ${p.judul}.`, page: 'dev-training' })
     bump()
   }
   return n
@@ -289,7 +289,7 @@ function seed() {
   gap6.forEach((nik, i) => {
     const enr = blank('TRN-2026-006', nik)
     vids.slice(0, prog6[i]).forEach((m, j) => {
-      enr.materi[m.id] = { status: 'tervalidasi', selesai: `2026-10-${pad(5 + j)}`, validasi: { by: 'Admin HRD', at: `${6 + j} Okt 2026` } }
+      enr.materi[m.id] = { status: 'tervalidasi', selesai: `2026-10-${pad(5 + j)}`, validasi: { by: 'Teddy Syahputra', at: `${6 + j} Okt 2026` } }
     })
     if (i === 2) enr.materi[vids[2].id] = { status: 'selesai', selesai: '2026-10-22' }
     ENROLLMENTS.push(enr)
@@ -305,7 +305,7 @@ function seed() {
     kode: 'TRN-2026-009', judul: 'K3 Dasar Area Produksi', singkat: 'K3 Dasar', tipe: 'Online', kompetensi: [{ kode: 'BSC-01', target: 3 }],
     penyelenggara: { jenis: 'Internal', nama: 'Tim K3 (HR & GA)' }, durasiJam: 3, materi: m9, sesi: [], paketId: 'PKT-006', passing: 70, status: 'Aktif', tahun: 2026,
   })
-  const ok = (id: string, d: string): [string, MaterialProgress] => [id, { status: 'tervalidasi', selesai: d, validasi: { by: 'Admin HRD', at: formatDate(d) } }]
+  const ok = (id: string, d: string): [string, MaterialProgress] => [id, { status: 'tervalidasi', selesai: d, validasi: { by: 'Teddy Syahputra', at: formatDate(d) } }]
   const wahyu = blank('TRN-2026-009', byName('Wahyu Hidayat'))
   wahyu.materi = Object.fromEntries([ok('k3-video', '2026-10-19'), ok('k3-apd', '2026-10-20'), ok('k3-darurat', '2026-10-21')])
   const eko = blank('TRN-2026-009', byName('Eko Prasetyo'))

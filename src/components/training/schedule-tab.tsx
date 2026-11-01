@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { Pager, usePaging } from '@/components/attendance/pager'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +18,7 @@ export function ScheduleTab({ programs, user, onAttend }: { programs: Program[];
     .flatMap((p) => p.sesi.map((s, i) => ({ p, s, no: i + 1 })))
     .sort((a, b) => b.s.tanggal.localeCompare(a.s.tanggal) || a.p.kode.localeCompare(b.p.kode))
   const paging = usePaging(rows, rows.length + programs.map((p) => p.kode).join())
-  const admin = user.role === 'admin'
+  const admin = can(user, 'dev.manage')
   return (
     <Card>
       <CardHeader>

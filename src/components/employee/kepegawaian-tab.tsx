@@ -2,6 +2,8 @@ import { Info, Lock } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { formatDate } from '@/lib/format'
 import { Input } from '@/components/ui/input'
+import { accountOf } from '@/data/accounts'
+import { SECURITY_POLICY } from '@/data/master/security-policy'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DatePicker } from './date-picker'
 import { Field, descId } from './field'
@@ -30,6 +32,8 @@ type Props = {
   atasan?: string
   /** Nominal gaji dari penawaran hanya untuk HR; Atasan tidak melihat Rupiah. */
   showPay?: boolean
+  /** Galat Email kantor (divalidasi saat Verifikasi & Aktifkan). */
+  emailError?: string
   onChange: (patch: Partial<DraftForm>) => void
 }
 
@@ -95,6 +99,8 @@ function LockedTab({ form, nik, atasan }: { form: DraftForm; nik?: string; atasa
   ]
   if (form.statusKerja === 'Kontrak') rows.push(['Tanggal Berakhir Kontrak', formatDate(form.tanggalAkhir)])
   if (atasan) rows.push(['Atasan Langsung', atasan])
+  const email = (nik ? accountOf(nik)?.emailKantor : undefined) ?? form.emailKantor
+  if (email) rows.push(['Email kantor', email])
   return (
     <div className="space-y-6">
       <Alert variant="info">
@@ -118,7 +124,7 @@ function LockedTab({ form, nik, atasan }: { form: DraftForm; nik?: string; atasa
   )
 }
 
-export function KepegawaianTab({ form, errors, nik, locked, atasan, showPay = true, onChange }: Props) {
+export function KepegawaianTab({ form, errors, nik, locked, atasan, showPay = true, emailError, onChange }: Props) {
   if (locked) return <LockedTab form={form} nik={nik} atasan={atasan} />
   const sections = sectionNames(form.department)
   const positions = posisiOptions(form.department, form.section)
@@ -262,6 +268,17 @@ export function KepegawaianTab({ form, errors, nik, locked, atasan, showPay = tr
         }
         onChange={(kelompok) => onChange({ kelompok })}
       />
+      <Field id="f-emailKantor" label="Email kantor" required error={emailError} helper={`Untuk login KOMPETEN; domain @${SECURITY_POLICY.domain}`} className="md:col-span-2">
+        <Input
+          id="f-emailKantor"
+          type="email"
+          value={form.emailKantor ?? ''}
+          aria-invalid={!!emailError || undefined}
+          aria-describedby={descId('f-emailKantor', true, !!emailError)}
+          placeholder={`nama@${SECURITY_POLICY.domain}`}
+          onChange={(e) => onChange({ emailKantor: e.target.value })}
+        />
+      </Field>
       <Field id="f-tanggalMasuk" label="Tanggal Masuk" required error={errors.tanggalMasuk}>
         <DatePicker
           id="f-tanggalMasuk"

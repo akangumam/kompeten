@@ -184,7 +184,7 @@ const seed = (kandidatId: string, paketId: string, jadwal: string, o: { nilai?: 
     nilai: o.nilai, rekomendasi: o.rekomendasi,
     laporan: o.rekomendasi ? { name: `Laporan_Psikotes_${nameOf(kandidatId)}.pdf`, size: 482_000 } : undefined,
     tautan: `https://tes.kompeten.id/${kandidatId.toLowerCase()}/${paketId.toLowerCase()}`, dikirimKe: EMAIL[kandidatId],
-    diinput: done ? { by: 'Admin HRD', at: o.selesai!, mode: 'manual' } : undefined,
+    diinput: done ? { by: 'Okta Maulana', at: o.selesai!, mode: 'manual' } : undefined,
   })
 }
 seed('LMR-2026-0150', 'PKT-001', '2026-10-28')

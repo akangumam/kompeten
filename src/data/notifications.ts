@@ -18,6 +18,7 @@ export function notify(n: Omit<Notif, 'id' | 'at' | 'read'>) {
   bump()
 }
 export const notifsFor = (role: Role) => NOTIFS.filter((n) => n.to === role)
+export const unreadOf = (role: Role) => NOTIFS.filter((n) => n.to === role && !n.read).length
 export function markRead(role: Role) {
   NOTIFS.filter((n) => n.to === role).forEach((n) => { n.read = true })
   bump()

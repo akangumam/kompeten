@@ -286,7 +286,7 @@ export function StatutoryTab({ user, canEdit, canOpenMaster, onGotoPage }: Props
           {canOpenMaster ? (
             <Button variant="link" className="h-auto p-0" onClick={() => onGotoPage('master-data')}>Data Master › Posisi & Level</Button>
           ) : (
-            <span className="text-sm text-muted-foreground">Pembagi dikelola Admin HRD di Data Master › Posisi & Level.</span>
+            <span className="text-sm text-muted-foreground">Pembagi dikelola HR Personalia di Data Master › Posisi & Level.</span>
           )}
           <Button variant="link" className="h-auto p-0" onClick={() => onGotoPage('overtime')}>Kehadiran › Overtime</Button>
         </div>

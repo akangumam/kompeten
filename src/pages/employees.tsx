@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import {
   BadgeCheck,
   CalendarClock,
@@ -96,7 +97,7 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
   const trxVersion = useTrx()
   const [trxCreate, setTrxCreate] = useState<{ jenis?: TrxJenis; nik?: string } | null>(null)
   const isSpv = user.role === 'supervisor'
-  const canAdd = user.role === 'admin'
+  const canAdd = can(user, 'employee.add')
   const canExport = !isSpv
   const [searchInput, setSearchInput] = useState(filters.q)
   const [sort, setSort] = useState<Sort>({ key: 'nama', dir: 'asc' })
@@ -122,7 +123,7 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
 
   const all = useMemo(() => scopeRows(buildDirectory(drafts, candidates), user), [drafts, candidates, user, trxVersion])
   const base = useMemo(() => filterRows(all, filters), [all, filters])
-  const tabs = isSpv ? TABS.filter((t) => t === 'aktif' || t === 'bergabung') : user.role === 'payroll' ? TABS.filter((t) => t !== 'draft') : TABS
+  const tabs = isSpv ? TABS.filter((t) => t === 'aktif' || t === 'bergabung') : can(user, 'draft.view') ? TABS : TABS.filter((t) => t !== 'draft')
   const tab = tabs.includes(filters.tab) ? filters.tab : 'aktif'
   const counts = useMemo(() => {
     const m = {} as Record<DirTab, number>
@@ -429,7 +430,7 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
                     canSelect={canExport}
                     selected={selected.has(r.id)}
                     onSelect={(on) => toggleRow(r.id, on)}
-                    canTransact={canAdd}
+                    canTransact={can(user, 'trx.manage')}
                     onTransact={() => setTrxCreate({ nik: r.nik })}
                   />
                 )

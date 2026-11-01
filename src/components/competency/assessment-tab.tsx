@@ -19,7 +19,7 @@ export function AssessmentTab({ rows, posisi, periodId, periodLabel, user, onOpe
     <Card>
       <CardHeader>
         <CardTitle>Penilaian {posisi}</CardTitle>
-        <CardDescription>{periodLabel} · diisi Atasan, diverifikasi Admin HRD, lalu Final dan dikunci</CardDescription>
+        <CardDescription>{periodLabel} · diisi Atasan, diverifikasi HR Development & Industrial, lalu Final dan dikunci</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!std && (

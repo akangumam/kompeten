@@ -1,3 +1,4 @@
+import { notify } from '@/data/notifications'
 import { useCallback, useState } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { atasanOf, ROSTER } from '@/data/employees'
@@ -23,7 +24,7 @@ export function useOvertime() {
         pekerjaan: input.pekerjaan,
         status,
         by: actor.nama,
-        byRole: actor.role === 'supervisor' ? 'supervisor' : 'admin',
+        byRole: actor.role === 'supervisor' ? 'supervisor' : 'hr',
         at,
       }))
       setRecords((r) => [...recs, ...r])
@@ -60,8 +61,10 @@ export function useOvertime() {
     approve: (id: string, actor: OtUser) => patch(id, actor, { status: 'terjadwal' }),
     reject: (id: string, actor: OtUser, alasan: string) => patch(id, actor, { status: 'ditolak' }, alasan),
     /** Validasi Atasan atas realisasi; data berlaku setelah verifikasi HRD. */
-    validate: (id: string, actor: OtUser, dibayar: number, kelebihan?: string, istirahat = 0) =>
-      patch(id, actor, { status: 'menunggu-verifikasi', dibayar, kelebihan, istirahat }, kelebihan),
+    validate: (id: string, actor: OtUser, dibayar: number, kelebihan?: string, istirahat = 0) => {
+      notify({ to: 'hr_personalia', title: 'Realisasi lembur menunggu verifikasi', body: `Lembur ${id.split('|')[0]} (${ROSTER.find((e) => e.nik === id.split('|')[1])?.nama ?? id.split('|')[1]}) divalidasi ${actor.nama}.`, page: 'overtime' })
+      return patch(id, actor, { status: 'menunggu-verifikasi', dibayar, kelebihan, istirahat }, kelebihan)
+    },
     verify,
     verifyAll,
     markTidak: (id: string, actor: OtUser) => patch(id, actor, { status: 'tidak-terealisasi', dibayar: 0 }),

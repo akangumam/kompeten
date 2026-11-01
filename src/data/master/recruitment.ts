@@ -2,7 +2,7 @@ import { datedAt, datedPush, type Dated } from '@/data/payroll/dated'
 import { DEMO_TODAY } from '@/lib/today'
 
 /** Parameter rekrutmen (Data Master › Rekrutmen), effective-dated. Halaman Recruitment hanya membaca dari sini. */
-const SEED = { oleh: 'Admin HRD', alasan: 'Kebijakan rekrutmen PT Primaplast' }
+const SEED = { oleh: 'Okta Maulana', alasan: 'Kebijakan rekrutmen PT Primaplast' }
 
 export const AMBANG_INTERVIEW: Dated<number>[] = [{ berlakuMulai: '2025-01-01', value: 65, ...SEED }]
 export const MASA_PENAWARAN: Dated<number>[] = [{ berlakuMulai: '2025-01-01', value: 3, ...SEED }]
@@ -28,7 +28,7 @@ export function saveRekrut(key: 'ambang' | 'masa' | 'simpan', value: number, ber
 export function saveRekrut(key: 'sumber', value: string[], berlakuMulai: string, alasan: string): void
 export function saveRekrut(key: 'nilai', value: string, berlakuMulai: string, alasan: string): void
 export function saveRekrut(key: RekrutKey, value: number | string | string[], berlakuMulai: string, alasan: string) {
-  const entry = { berlakuMulai, value, oleh: 'Admin HRD', alasan }
+  const entry = { berlakuMulai, value, oleh: 'Okta Maulana', alasan }
   if (key === 'ambang') datedPush(AMBANG_INTERVIEW, entry as Dated<number>)
   else if (key === 'masa') datedPush(MASA_PENAWARAN, entry as Dated<number>)
   else if (key === 'simpan') datedPush(MASA_SIMPAN_PELAMAR, entry as Dated<number>)

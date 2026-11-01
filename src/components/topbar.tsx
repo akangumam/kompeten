@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
-import { Bell, CalendarCheck, Check, ChevronsUpDown, LogOut, User, UserCog, Wallet } from 'lucide-react'
+import { Bell, CalendarCheck, ChevronsUpDown, KeyRound, LogOut, Wallet } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -17,6 +18,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -25,17 +28,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import type { PageId } from '@/App'
-import { markRead, notifsFor, useNotifs } from '@/data/notifications'
-import { USERS, type CurrentUser, type Role } from '@/data/users'
-import type { PortalPersona } from '@/components/portal/portal-shell'
-
-const PERSONA_GROUPS: { label: string; roles: Role[] }[] = [
-  { label: 'HR', roles: ['admin', 'supervisor', 'manager'] },
-  { label: 'Payroll & Finance', roles: ['payroll', 'finance'] },
-  { label: 'Koperasi', roles: ['sekretaris', 'bendahara', 'ketua'] },
-]
-
-const soon = () => toast.info('Dibuat di tahap berikutnya')
+import { markRead, notifsFor, unreadOf, useNotifs } from '@/data/notifications'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { ROLE_LABEL, type CurrentUser, type Role } from '@/data/users'
+import type { Account } from '@/data/accounts'
+import { ChangePasswordDialog } from '@/components/change-password-dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
 /** Halaman profil pegawai; `from` menentukan jejak breadcrumb. */
 type Draft = { nama: string; activated: boolean; from: 'directory' | 'recruitment' }
@@ -45,6 +43,7 @@ const DASH_CRUMB: Record<string, string> = { umum: 'Umum & Rekrutmen', produksi:
 
 function crumbsFor(activePage: PageId, draft?: Draft, ksb = false, dashTab = 'umum'): Crumb[] {
   const c = (...labels: string[]): Crumb[] => labels.map((label) => ({ label }))
+  if (activePage === 'system-settings') return c('Pengaturan Sistem')
   if (activePage === 'recruitment') return c('Recruitment', 'Daftar Kandidat')
   if (activePage === 'recruitment-jobs') return c('Recruitment', 'Lowongan')
   if (activePage === 'recruitment-form') return c('Recruitment', 'Form Calon Pegawai (DICAP)')
@@ -89,8 +88,10 @@ export function Topbar({
   dashTab,
   draft,
   user,
-  onUserChange,
-  onPortalSelect,
+  account,
+  roles,
+  onRoleChange,
+  onLogout,
   onNavigate,
   attendanceClosed,
   onScenario,
@@ -101,8 +102,11 @@ export function Topbar({
   dashTab?: string
   draft?: Draft
   user: CurrentUser
-  onUserChange: (role: Role) => void
-  onPortalSelect: (p: PortalPersona) => void
+  account: Account
+  /** Peran web milik akun; pemilih peran hanya tampil bila lebih dari satu. */
+  roles: Role[]
+  onRoleChange: (role: Role) => void
+  onLogout: () => void
   onNavigate: (page: PageId) => void
   attendanceClosed: boolean
   onScenario: () => void
@@ -110,8 +114,13 @@ export function Topbar({
   onFinishPayroll: () => void
 }) {
   useNotifs()
+  const [pwOpen, setPwOpen] = useState(false)
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const notes = notifsFor(user.role)
   const unread = notes.filter((n) => !n.read).length
+  // Notifikasi peran lain milik akun yang sama tidak hilang saat peran itu sedang tidak aktif.
+  const others = roles.filter((r) => r !== user.role).map((r) => [r, unreadOf(r)] as const).filter(([, n]) => n > 0)
+  const otherTotal = others.reduce((a, [, n]) => a + n, 0)
   const crumbs = crumbsFor(activePage, draft, user.role === 'ketua' || user.role === 'sekretaris' || user.role === 'bendahara', dashTab)
   return (
     <header className="z-20 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
@@ -149,14 +158,26 @@ export function Topbar({
         <ThemeToggle />
         <DropdownMenu onOpenChange={(o) => { if (!o && unread) markRead(user.role) }}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `${unread} notifikasi baru` : 'Notifikasi'}>
+            <Button variant="ghost" size="icon" className="relative" aria-label={unread || otherTotal ? `${unread} notifikasi baru${otherTotal ? `, ${otherTotal} di peran lain` : ''}` : 'Notifikasi'}>
               <Bell className="size-4" />
-              {unread > 0 && <span aria-hidden className="absolute right-2 top-2 size-2 rounded-full bg-danger ring-2 ring-background" />}
+              {(unread > 0 || otherTotal > 0) && <span aria-hidden className={`absolute right-2 top-2 size-2 rounded-full ring-2 ring-background ${unread > 0 ? 'bg-danger' : 'bg-warning'}`} />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel>Notifikasi</DropdownMenuLabel>
             {notes.length === 0 && <p className="px-2 py-4 text-center text-sm text-muted-foreground">Tidak ada notifikasi.</p>}
+            {others.length > 0 && (
+              <>
+                {notes.length > 0 && <DropdownMenuSeparator />}
+                <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Peran lain</DropdownMenuLabel>
+                {others.map(([r, n]) => (
+                  <DropdownMenuItem key={r} onSelect={() => onRoleChange(r)}>
+                    <span className="flex-1">{n} untuk {ROLE_LABEL[r]}</span>
+                    <span className="text-xs text-muted-foreground">Ganti peran</span>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
             {notes.map((n) => (
               <DropdownMenuItem key={n.id} className="flex-col items-start gap-0.5" onSelect={() => onNavigate(n.page)}>
                 <span className="text-sm font-medium">{n.title}{!n.read && <span className="sr-only"> (baru)</span>}</span>
@@ -183,33 +204,27 @@ export function Topbar({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">Masuk sebagai (demo)</DropdownMenuLabel>
-            {PERSONA_GROUPS.map((g, gi) => (
-              <DropdownMenuGroup key={g.label}>
-                {gi > 0 && <DropdownMenuSeparator />}
-                <DropdownMenuLabel className="pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">{g.label}</DropdownMenuLabel>
-                {g.roles.map((r) => (
-                  <DropdownMenuItem key={r} onSelect={() => onUserChange(r)} aria-current={user.role === r}>
-                    <Check className={user.role === r ? 'size-4' : 'size-4 opacity-0'} aria-hidden />
-                    {r === 'admin' ? USERS[r].nama : `${USERS[r].nama} · ${USERS[r].jabatan}`}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Portal Pelamar</DropdownMenuLabel>
-            <DropdownMenuGroup>
-              {([
-                { p: 'visitor' as PortalPersona, label: 'Pengunjung (belum masuk)' },
-                { p: 'maya' as PortalPersona, label: 'Maya Sari · Pelamar' },
-                { p: 'dewi' as PortalPersona, label: 'Dewi Lestari · Pelamar' },
-              ]).map(({ p, label }) => (
-                <DropdownMenuItem key={p} onSelect={() => onPortalSelect(p)}>
-                  <Check className="size-4 opacity-0" aria-hidden />
-                  {label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
+            <DropdownMenuLabel className="font-normal">
+              <p className="text-sm font-medium">{account.nama}</p>
+              <p className="text-xs text-muted-foreground">{account.emailKantor}</p>
+            </DropdownMenuLabel>
+            {roles.length > 1 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Peran aktif</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={user.role} onValueChange={(v) => onRoleChange(v as Role)}>
+                  {roles.map((r) => {
+                    const n = unreadOf(r)
+                    return (
+                      <DropdownMenuRadioItem key={r} value={r}>
+                        <span className="flex-1">{ROLE_LABEL[r]}</span>
+                        {n > 0 && <StatusBadge variant="danger">{n}<span className="sr-only"> notifikasi belum dibaca</span></StatusBadge>}
+                      </DropdownMenuRadioItem>
+                    )
+                  })}
+                </DropdownMenuRadioGroup>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">Skenario (demo)</DropdownMenuLabel>
             {attendanceClosed ? (
@@ -237,12 +252,24 @@ export function Topbar({
               <DropdownMenuItem onSelect={onFinishPayroll}><Wallet className="size-4" />Selesaikan payroll Oktober 2026</DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={soon}><User className="size-4" />Profil Saya</DropdownMenuItem>
-            <DropdownMenuItem onSelect={soon}><UserCog className="size-4" />Pengaturan Akun</DropdownMenuItem>
-            <DropdownMenuItem onSelect={soon}><LogOut className="size-4" />Keluar</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setPwOpen(true)}><KeyRound className="size-4" />Ganti kata sandi</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setLogoutOpen(true)}><LogOut className="size-4" />Keluar</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <ChangePasswordDialog account={account} open={pwOpen} onClose={() => setPwOpen(false)} />
+      <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Keluar dari KOMPETEN?</AlertDialogTitle>
+            <AlertDialogDescription>Sesi Anda akan diakhiri dan Anda kembali ke halaman Masuk.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={onLogout}>Keluar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   )
 }

@@ -52,7 +52,7 @@ export function ScheduleDialog({ cand, mode, onClose, by }: { cand: Candidate | 
           <Field id="iv-user" label="Pewawancara User" required error={sub ? eU : undefined} helper="Atasan dari department peminta; tidak melihat gaji">
             <Combobox id="iv-user" value={userNik} items={opts.map((o) => ({ value: o.nik, label: o.nama, sub: o.sub }))} onChange={setUserNik} placeholder="Pilih pewawancara" searchPlaceholder="Cari nama…" invalid={!!(sub && eU)} />
           </Field>
-          <Field id="iv-hr" label="Pewawancara HR"><Input id="iv-hr" readOnly value="Admin HRD" className="bg-muted/50 text-foreground" /></Field>
+          <Field id="iv-hr" label="Pewawancara HR"><Input id="iv-hr" readOnly value={by} className="bg-muted/50 text-foreground" /></Field>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={close}>Batal</Button>
@@ -60,7 +60,7 @@ export function ScheduleDialog({ cand, mode, onClose, by }: { cand: Candidate | 
             setSub(true)
             if (eT || eJ || eL || eU || !cand) return
             const u = opts.find((o) => o.nik === userNik)!
-            const info: InterviewInfo = { tanggal, jam, lokasi: lokasi.trim(), userNik, userNama: u.nama, hrNama: 'Admin HRD' }
+            const info: InterviewInfo = { tanggal, jam, lokasi: lokasi.trim(), userNik, userNama: u.nama, hrNama: by }
             if (mode === 'start') { startInterview(cand.id, info, by); toast.success('Kandidat lanjut ke Interview') }
             else { saveInterviewInfo(cand.id, info, by); toast.success('Jadwal interview diperbarui') }
             close()
@@ -73,7 +73,7 @@ export function ScheduleDialog({ cand, mode, onClose, by }: { cand: Candidate | 
   )
 }
 
-/** Input nilai interview 0–100: Nilai User oleh Atasan, Nilai HR oleh Admin HRD. */
+/** Input nilai interview 0–100: Nilai User oleh Atasan, Nilai HR oleh HR Recruitment. */
 export function ScoreInputDialog({ cand, who, onClose, by }: { cand: Candidate | null; who: 'user' | 'hr'; onClose: () => void; by: string }) {
   const [nilai, setNilai] = useState('')
   const [cat, setCat] = useState('')
@@ -118,7 +118,7 @@ const Score = ({ label, value }: { label: string; value?: number }) => (
 
 export function InterviewSection({ c, internal, canUserScore, canHrScore, canEdit, onUser, onHr, onEdit }: {
   c: Candidate
-  /** Catatan Internal HRD hanya untuk Admin HRD dan HR & GA Manager. */
+  /** Catatan Internal HRD hanya untuk HR Recruitment dan HR & GA Manager. */
   internal: boolean
   canUserScore: boolean
   canHrScore: boolean

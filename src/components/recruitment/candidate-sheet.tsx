@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { BadgeCheck, Clock, FileText, Info, Paperclip, TriangleAlert, UserCheck, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -109,7 +110,7 @@ function DocsSection({ c, canAct, by }: { c: Candidate; canAct: boolean; by: str
 export function CandidateSheet({ candidate, onClose, user, actions }: { candidate: Candidate | null; onClose: () => void; user: CurrentUser; actions: CandidateActions }) {
   useRecruitment()
   const c = candidate
-  const admin = user.role === 'admin'
+  const admin = can(user, 'recruitment.manage')
   const manager = user.role === 'manager'
   const hr = admin || manager
   const spv = user.role === 'supervisor'
@@ -135,7 +136,7 @@ export function CandidateSheet({ candidate, onClose, user, actions }: { candidat
   const failed = c ? failedTests(c) : []
   const done = c ? ['Diterima', 'Ditolak', 'Batal'].includes(c.stage) : true
   const myDept = spv ? atasanDept() : undefined
-  // Nilai User diinput Atasan department peminta; bila pewawancara user bukan persona Atasan, Admin HRD menginput atas namanya.
+  // Nilai User diinput Atasan department peminta; bila pewawancara user bukan persona Atasan, HR Recruitment menginput atas namanya.
   const canUserScore = !!c && c.stage === 'Interview' && ((spv && c.dept === myDept) || (admin && c.interview?.userNik !== USERS.supervisor.nik))
   const a = c ? avg(c) : null
   const hist = c ? (spv ? c.history.filter((h) => h.stage || h.label.startsWith('Nilai')) : c.history) : []

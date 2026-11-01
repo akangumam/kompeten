@@ -111,7 +111,7 @@ export function belowMinimum(r: Pick<ReasonRule, 'up' | 'upmk' | 'minUp' | 'minU
 }
 
 /** Simpan perubahan sebagai versi baru (berlaku mulai + alasan); versi lama tetap di riwayat. */
-export function saveRuleSet(mutate: (rs: RuleSet) => void, berlakuMulai: string, alasan: string, perubahan: string, oleh = 'Admin HRD') {
+export function saveRuleSet(mutate: (rs: RuleSet) => void, berlakuMulai: string, alasan: string, perubahan: string, oleh = 'Teddy Syahputra') {
   const next: RuleSet = JSON.parse(JSON.stringify(rulesAt(berlakuMulai)))
   mutate(next)
   datedPush(RULESETS, { berlakuMulai, value: next, oleh, alasan })

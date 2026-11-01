@@ -214,7 +214,7 @@ function RuleSheet({ k, onClose }: { k: RuleKey; onClose: () => void }) {
         const value = Object.fromEntries(fields.map((f) => [f.key, Number(v[f.key])])) as never
         const before = ruleText(k, cur as never)
         const list = RULES[k] as { from: string; value: unknown }[]
-        const meta = k === 'cutoff' ? { by: 'Admin HRD', at: DEMO_TODAY, alasan: alasan.trim() } : {}
+        const meta = k === 'cutoff' ? { by: 'Teddy Syahputra', at: DEMO_TODAY, alasan: alasan.trim() } : {}
         const same = list.findIndex((x) => x.from === berlaku)
         if (same >= 0) Object.assign(list[same], { value }, meta)
         else list.push({ from: berlaku, value, ...meta } as never)

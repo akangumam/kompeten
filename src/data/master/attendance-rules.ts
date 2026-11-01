@@ -18,7 +18,7 @@ export const RULES: { [K in RuleKey]: Versioned<RuleMap[K]> } = {
   batasLembur: [{ from: '2020-01-01', value: { hari: 4, minggu: 18 } }],
   cutoff: [
     { from: '2020-01-01', value: { dari: 21, sampai: 20 }, by: 'Data awal' },
-    { from: '2026-11-01', value: { dari: 24, sampai: 23 }, by: 'Admin HRD', at: '2026-10-28', alasan: 'Penyesuaian cut-off sesuai kebijakan Primaplast' },
+    { from: '2026-11-01', value: { dari: 24, sampai: 23 }, by: 'Teddy Syahputra', at: '2026-10-28', alasan: 'Penyesuaian cut-off sesuai kebijakan Primaplast' },
   ],
 }
 

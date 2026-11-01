@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useEffect, useState } from 'react'
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, FileCheck, MoreHorizontal, Search, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
@@ -40,7 +41,7 @@ type Props = {
 
 export default function RecruitmentPage({ user, onOpenDraft, onOpenForm, initialSelectedId = null }: Props) {
   useRecruitment()
-  const admin = user.role === 'admin'
+  const admin = can(user, 'recruitment.manage')
   const spv = user.role === 'supervisor'
   const [tab, setTab] = useState<string>(ALL)
   const [searchInput, setSearchInput] = useState('')

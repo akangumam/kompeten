@@ -1,3 +1,4 @@
+import { notify } from '@/data/notifications'
 import { CANDIDATES, DOC_DEFS, avg, ageOn, candidateOf, type Candidate, type CandEdu, type DocKey, type DocStatus, type HistoryItem, type InterviewInfo, type Pengalaman, type Stage } from '@/data/candidates'
 import { ROSTER } from '@/data/employees'
 import { departmentNodes } from '@/data/master/organization'
@@ -250,7 +251,7 @@ export function markGenerated(candId: string) {
   const o = offerOf(c.offerId)
   c.draftCreatedAt = DEMO_TODAY
   c.salinPenawaran = o?.olNo
-  ev(c, 'Draft Pegawai dibuat', 'Admin HRD')
+  ev(c, 'Draft Pegawai dibuat', 'Okta Maulana')
   bump()
 }
 
@@ -288,6 +289,7 @@ export function submitApplication(a: Application, by: string): Candidate | undef
     history: [{ date: DEMO_TODAY, label: `Lamaran diterima (${a.sumber}), diinput lewat Form DICAP`, by, stage: 'Seleksi Administrasi' }],
   }
   CANDIDATES.unshift(c)
+  notify({ to: 'hr_recruitment', title: 'Lamaran masuk (DICAP)', body: `${c.nama} melamar ${c.posisi} (${c.id}).`, page: 'recruitment' })
   bump()
   return c
 }

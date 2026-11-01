@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import type { PageId } from '@/App'
 import { Logo } from '@/components/brand/logo'
 import type { Role } from '@/data/users'
+import { canOpen } from '@/lib/access'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Sidebar,
@@ -98,6 +99,9 @@ const PAGES: Record<string, PageId> = {
   'Kehadiran/Overtime': 'overtime',
 }
 
+/** Menu per peran aktif: hanya halaman yang diizinkan matriks akses (src/lib/access.ts). */
+const visibleItems = (entry: NavItem, role: Role) => entry.items.filter((l) => canOpen(role, PAGES[`${entry.title}/${l}`]))
+
 type NavProps = { activePage: PageId; onNavigate: (page: PageId) => void; role: Role }
 type GroupProps = Pick<NavProps, 'activePage' | 'onNavigate'> & {
   entry: NavItem
@@ -109,7 +113,7 @@ type GroupProps = Pick<NavProps, 'activePage' | 'onNavigate'> & {
 const groupOf = (page: PageId) =>
   NAV.find((n) => n.items.some((l) => PAGES[`${n.title}/${l}`] === (page === 'employee-draft' ? 'employees' : page)))?.title ?? null
 
-function NavGroup({ entry, activePage, onNavigate, open, onOpenChange, hidden }: GroupProps & { hidden: string[] }) {
+function NavGroup({ entry, activePage, onNavigate, open, onOpenChange, role }: GroupProps & { role: Role }) {
   const { state, setOpen } = useSidebar()
   const Icon = entry.icon
   const containsActive = groupOf(activePage) === entry.title
@@ -129,7 +133,7 @@ function NavGroup({ entry, activePage, onNavigate, open, onOpenChange, hidden }:
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
-            {entry.items.filter((l) => !hidden.includes(`${entry.title}/${l}`)).map((label) => {
+            {visibleItems(entry, role).map((label) => {
               const page = PAGES[`${entry.title}/${label}`]
               const active = page === activePage || (page === 'employees' && activePage === 'employee-draft')
               return (
@@ -160,44 +164,8 @@ function NavGroup({ entry, activePage, onNavigate, open, onOpenChange, hidden }:
   )
 }
 
-/**
- * Menu per peran. Payroll: Payroll Officer dan HR & GA Manager; Finance hanya Daftar Pembayaran, Rekonsiliasi Potongan, dan Kompensasi & Pesangon; Admin HRD hanya Kompensasi & Pesangon (baca saja). Atasan tidak melihat Data Master.
- * Payroll Officer hanya melihat Dashboard, Direktori, Kehadiran (baca saja), dan Payroll. Koperasi hanya untuk pengurus KSB.
- */
-function hiddenFor(role: Role): { groups: string[]; items: string[]; showSystemSettings: boolean } {
-  switch (role) {
-    case 'admin':
-      // Admin HRD hanya membaca Kompensasi & Pesangon di menu Payroll.
-      return { groups: ['Koperasi'], items: ['Payroll/Proses & Closing', 'Payroll/Komponen & Potongan', 'Payroll/Perubahan Gaji', 'Payroll/Slip Gaji', 'Payroll/Daftar Pembayaran', 'Payroll/Rekonsiliasi Potongan'], showSystemSettings: true }
-    case 'supervisor':
-      return { groups: ['Payroll', 'Koperasi'], items: ['Data Pegawai/Data Master', 'Recruitment/Lowongan', 'Recruitment/Form DICAP', 'Recruitment/Menu Tes'], showSystemSettings: false }
-    case 'payroll':
-      return {
-        groups: ['Recruitment', 'People Development', 'Koperasi'],
-        items: ['Data Pegawai/Data Master', 'Payroll/Rekonsiliasi Potongan'],
-        showSystemSettings: false,
-      }
-    case 'sekretaris':
-    case 'bendahara':
-    case 'ketua':
-      // Pengurus koperasi (KSB) hanya melihat Dashboard Koperasi dan menu Koperasi; saldo Koperasi tidak pernah tampil untuk persona HR dan Payroll.
-      return { groups: ['Recruitment', 'Data Pegawai', 'Kehadiran', 'People Development', 'Payroll'], items: [], showSystemSettings: false }
-    case 'finance':
-      // Finance melihat Daftar Pembayaran, Rekonsiliasi Potongan, dan Kompensasi & Pesangon (transfer terpisah); tanpa data pegawai, kehadiran, atau gaji.
-      return {
-        groups: ['Recruitment', 'Data Pegawai', 'Kehadiran', 'People Development', 'Koperasi'],
-        items: ['Payroll/Proses & Closing', 'Payroll/Komponen & Potongan', 'Payroll/Perubahan Gaji', 'Payroll/Slip Gaji'],
-        showSystemSettings: false,
-      }
-    default:
-      // HR & GA Manager: seluruh halaman Payroll; Rekonsiliasi Potongan ada sebagai tab di Komponen & Potongan.
-      return { groups: ['Koperasi'], items: ['Payroll/Rekonsiliasi Potongan', 'Recruitment/Form DICAP'], showSystemSettings: true }
-  }
-}
-
 export function AppSidebar({ activePage, onNavigate, role }: NavProps) {
-  const hide = hiddenFor(role)
-  const hideSystemSettings = !hide.showSystemSettings
+  const showSystemSettings = canOpen(role, 'system-settings')
   const [openGroup, setOpenGroup] = useState<string | null>(() => groupOf(activePage))
   useEffect(() => setOpenGroup(groupOf(activePage)), [activePage])
   return (
@@ -213,19 +181,21 @@ export function AppSidebar({ activePage, onNavigate, role }: NavProps) {
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarMenu>
             {/* Dashboard: satu item tanpa submenu dan tanpa chevron; tab (Umum/Produksi/Presensi) ada di halamannya. */}
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Dashboard" isActive={activePage === 'dashboard'} onClick={() => onNavigate('dashboard')}>
-                <LayoutDashboard className="size-4" />
-                <span>Dashboard</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {NAV.filter((entry) => !hide.groups.includes(entry.title)).map((entry) => (
+            {canOpen(role, 'dashboard') && (
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Dashboard" isActive={activePage === 'dashboard'} onClick={() => onNavigate('dashboard')}>
+                  <LayoutDashboard className="size-4" />
+                  <span>Dashboard</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+            {NAV.filter((entry) => visibleItems(entry, role).length > 0).map((entry) => (
               <NavGroup
                 key={entry.title}
                 entry={entry}
                 activePage={activePage}
                 onNavigate={onNavigate}
-                hidden={hide.items}
+                role={role}
                 open={openGroup === entry.title}
                 onOpenChange={(o) => setOpenGroup(o ? entry.title : null)}
               />
@@ -235,9 +205,9 @@ export function AppSidebar({ activePage, onNavigate, role }: NavProps) {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          {!hideSystemSettings && (
+          {showSystemSettings && (
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Pengaturan Sistem">
+              <SidebarMenuButton tooltip="Pengaturan Sistem" isActive={activePage === 'system-settings'} onClick={() => onNavigate('system-settings')}>
                 <Settings className="size-4" />
                 <span>Pengaturan Sistem</span>
               </SidebarMenuButton>

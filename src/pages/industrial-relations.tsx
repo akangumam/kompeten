@@ -1,4 +1,5 @@
 import { Plus, UserMinus } from 'lucide-react'
+import { can } from '@/lib/access'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { canCreateDisc } from '@/data/discipline'
@@ -13,8 +14,8 @@ import type { CurrentUser } from '@/data/users'
 export type IrIntent = { tab: 'disiplin' | 'keluar'; disiplin?: { nik?: string; jenis?: DiscJenis }; keluar?: { nik?: string; reason?: string } }
 
 export default function IndustrialRelationsPage({ user, intent, onIntentDone, onFinished }: { user: CurrentUser; intent?: IrIntent; onIntentDone: () => void; onFinished: (o: Off) => number }) {
-  // Disiplin hanya untuk Admin HRD, HR & GA Manager, dan atasan; Payroll hanya melihat Pegawai Keluar (baca saja).
-  const tabs: ('disiplin' | 'keluar')[] = user.role === 'payroll' ? ['keluar'] : ['disiplin', 'keluar']
+  // Disiplin hanya untuk HR Development & Industrial, HR & GA Manager, dan atasan; Payroll hanya melihat Pegawai Keluar (baca saja).
+  const tabs: ('disiplin' | 'keluar')[] = can(user, 'ir.discipline-view') ? ['disiplin', 'keluar'] : ['keluar']
   const [tab, setTab] = useState<'disiplin' | 'keluar'>(intent?.tab && tabs.includes(intent.tab) ? intent.tab : tabs[0])
   const [discToken, setDiscToken] = useState(0)
   const [offToken, setOffToken] = useState(0)

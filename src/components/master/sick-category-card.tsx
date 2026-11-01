@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useMaster } from '@/data/master/store'
 import { addSickCategory, SICK_CATEGORIES, toggleSickCategory } from '@/data/master/sick-categories'
 
-/** Master Kategori Sakit: dipilih Admin HRD saat verifikasi Sakit. Kategori yang sudah dipakai tidak dihapus, hanya dinonaktifkan. */
+/** Master Kategori Sakit: dipilih HR Personalia saat verifikasi Sakit. Kategori yang sudah dipakai tidak dihapus, hanya dinonaktifkan. */
 export function SickCategoryCard({ canEdit }: { canEdit: boolean }) {
   useMaster()
   const [nama, setNama] = useState('')
@@ -22,7 +22,7 @@ export function SickCategoryCard({ canEdit }: { canEdit: boolean }) {
     setError('')
   }
   return (
-    <MasterCard title="Kategori Sakit" description="Dipilih Admin HRD saat verifikasi Sakit. Hanya terlihat Admin HRD dan HR & GA Manager; dashboard menampilkannya sebagai agregat.">
+    <MasterCard title="Kategori Sakit" description="Dipilih HR Personalia saat verifikasi Sakit. Hanya terlihat HR Personalia dan HR & GA Manager; dashboard menampilkannya sebagai agregat.">
       <div className="space-y-4">
         <div className="overflow-x-auto">
           <Table>

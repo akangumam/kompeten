@@ -187,7 +187,7 @@ export default function RecruitmentFormPage({ user, onDirtyChange, onDone }: { u
     <div className="mx-auto w-full max-w-[1600px] space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Form Calon Pegawai (DICAP)</h1>
-        <p className="text-sm text-muted-foreground">Input lamaran oleh Admin HRD. Nomor lamaran dibuat otomatis saat dikirim.</p>
+        <p className="text-sm text-muted-foreground">Input lamaran oleh HR Recruitment. Nomor lamaran dibuat otomatis saat dikirim.</p>
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
         <nav aria-label="Langkah formulir" className="hidden lg:block">

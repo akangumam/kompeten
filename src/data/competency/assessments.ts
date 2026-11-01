@@ -1,3 +1,5 @@
+import { notify } from '@/data/notifications'
+import { can, canOpen } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { ROSTER, type RosterEmployee } from '@/data/employees'
 import { atasanName } from '@/data/directory'
@@ -45,8 +47,8 @@ export type Assessment = {
   dikembalikan?: { by: string; at: string; alasan: string }
 }
 
-/** Akses modul: Admin HRD, HR & GA Manager (baca), Atasan (tim sendiri). Payroll, Finance, dan KSB tidak punya akses. */
-export const canAccessCompetency = (role: Role) => role === 'admin' || role === 'manager' || role === 'supervisor'
+/** Akses modul: HR Development & Industrial, HR & GA Manager (baca), Atasan (tim sendiri). Payroll, Finance, dan KSB tidak punya akses. */
+export const canAccessCompetency = (role: Role) => canOpen(role, 'dev-competency')
 
 // ---------- store ----------
 let version = 0
@@ -124,7 +126,7 @@ export function pendingPositionChange(nik: string) {
 // ---------- izin ----------
 export const canAssess = (user: CurrentUser, r: CompRow, periodId: string) =>
   user.role === 'supervisor' && periodOf(periodId).status === 'Berjalan' && r.emp.atasanId === user.nik && (statusOf(r) === 'belum' || statusOf(r) === 'draft')
-export const canReview = (user: CurrentUser, r: CompRow, periodId: string) => user.role === 'admin' && periodOf(periodId).status === 'Berjalan' && statusOf(r) === 'diajukan'
+export const canReview = (user: CurrentUser, r: CompRow, periodId: string) => can(user, 'dev.manage') && periodOf(periodId).status === 'Berjalan' && statusOf(r) === 'diajukan'
 
 // ---------- aksi ----------
 export function saveDraft(periodId: string, r: CompRow, levels: Record<string, number | null>, catatan: Record<string, string>, actor: CurrentUser) {
@@ -152,6 +154,7 @@ export function submitAssessment(periodId: string, r: CompRow, levels: Record<st
   a.status = 'diajukan'
   a.diajukan = { by: actor.nama, at: stamp() }
   a.dikembalikan = undefined
+  notify({ to: 'hr_development', title: 'Penilaian kompetensi menunggu verifikasi', body: `${actor.nama} mengajukan penilaian ${r.emp.nama}.`, page: 'dev-competency' })
   bump()
   return {}
 }
@@ -199,7 +202,7 @@ function seed() {
     id: `ASM-${periodId.replace('-', '')}-${e.nik}`, periodId, nik: e.nik, posisi: e.posisi, penilai: atasanName(e.atasanId), levels, catatan: {}, status,
   })
 
-  // S1 2026 Final (diverifikasi Admin HRD 15 Jul 2026): semua Operator Injection dan QC Inspector.
+  // S1 2026 Final (diverifikasi HR Development & Industrial 15 Jul 2026): semua Operator Injection dan QC Inspector.
   const s1 = periodOf('2026-S1')
   for (const e of [...oi, ...qc]) {
     const std = standardAt(e.posisi, s1.refDate)!
@@ -207,7 +210,7 @@ function seed() {
     const a = base('2026-S1', e, levels, 'final')
     a.std = snapshotOf(std)
     a.diajukan = { by: a.penilai, at: '10 Jul 2026, 10.00 WIB' }
-    a.diverifikasi = { by: 'Admin HRD', at: '15 Jul 2026, 09.30 WIB' }
+    a.diverifikasi = { by: 'Teddy Syahputra', at: '15 Jul 2026, 09.30 WIB' }
     ASSESSMENTS.push(a)
   }
 
@@ -222,7 +225,7 @@ function seed() {
     const a = base('2026-S2', e, seedLevels(e.nik, std2, 'S2'), 'final')
     a.std = snapshotOf(std2)
     a.diajukan = { by: a.penilai, at: '19 Okt 2026, 14.00 WIB' }
-    a.diverifikasi = { by: 'Admin HRD', at: '22 Okt 2026, 10.15 WIB' }
+    a.diverifikasi = { by: 'Teddy Syahputra', at: '22 Okt 2026, 10.15 WIB' }
     ASSESSMENTS.push(a)
   }
   for (const e of diajukan) {

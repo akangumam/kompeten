@@ -27,16 +27,15 @@ import { POSITIONS } from '@/data/master/positions'
 import { POLA_DEFS, SHIFT_DEFS } from '@/data/master/shifts'
 import { AGE_TIERS, TENURE_TIERS } from '@/data/master/tier-ranges'
 import type { Role } from '@/data/users'
+import { masterAccess, type MasterTab } from '@/lib/access'
 
-type TabId = 'org' | 'pos' | 'grade' | 'shift' | 'holiday' | 'leave' | 'approver' | 'industrial' | 'recruit' | 'dashboard' | 'competency'
+type TabId = MasterTab
 
 export default function MasterDataPage({ role }: { role: Role }) {
   const [tab, setTab] = useState<TabId>('org')
   const [hist, setHist] = useState(false)
   const [query, setQuery] = useState('')
-  const canEdit = role === 'admin'
-
-  const items: { id: TabId; label: string; icon: LucideIcon; count: number }[] = [
+  const allItems: { id: TabId; label: string; icon: LucideIcon; count: number }[] = [
     { id: 'org', label: 'Organisasi', icon: Network, count: ORG.length },
     { id: 'pos', label: 'Posisi & Level', icon: Briefcase, count: POSITIONS.length + LEVEL_DEFS.length + 9 },
     { id: 'grade', label: 'Grade', icon: Layers, count: GRADES.length },
@@ -49,6 +48,10 @@ export default function MasterDataPage({ role }: { role: Role }) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: TENURE_TIERS.length + AGE_TIERS.length },
     { id: 'competency', label: 'Kompetensi', icon: Award, count: COMPETENCIES.length },
   ]
+  const items = allItems.filter((it) => masterAccess(role, it.id))
+  const first = items[0]?.id ?? 'org'
+  const cur: TabId = items.some((it) => it.id === tab) ? tab : first
+  const canEdit = masterAccess(role, cur) === 'edit'
   const onHistory = (q: string) => {
     setQuery(q)
     setHist(true)
@@ -68,14 +71,14 @@ export default function MasterDataPage({ role }: { role: Role }) {
       </div>
       {!canEdit && (
         <Alert variant="info">
-          <AlertDescription>Mode baca. Perubahan dilakukan oleh Admin HRD.</AlertDescription>
+          <AlertDescription>Mode baca untuk kelompok data ini. Organisasi, posisi, jadwal, dan kalender diubah HR Personalia; kompetensi, KPI, dan parameter Hubungan Industrial diubah HR Development &amp; Industrial.</AlertDescription>
         </Alert>
       )}
       <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
         <Card className="h-fit p-2 max-lg:overflow-x-auto">
           <nav aria-label="Data master" className="flex gap-1 lg:flex-col">
             {items.map((it) => {
-              const active = tab === it.id
+              const active = cur === it.id
               return (
                 <button
                   key={it.id}
@@ -93,17 +96,17 @@ export default function MasterDataPage({ role }: { role: Role }) {
           </nav>
         </Card>
         <div className="min-w-0">
-          {tab === 'org' && <OrgTab {...props} />}
-          {tab === 'pos' && <PositionTab {...props} />}
-          {tab === 'grade' && <GradeTab {...props} />}
-          {tab === 'shift' && <ShiftTab {...props} />}
-          {tab === 'holiday' && <HolidayTab {...props} />}
-          {tab === 'leave' && <LeaveRulesTab {...props} />}
-          {tab === 'approver' && <ApproverTab {...props} />}
-          {tab === 'industrial' && <IndustrialTab {...props} />}
-          {tab === 'recruit' && <RecruitmentTab {...props} />}
-          {tab === 'dashboard' && <DashboardTab {...props} />}
-          {tab === 'competency' && <CompetencyTab {...props} />}
+          {cur === 'org' && <OrgTab {...props} />}
+          {cur === 'pos' && <PositionTab {...props} />}
+          {cur === 'grade' && <GradeTab {...props} />}
+          {cur === 'shift' && <ShiftTab {...props} />}
+          {cur === 'holiday' && <HolidayTab {...props} />}
+          {cur === 'leave' && <LeaveRulesTab {...props} />}
+          {cur === 'approver' && <ApproverTab {...props} />}
+          {cur === 'industrial' && <IndustrialTab {...props} />}
+          {cur === 'recruit' && <RecruitmentTab {...props} />}
+          {cur === 'dashboard' && <DashboardTab {...props} />}
+          {cur === 'competency' && <CompetencyTab {...props} />}
         </div>
       </div>
       <AuditSheet open={hist} onOpenChange={setHist} query={query} onQuery={setQuery} />

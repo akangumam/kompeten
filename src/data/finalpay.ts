@@ -1,3 +1,4 @@
+import { can, canOpen } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { addDayIso, contractsOf, kpkHook, monthsBetween, type Contract } from '@/data/contracts'
@@ -121,7 +122,7 @@ export function statusOf(r: FinalPay): HakStatus {
 export const canCalc = (u: CurrentUser) => u.role === 'payroll'
 export const canApprove = (r: FinalPay, u: CurrentUser) => u.role === 'manager' && r.status === 'menunggu'
 export const canPay = (r: FinalPay, u: CurrentUser) => u.role === 'finance' && r.status === 'disetujui' && r.pembayaran.mode === 'transfer' && !r.pembayaran.transfer
-export const canSeeFinalPay = (u: CurrentUser) => u.role === 'payroll' || u.role === 'manager' || u.role === 'finance' || u.role === 'admin'
+export const canSeeFinalPay = (u: CurrentUser) => canOpen(u.role, 'final-pay')
 
 /* ---------- data dasar ---------- */
 const MON_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']

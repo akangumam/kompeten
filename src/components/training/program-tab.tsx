@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { MoreHorizontal } from 'lucide-react'
 import { Pager, usePaging } from '@/components/attendance/pager'
 import { CompChips, ProgramStatusBadge, TypeBadge } from '@/components/training/shared'
@@ -13,7 +14,7 @@ const head = 'text-xs font-medium text-muted-foreground'
 
 export function ProgramTab({ programs, user, onOpen, onPropose }: { programs: Program[]; user: CurrentUser; onOpen: (p: Program, edit: boolean) => void; onPropose: (p: Program) => void }) {
   const paging = usePaging(programs, programs.map((p) => p.kode).join())
-  const admin = user.role === 'admin'
+  const admin = can(user, 'dev.manage')
   const spv = user.role === 'supervisor'
   const pesertaOf = (p: Program) => enrollmentsOf(p.kode).filter((e) => !spv || empOf(e.nik)?.atasanId === user.nik).length
   return (

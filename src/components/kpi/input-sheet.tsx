@@ -101,7 +101,7 @@ function Body({ row, bulan, user, attendance, onClose, onNavigate }: { row: KpiR
       </SheetHeader>
 
       <div className="space-y-4 p-4">
-        {!tpl && <Alert variant="warning"><TriangleAlert aria-hidden /><AlertDescription>Template KPI belum diatur untuk {row.posisi} {bulan.slice(0, 4)}. Admin HRD mengaturnya di Data Master › Kompetensi › Template KPI.</AlertDescription></Alert>}
+        {!tpl && <Alert variant="warning"><TriangleAlert aria-hidden /><AlertDescription>Template KPI belum diatur untuk {row.posisi} {bulan.slice(0, 4)}. HR Development & Industrial mengaturnya di Data Master › Kompetensi › Template KPI.</AlertDescription></Alert>}
         {row.rec?.dikembalikan && status === 'dikembalikan' && <Alert variant="warning"><TriangleAlert aria-hidden /><AlertDescription>Dikembalikan oleh {row.rec.dikembalikan.by} ({row.rec.dikembalikan.at}): {row.rec.dikembalikan.alasan}</AlertDescription></Alert>}
         {status === 'disetujui' && row.rec?.disetujui && (
           <Alert variant="success"><Lock aria-hidden /><AlertDescription>Disetujui oleh {row.rec.disetujui.by}{row.rec.disetujui.mewakili ? ` (mewakili ${row.rec.disetujui.mewakili})` : ''}, {row.rec.disetujui.at}. Template dan nilai terkunci.</AlertDescription></Alert>

@@ -1,3 +1,4 @@
+import { notify } from '@/data/notifications'
 import { useCallback, useState } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { NEEDS_HRD, pendingStatusFor, SEED_REQUESTS, syncDayLinks, type Jenis, type LeaveRequest } from '@/data/leave'
@@ -36,6 +37,7 @@ export function useLeave() {
     [requests.length],
   )
 
+  const empNameOf = (nik: string) => ROSTER.find((e) => e.nik === nik)?.nama ?? nik
   const update = useCallback((no: string, fn: (r: LeaveRequest) => LeaveRequest) => setRequests((rs) => rs.map((r) => (r.no === no ? fn(r) : r))), [])
   // Penyetuju yang sedang menunggu (Matriks Penyetuju); HR & GA Manager boleh menyetujui mewakilinya.
   const currentStep = (r: LeaveRequest) => {
@@ -50,8 +52,12 @@ export function useLeave() {
 
   /** Keputusan Atasan. Sakit dan Dinas lanjut ke verifikasi HRD; pembatalan yang disetujui mengembalikan saldo. */
   const approve = useCallback(
-    (no: string, actor: CurrentUser) =>
-      update(no, (r) => {
+    (no: string, actor: CurrentUser) => {
+      // Sakit/Dinas yang disetujui penyetuju terakhir menunggu verifikasi HR Personalia.
+      const r0 = requests.find((x) => x.no === no)
+      if (r0 && r0.status !== 'pembatalan' && NEEDS_HRD.includes(r0.jenis) && (r0.approvals?.length ?? 0) + 1 >= currentStep(r0).chain.length)
+        notify({ to: 'hr_personalia', title: `Pengajuan ${r0.jenis} menunggu verifikasi`, body: `${r0.no} (${empNameOf(r0.nik)}) disetujui ${actor.nama}; perlu verifikasi HR.`, page: 'leave' })
+      return update(no, (r) => {
         const by = proxyBy(actor, r)
         if (r.status === 'pembatalan') {
           const back = r.jenis === 'Cuti Tahunan' ? ` Saldo dikembalikan ${r.hari} hari.` : ''
@@ -72,8 +78,9 @@ export function useLeave() {
         const approvals = [...(r.approvals ?? []), { step: done, by, at: nowStamp() }]
         const next = NEEDS_HRD.includes(r.jenis) ? 'menunggu-hrd' : 'disetujui'
         return { ...r, approvals, status: next, decision: { by, at: nowStamp() }, riwayat: log(r, by, next === 'menunggu-hrd' ? 'Disetujui Atasan, menunggu verifikasi HRD' : 'Disetujui') }
-      }),
-    [update],
+      })
+    },
+    [update, requests],
   )
 
   const reject = useCallback(
@@ -88,7 +95,7 @@ export function useLeave() {
     [update],
   )
 
-  /** Admin HRD: verifikasi Sakit/Dinas, atau kembalikan dengan alasan (menjadi Ditolak). */
+  /** HR Personalia: verifikasi Sakit/Dinas, atau kembalikan dengan alasan (menjadi Ditolak). */
   const verify = useCallback(
     (no: string, actor: CurrentUser, kategori?: string) =>
       update(no, (r) => (r.status !== 'menunggu-hrd' ? r : { ...r, kategori: r.jenis === 'Sakit' ? kategori : r.kategori, status: 'disetujui', verif: { by: actor.nama, at: nowStamp(), hasil: 'disetujui' }, riwayat: log(r, actor.nama, 'Diverifikasi HRD') })),

@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { CONTRACT_ENDING, CONTRACT_FLAGS, daysFromToday, CONTRACT_WARN_DAYS, ROSTER, type ContractFlag, type RosterEmployee } from '@/data/employees'
@@ -149,13 +150,13 @@ export function canReview(t: Trx, user: CurrentUser): boolean {
   return user.role === 'supervisor' && s.personId === user.nik
 }
 export function canSee(t: Trx, user: CurrentUser): boolean {
-  if (user.role === 'admin' || user.role === 'manager') return true
+  if (can(user, 'trx.view-all')) return true
   if (user.role === 'payroll') return t.status === 'disetujui'
   if (user.role === 'supervisor') return empOf(t.nik)?.atasanId === user.nik || t.steps.some((s) => s.personId === user.nik)
   return false
 }
-export const canCreate = (user: CurrentUser) => user.role === 'admin'
-export const canCancel = (t: Trx, user: CurrentUser) => user.role === 'admin' && t.status === 'menunggu'
+export const canCreate = (user: CurrentUser) => can(user, 'trx.manage')
+export const canCancel = (t: Trx, user: CurrentUser) => can(user, 'trx.manage') && t.status === 'menunggu'
 export const showsPay = (user: CurrentUser) => user.role !== 'supervisor'
 export const isFuture = (t: Trx) => t.status === 'disetujui' && !t.applied
 export const waitingFor = (t: Trx) => currentStep(t)?.person
@@ -697,7 +698,7 @@ export const inMonth = (t: Trx) => t.status === 'disetujui' && t.efektif.slice(0
 export const effectiveInPeriod = (t: Trx, dari: string, sampai: string) => t.status === 'disetujui' && t.efektif >= dari && t.efektif <= sampai
 
 /* ---------- seed ---------- */
-const ADM = 'Admin HRD'
+const ADM = 'Teddy Syahputra'
 const approvedSteps = (e: RosterEmployee, first: string, at1: string, at2: string): TrxStep[] => {
   const base = stepsFor(e)
   return base.map((s, i) => ({ ...s, status: 'disetujui', by: s.person, at: i === 0 && base.length > 1 ? at1 : at2 }))

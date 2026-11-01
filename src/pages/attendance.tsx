@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useMemo, useState } from 'react'
 import { CalendarCheck, CircleCheck, Clock, Hourglass, Lock, Search, TriangleAlert, Upload } from 'lucide-react'
 import { toast } from 'sonner'
@@ -90,7 +91,7 @@ export default function AttendancePage({ api, user, otPending = 0, verifItems = 
   const [closeOpen, setCloseOpen] = useState(false)
 
   const reviewRec = state.records.find((r) => r.id === reviewId) ?? null
-  const isAdmin = user.role === 'admin'
+  const isAdmin = can(user, 'attendance.manage')
 
   const isSpv = user.role === 'supervisor'
   const scopedRecords = useMemo(() => state.records.filter((r) => inScope(user, empByNik(r.nik))), [state.records, user])
@@ -227,7 +228,7 @@ export default function AttendancePage({ api, user, otPending = 0, verifItems = 
         </Card>
       ) : (
       <>
-      {user.role === 'admin' && alfaStreaks.map((a) => (
+      {can(user, 'attendance.manage') && alfaStreaks.map((a) => (
         <Alert key={a.nik} variant="info">
           <Info />
           <AlertDescription className="flex flex-wrap items-center justify-between gap-3">

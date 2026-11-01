@@ -23,7 +23,7 @@ const ind = (id: string, aspek: Aspek, nama: string, satuan: string, target: num
 const SKU: Aspek = 'Sasaran Kinerja Utama'
 const MUTU: Aspek = 'Sasaran Mutu Perusahaan'
 const SIKAP: Aspek = 'Sikap Kerja'
-const first = (txt: string) => [{ at: '5 Jan 2026, 09.00 WIB', by: 'Admin HRD', perubahan: txt }]
+const first = (txt: string) => [{ at: '5 Jan 2026, 09.00 WIB', by: 'Teddy Syahputra', perubahan: txt }]
 
 export const KPI_TEMPLATES: KpiTemplate[] = [
   {
@@ -55,7 +55,7 @@ export const templateOf = (posisi: string, tahun: number) => KPI_TEMPLATES.find(
 
 const stamp = () => { const { hh, mm } = nowTimeWIB(); return `${formatDate(DEMO_TODAY)}, ${hh}.${mm} WIB` }
 
-export function saveTemplate(posisi: string, tahun: number, indikator: Indicator[], by = 'Admin HRD'): { error?: string } {
+export function saveTemplate(posisi: string, tahun: number, indikator: Indicator[], by = 'Teddy Syahputra'): { error?: string } {
   const total = totalBobot(indikator)
   if (total !== 100) return { error: `Total bobot ${total.toLocaleString('id-ID')}% (harus 100%)` }
   if (!indikator.length) return { error: 'Minimal satu indikator' }
@@ -105,7 +105,7 @@ export const predikatRanges = (): PredikatRanges => {
 const round1 = (n: number) => Math.round(n * 10) / 10
 
 /** Simpan rentang predikat. Rentang tidak boleh tumpang tindih dan tidak boleh ada celah (selisih antar rentang = 0,1). */
-export function savePredikat(r: PredikatRanges, by = 'Admin HRD'): { error?: string } {
+export function savePredikat(r: PredikatRanges, by = 'Teddy Syahputra'): { error?: string } {
   const vals = Object.values(r)
   if (!vals.every((n) => Number.isFinite(n) && n >= 0)) return { error: 'Semua batas harus berupa angka 0 atau lebih' }
   if (r.cukupMin > r.cukupMax) return { error: `Rentang Cukup tidak valid: dari ${fmt(r.cukupMin)} sampai ${fmt(r.cukupMax)}` }

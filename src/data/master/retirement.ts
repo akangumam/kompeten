@@ -2,9 +2,9 @@ import { datedAt, datedPush, type Dated } from '@/data/payroll/dated'
 import { DEMO_TODAY } from '@/lib/today'
 
 /** Usia pensiun (tahun), effective-dated. Pegawai pensiun pada ulang tahun ke-N. */
-export const RETIREMENT_AGE: Dated<number>[] = [{ berlakuMulai: '2020-01-01', value: 55, oleh: 'Admin HRD', alasan: 'Ketentuan awal perusahaan' }]
+export const RETIREMENT_AGE: Dated<number>[] = [{ berlakuMulai: '2020-01-01', value: 55, oleh: 'Teddy Syahputra', alasan: 'Ketentuan awal perusahaan' }]
 export const retirementAge = (date: string = DEMO_TODAY) => datedAt(RETIREMENT_AGE, date).value
-export function saveRetirementAge(value: number, berlakuMulai: string, alasan: string, oleh = 'Admin HRD') {
+export function saveRetirementAge(value: number, berlakuMulai: string, alasan: string, oleh = 'Teddy Syahputra') {
   datedPush(RETIREMENT_AGE, { berlakuMulai, value, oleh, alasan })
 }
 

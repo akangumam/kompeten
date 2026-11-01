@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { type Candidate } from '@/data/candidates'
 import { offerOf } from '@/data/recruitment/offers'
 import { DEMO_TODAY } from '@/lib/today'
@@ -186,8 +187,9 @@ export function teamOf(user: CurrentUser) {
   const me = ROSTER.find((e) => e.nik === user.nik)
   return me ? { department: me.department, section: sectionName(me) } : null
 }
-export function scopeRows(rows: DirRow[], user: CurrentUser): DirRow[] {
-  if (user.role === 'payroll') return rows.filter((r) => r.status !== 'Draft') // draft belum punya NIP/gaji
+export function scopeRows(allRows: DirRow[], user: CurrentUser): DirRow[] {
+  let rows = allRows
+  if (!can(user, 'draft.view')) rows = rows.filter((r) => r.status !== 'Draft') // draft hanya untuk HR Recruitment, HR Personalia, HR & GA Manager
   if (user.role !== 'supervisor') return rows
   const t = teamOf(user)
   return rows.filter((r) => (r.status === 'Aktif' || r.status === 'Akan Bergabung') && !!t && r.department === t.department && r.section === t.section)

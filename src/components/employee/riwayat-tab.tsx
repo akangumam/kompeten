@@ -10,7 +10,7 @@ export function RiwayatTab({ nik, user }: { nik: string; user: CurrentUser }) {
   useTrx()
   useDiscipline()
   const entries = riwayatOf(nik, showsPay(user))
-  // Catatan disiplin hanya untuk Admin HRD, HR & GA Manager, dan atasan langsung.
+  // Catatan disiplin hanya untuk HR Development & Industrial, HR & GA Manager, dan atasan langsung.
   const disc = canSeeDiscipline(nik, user) ? disciplineOf(nik) : []
   return (
     <div className="space-y-8">

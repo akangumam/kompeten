@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useEffect, useState } from 'react'
 import { Banknote, Calculator, CircleCheck, CircleDashed, FileClock, Hourglass, MoreHorizontal, Search } from 'lucide-react'
 import { toast } from 'sonner'
@@ -85,7 +86,7 @@ export default function FinalPayPage({ user, leaves, focus, onFocusDone }: { use
           <SelectContent>{['2026', '2025'].map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      {user.role === 'admin' && <p className="text-sm text-muted-foreground">Mode baca: perhitungan oleh Payroll Officer, persetujuan oleh HR & GA Manager.</p>}
+      {can(user, 'finalpay.readonly') && <p className="text-sm text-muted-foreground">Mode baca: perhitungan oleh Payroll Officer, persetujuan oleh HR & GA Manager.</p>}
 
       <div className={KPI_GRID}>
         <StatCard label="Perlu dihitung" value={k.hitung} icon={Calculator} hint="Menunggu Payroll Officer" />

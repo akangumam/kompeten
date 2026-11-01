@@ -32,7 +32,6 @@ import { openJobs, jobOf } from '@/data/recruitment/jobs'
 import { offerOf, effOfferStatus, type Offer } from '@/data/recruitment/offers'
 import { acceptOffer, declineOffer, portalCheckNik, portalRequestDelete, portalReuploadDoc, submitApplication, type Application } from '@/data/recruitment/flow'
 import { assignsOf, effTestStatus, paketOf, type TestAssign } from '@/data/recruitment/tests'
-import { USERS, type Role } from '@/data/users'
 import { formatDate } from '@/lib/format'
 import { digitsOnly, formatHp, RULES } from '@/lib/validators'
 import { DEMO_TODAY } from '@/lib/today'
@@ -86,11 +85,11 @@ const PHOTO_ACCEPT = { accept: '.jpg,.jpeg,.png', extensions: ['jpg', 'jpeg', 'p
 /* ───────────────────────── Root Component ───────────────────────── */
 
 export function PortalShell({
-  persona, onSelectPortalPersona, onSelectHRRole,
+  persona, onSelectPortalPersona, onBackToLogin,
 }: {
   persona: PortalPersona
   onSelectPortalPersona: (p: PortalPersona) => void
-  onSelectHRRole: (r: Role) => void
+  onBackToLogin: () => void
 }) {
   const [nav, setNav] = useState<PortalNav>({ id: 'lowongan-list' })
   const [session, setSession] = useState<PortalSession>(() =>
@@ -143,14 +142,12 @@ export function PortalShell({
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Kembali ke HR</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Staf PT Primaplast</DropdownMenuLabel>
             <DropdownMenuGroup>
-              {(['admin', 'manager', 'supervisor', 'payroll', 'finance'] as Role[]).map((r) => (
-                <DropdownMenuItem key={r} onSelect={() => onSelectHRRole(r)}>
-                  <LogOut className="size-4" />
-                  {USERS[r].nama} · {USERS[r].jabatan}
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuItem onSelect={onBackToLogin}>
+                <LogOut className="size-4" />
+                Halaman Masuk staf
+              </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

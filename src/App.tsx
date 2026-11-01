@@ -1,3 +1,5 @@
+import { ShieldAlert } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { pageTitleFor, formatDocTitle } from '@/lib/page-title'
 import { DEMO_TODAY } from '@/lib/today'
@@ -55,7 +57,13 @@ import { pendingVerification } from '@/data/verification'
 import { durJam, effStatus, isAwaitingValidation, realisasiOf, unvalidatedCount } from '@/data/overtime'
 import { useLeave } from '@/components/leave/use-leave'
 import { useAttendance } from '@/components/attendance/use-attendance'
-import { USERS, type Role } from '@/data/users'
+import type { CurrentUser, Role } from '@/data/users'
+import { canOpen } from '@/lib/access'
+import { endSession, switchRole, useSession, type Session } from '@/lib/session'
+import LoginPage from '@/pages/login'
+import SystemSettingsPage from '@/pages/system-settings'
+import { IdleGuard } from '@/components/idle-guard'
+import { ROLE_LABEL } from '@/data/users'
 import MasterDataPage from '@/pages/master-data'
 import PayrollComponentsPage from '@/pages/payroll-components'
 import PayrollRunPage from '@/pages/payroll-run'
@@ -80,35 +88,86 @@ import { completeScenario, periodFinalized, type PeriodId } from '@/data/payroll
 import { usePayroll } from '@/data/payroll/store'
 import { enrollNewHire } from '@/data/payroll/bpjs-membership'
 
-export type PageId = 'dashboard' | 'recruitment' | 'recruitment-jobs' | 'recruitment-form' | 'recruitment-tests' | 'employees' | 'payroll-components' | 'salary-change' | 'payroll-run' | 'payslips' | 'payments' | 'payroll-recon' | 'coop-members' | 'coop-withdrawals' | 'coop-cash-advance' | 'coop-loans' | 'coop-payroll-deductions' | 'coop-budget' | 'coop-shu' | 'coop-settings' | 'coop-trading' | 'employee-draft' | 'employee-transactions' | 'industrial-relations' | 'final-pay' | 'attendance' | 'leave' | 'shift-swap' | 'overtime' | 'master-data' | 'dev-competency' | 'dev-training' | 'dev-kpi'
+export type PageId = 'dashboard' | 'recruitment' | 'recruitment-jobs' | 'recruitment-form' | 'recruitment-tests' | 'employees' | 'payroll-components' | 'salary-change' | 'payroll-run' | 'payslips' | 'payments' | 'payroll-recon' | 'coop-members' | 'coop-withdrawals' | 'coop-cash-advance' | 'coop-loans' | 'coop-payroll-deductions' | 'coop-budget' | 'coop-shu' | 'coop-settings' | 'coop-trading' | 'employee-draft' | 'employee-transactions' | 'industrial-relations' | 'final-pay' | 'attendance' | 'leave' | 'shift-swap' | 'overtime' | 'master-data' | 'dev-competency' | 'dev-training' | 'dev-kpi' | 'system-settings'
 
 type Profile = { kind: 'draft'; id: string } | { kind: 'roster'; nik: string } | { kind: 'exited'; nik: string }
 
 const PAYROLL_PAGES: PageId[] = ['final-pay', 'payroll-components', 'salary-change', 'payroll-run', 'payslips', 'payments', 'payroll-recon']
 const COOP_PAGES: PageId[] = ['coop-members', 'coop-withdrawals', 'coop-cash-advance', 'coop-loans', 'coop-payroll-deductions', 'coop-budget', 'coop-shu', 'coop-settings', 'coop-trading']
 
+function useDraftState() {
+  const [drafts, setDrafts] = useState<Record<string, DraftRecord>>({})
+  const [rosterEdits, setRosterEdits] = useState<Record<string, DraftRecord>>({})
+  return { drafts, setDrafts, rosterEdits, setRosterEdits }
+}
+
+const PAGE_HASH: Record<string, PageId> = { kehadiran: 'attendance', cuti: 'leave', lembur: 'overtime', payroll: 'payroll-run', kpi: 'dev-kpi', training: 'dev-training', kompetensi: 'dev-competency', koperasi: 'coop-members', rekrutmen: 'recruitment', direktori: 'employees', master: 'master-data' }
+/** Tautan dalam (#/kehadiran, dst.) hanya untuk pengujian; halaman tetap diperiksa terhadap peran aktif. */
+const pageFromHash = (): PageId | null => PAGE_HASH[window.location.hash.replace(/^#\/?/, '')] ?? null
+const landingFor = (role: Role): PageId => (canOpen(role, 'dashboard') ? 'dashboard' : 'system-settings')
+
 export default function App() {
+  const session = useSession()
+  // Data kerja (kehadiran, cuti, lembur, draft) hidup di atas sesi supaya tidak hilang saat pengguna keluar lalu orang lain masuk.
+  const shared: SharedData = {
+    attendance: useAttendance(),
+    leave: useLeave(),
+    overtime: useOvertime(),
+    swaps: useShiftSwaps(),
+    ...useDraftState(),
+  }
+  const [portalPersona, setPortalPersona] = useState<PortalPersona | null>(null)
+  if (portalPersona !== null) {
+    return (
+      <>
+        <Toaster />
+        <PortalShell persona={portalPersona} onSelectPortalPersona={setPortalPersona} onBackToLogin={() => setPortalPersona(null)} />
+      </>
+    )
+  }
+  if (!session) return <LoginPage onOpenPortal={() => setPortalPersona('visitor')} />
+  return <AppShell key={session.account.nip} session={session} data={shared} />
+}
+
+function NoAccess({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-6 py-24 text-center">
+      <div className="flex size-12 items-center justify-center rounded-full bg-muted"><ShieldAlert className="size-6 text-muted-foreground" aria-hidden /></div>
+      <h1 className="text-xl font-semibold tracking-tight">Anda tidak memiliki akses ke halaman ini</h1>
+      <p className="text-sm text-muted-foreground">Peran aktif Anda tidak mencakup halaman ini. Ganti peran aktif di menu akun atau kembali ke Dashboard.</p>
+      <Button onClick={onBack}>Kembali ke Dashboard</Button>
+    </div>
+  )
+}
+
+type SharedData = {
+  attendance: ReturnType<typeof useAttendance>
+  leave: ReturnType<typeof useLeave>
+  overtime: ReturnType<typeof useOvertime>
+  swaps: ReturnType<typeof useShiftSwaps>
+  drafts: Record<string, DraftRecord>
+  setDrafts: React.Dispatch<React.SetStateAction<Record<string, DraftRecord>>>
+  rosterEdits: Record<string, DraftRecord>
+  setRosterEdits: React.Dispatch<React.SetStateAction<Record<string, DraftRecord>>>
+}
+
+function AppShell({ session, data }: { session: Session; data: SharedData }) {
+  const { attendance, leave, overtime, swaps, drafts, setDrafts, rosterEdits, setRosterEdits } = data
+  const role = session.role
+  const user: CurrentUser = session.user
   const [open, setOpen] = useState(true)
-  const [activePage, setActivePage] = useState<PageId>('dashboard')
+  const [activePage, setActivePage] = useState<PageId>(() => pageFromHash() ?? landingFor(session.role))
   // Satu state tab Dashboard menggerakkan tab, breadcrumb, dan judul tab browser.
   const [dashTabState, setDashTab] = useState<DashTab>('umum')
   useRecruitment()
   const candidates = CANDIDATES
-  const [drafts, setDrafts] = useState<Record<string, DraftRecord>>({})
   const [profile, setProfile] = useState<Profile>({ kind: 'draft', id: ANDI_ID })
   const [profileFrom, setProfileFrom] = useState<'directory' | 'recruitment'>('recruitment')
-  const [rosterEdits, setRosterEdits] = useState<Record<string, DraftRecord>>({})
   const [dirFilters, setDirFilters] = useState<DirFilters>(DEFAULT_FILTERS)
   const [focusId, setFocusId] = useState<string | null>(null)
   const [pendingNav, setPendingNav] = useState<(() => void) | null>(null)
   const dirtyRef = useRef(false)
   const mainRef = useRef<HTMLElement>(null)
-  const [role, setRole] = useState<Role>('admin')
-  const [portalPersona, setPortalPersona] = useState<PortalPersona | null>(null)
-  const attendance = useAttendance()
-  const leave = useLeave()
-  const overtime = useOvertime()
-  const swaps = useShiftSwaps()
   useMaster()
   usePayroll()
   useKoperasi()
@@ -200,38 +259,19 @@ export default function App() {
     toast.success('Draft pegawai kosong dibuat')
   }
 
-  // Halaman yang tidak boleh dibuka peran aktif kembali ke Dashboard saat pengguna demo berganti.
+  // Ganti peran aktif: bila halaman sekarang tidak diizinkan untuk peran baru, kembali ke Dashboard.
+  const prevRole = useRef(role)
   useEffect(() => {
-    // Koperasi adalah badan hukum terpisah: hanya pengurus KSB yang membukanya, dan mereka tidak membuka halaman HR/Payroll.
-    const ksb = isKsbRole(role)
-    if (ksb && activePage !== 'dashboard' && !COOP_PAGES.includes(activePage)) return setActivePage('dashboard')
-    if (!ksb && COOP_PAGES.includes(activePage)) return setActivePage('dashboard')
-    const noMaster = role === 'supervisor' || role === 'payroll' || role === 'finance'
-    // People Development: Admin HRD, HR & GA Manager, dan Atasan; Payroll, Finance, dan KSB tidak punya akses.
-    const noDev = !canAccessCompetency(role) && activePage.startsWith('dev-')
-    const noPayroll = role === 'admin' || role === 'supervisor'
-    // Kompensasi & Pesangon: Admin HRD membaca (jumlah terlihat); Atasan tidak pernah.
-    const payrollPage = PAYROLL_PAGES.includes(activePage) && !(activePage === 'final-pay' && role === 'admin')
-    // Finance hanya Daftar Pembayaran dan Rekonsiliasi Potongan; Rekonsiliasi berdiri sendiri hanya untuk Finance.
-    const financeBlocked = role === 'finance' && activePage !== 'dashboard' && activePage !== 'payments' && activePage !== 'payroll-recon' && activePage !== 'final-pay'
-    if (
-      (noMaster && activePage === 'master-data') ||
-      noDev ||
-      (noPayroll && payrollPage) ||
-      financeBlocked ||
-      (role !== 'finance' && activePage === 'payroll-recon') ||
-      (role === 'payroll' && (activePage === 'recruitment' || activePage === 'recruitment-jobs' || activePage === 'recruitment-form' || activePage === 'recruitment-tests')) ||
-      (role === 'supervisor' && (activePage === 'recruitment-jobs' || activePage === 'recruitment-form' || activePage === 'recruitment-tests')) ||
-      (role === 'manager' && activePage === 'recruitment-form') ||
-      (role === 'finance' && activePage.startsWith('recruitment'))
-    )
-      setActivePage('dashboard')
+    if (prevRole.current === role) return
+    prevRole.current = role
+    if (!canOpen(role, activePage === 'employee-draft' ? 'employee-draft' : activePage)) setActivePage(landingFor(role))
   }, [role, activePage])
+  const pageOk = canOpen(role, activePage)
 
   // Atasan hanya boleh membuka profil anggota timnya; selain itu kembali ke Direktori.
   useEffect(() => {
     if (role !== 'supervisor' || activePage !== 'employee-draft') return
-    const team = teamOf(USERS.supervisor)
+    const team = teamOf(user)
     const e = profile.kind === 'roster' ? ROSTER.find((x) => x.nik === profile.nik) : undefined
     const ok = !!e && !!team && e.department === team.department && (e.section ?? e.department) === team.section
     if (!ok) setActivePage('employees')
@@ -240,8 +280,8 @@ export default function App() {
   // Skenario demo: menyelesaikan anomali/approval kehadiran + validasi lembur, lalu closing periode Oktober.
   const runDemoClosing = () => {
     if (attendance.state.closed) return
-    attendance.closeDemo(USERS[role])
-    const demo = { role: 'admin' as const, nama: 'Skenario demo' }
+    attendance.closeDemo(user)
+    const demo = { role: 'hr_personalia' as Role, nama: 'Skenario demo' }
     for (const r of overtime.records) {
       if (r.date < PERIOD.start || r.date > PERIOD.end || !isAwaitingValidation(effStatus(r))) continue
       const real = realisasiOf(r, attendance.state.scans)
@@ -274,7 +314,7 @@ export default function App() {
 
   // Pegawai keluar: pengajuan (cuti, tukar shift, lembur) yang masih menunggu dan jatuh setelah tanggal keluar dibatalkan.
   const cancelAfterExit = (o: Off): number => {
-    const actor = { ...USERS.admin, nama: 'Sistem (pegawai keluar)' }
+    const actor: CurrentUser = { role: 'hr_personalia', nama: 'Sistem (pegawai keluar)', jabatan: 'Sistem', initials: 'SP' }
     const alasan = 'Pegawai keluar'
     let n = 0
     for (const r of leave.requests) if (r.nik === o.nik && r.start > o.tanggalKeluar && (isPending(r.status) || isVerif(r.status))) { leave.cancel(r.no, actor, alasan); n++ }
@@ -329,19 +369,6 @@ export default function App() {
     document.title = formatDocTitle(pageTitleFor(activePage, draft, ksb, dashTab))
   }, [activePage, role, dashTab, record, record?.form.nama, record?.status])
 
-  if (portalPersona !== null) {
-    return (
-      <>
-        <Toaster />
-        <PortalShell
-          persona={portalPersona}
-          onSelectPortalPersona={setPortalPersona}
-          onSelectHRRole={(r) => { setRole(r); setPortalPersona(null) }}
-        />
-      </>
-    )
-  }
-
   return (
     <SidebarProvider open={open} onOpenChange={onSidebarOpenChange}>
       <AppSidebar
@@ -354,9 +381,11 @@ export default function App() {
           activePage={activePage}
           dashTab={dashTab}
           draft={record ? { nama: record.form.nama, activated: record.status === 'aktif', from: profileFrom } : undefined}
-          user={USERS[role]}
-          onUserChange={setRole}
-          onPortalSelect={setPortalPersona}
+          user={user}
+          account={session.account}
+          roles={session.roles}
+          onRoleChange={(r) => { switchRole(r); toast.success(`Peran aktif: ${ROLE_LABEL[r]}`) }}
+          onLogout={() => endSession('logout')}
           onNavigate={(p) => guarded(() => { setTrxPeriod(undefined); go(p) })}
           attendanceClosed={!!attendance.state.closed}
           onScenario={runDemoClosing}
@@ -365,76 +394,78 @@ export default function App() {
         />
         <DirectoryNavContext.Provider value={{ openDirectory, openEmployee, openOffboarding, openDiscipline, openFinalPay }}>
         <main ref={mainRef} className="flex-1 overflow-y-auto">
-          {activePage === 'dashboard' && (
-            <DashboardPage user={USERS[role]} records={attendance.state.records} requests={leave.requests} tab={dashTab} onTabChange={setDashTab} onNavigate={(p, id) => guarded(() => go(p, id ?? null))} />
+          {!pageOk && <NoAccess onBack={() => setActivePage(landingFor(role))} />}
+          {pageOk && activePage === 'system-settings' && <SystemSettingsPage user={user} />}
+          {pageOk && activePage === 'dashboard' && (
+            <DashboardPage user={user} records={attendance.state.records} requests={leave.requests} tab={dashTab} onTabChange={setDashTab} onNavigate={(p, id) => guarded(() => go(p, id ?? null))} />
           )}
-          {activePage === 'recruitment' && (
+          {pageOk && activePage === 'recruitment' && (
             <RecruitmentPage
-              user={USERS[role]}
+              user={user}
               onOpenDraft={(id) => openDraft(id, 'recruitment')}
               onOpenForm={() => guarded(() => go('recruitment-form'))}
               initialSelectedId={focusId}
             />
           )}
-          {activePage === 'recruitment-jobs' && (role === 'admin' || role === 'manager') && (
-            <RecruitmentJobsPage user={USERS[role]} onOpenCandidate={(id) => guarded(() => go('recruitment', id))} />
+          {pageOk && activePage === 'recruitment-jobs' && (
+            <RecruitmentJobsPage user={user} onOpenCandidate={(id) => guarded(() => go('recruitment', id))} />
           )}
-          {activePage === 'recruitment-form' && role === 'admin' && (
-            <RecruitmentFormPage user={USERS[role]} onDirtyChange={onDirtyChange} onDone={(id) => guarded(() => go('recruitment', id))} />
+          {pageOk && activePage === 'recruitment-form' && (
+            <RecruitmentFormPage user={user} onDirtyChange={onDirtyChange} onDone={(id) => guarded(() => go('recruitment', id))} />
           )}
-          {activePage === 'recruitment-tests' && (role === 'admin' || role === 'manager') && (
-            <RecruitmentTestsPage user={USERS[role]} onOpenCandidate={(id) => guarded(() => go('recruitment', id))} />
+          {pageOk && activePage === 'recruitment-tests' && (
+            <RecruitmentTestsPage user={user} onOpenCandidate={(id) => guarded(() => go('recruitment', id))} />
           )}
-          {activePage === 'attendance' && <AttendancePage focusId={focusId} api={attendance} user={USERS[role]} otPending={unvalidatedCount(overtime.records, PERIOD.start, PERIOD.end)} verifItems={pendingVerification(leave.requests, overtime.records, PERIOD.start, PERIOD.end)} />}
-          {activePage === 'leave' && <LeavePage api={leave} user={USERS[role]} octClosed={!!attendance.state.closed} />}
-          {activePage === 'overtime' && (
-            <OvertimePage api={overtime} user={USERS[role]} scans={attendance.state.scans} leaves={leave.requests} octClosed={!!attendance.state.closed} />
+          {pageOk && activePage === 'attendance' && <AttendancePage focusId={focusId} api={attendance} user={user} otPending={unvalidatedCount(overtime.records, PERIOD.start, PERIOD.end)} verifItems={pendingVerification(leave.requests, overtime.records, PERIOD.start, PERIOD.end)} />}
+          {pageOk && activePage === 'leave' && <LeavePage api={leave} user={user} octClosed={!!attendance.state.closed} />}
+          {pageOk && activePage === 'overtime' && (
+            <OvertimePage api={overtime} user={user} scans={attendance.state.scans} leaves={leave.requests} octClosed={!!attendance.state.closed} />
           )}
-          {activePage === 'master-data' && (role === 'admin' || role === 'manager') && <MasterDataPage role={role} />}
-          {activePage === 'dev-competency' && canAccessCompetency(role) && <CompetencyPage user={USERS[role]} />}
-          {activePage === 'dev-training' && canAccessCompetency(role) && <TrainingPage user={USERS[role]} />}
-          {activePage === 'dev-kpi' && canAccessCompetency(role) && <KpiPage user={USERS[role]} attendance={attendance.state.records} onNavigate={() => guarded(() => go('attendance'))} />}
-          {activePage === 'payroll-run' && (role === 'payroll' || role === 'manager') && (
+          {pageOk && activePage === 'master-data' && <MasterDataPage role={role} />}
+          {pageOk && activePage === 'dev-competency' && canAccessCompetency(role) && <CompetencyPage user={user} />}
+          {pageOk && activePage === 'dev-training' && canAccessCompetency(role) && <TrainingPage user={user} />}
+          {pageOk && activePage === 'dev-kpi' && canAccessCompetency(role) && <KpiPage user={user} attendance={attendance.state.records} onNavigate={() => guarded(() => go('attendance'))} />}
+          {pageOk && activePage === 'payroll-run' && (
             <PayrollRunPage
-              user={USERS[role]}
+              user={user}
               ctx={{ records: attendance.state.records, scans: attendance.state.scans, otRecords: overtime.records }}
               closed={attendance.state.closed}
               onNavigate={(p, period) => guarded(() => { setPayPeriod(period); setTrxPeriod(p === 'employee-transactions' ? period : undefined); go(p) })}
             />
           )}
-          {activePage === 'payslips' && (role === 'payroll' || role === 'manager') && (
-            <PayslipsPage user={USERS[role]} ctx={payCtx} initialPeriod={payPeriod} onNavigate={(p) => guarded(() => go(p))} />
+          {pageOk && activePage === 'payslips' && (
+            <PayslipsPage user={user} ctx={payCtx} initialPeriod={payPeriod} onNavigate={(p) => guarded(() => go(p))} />
           )}
-          {activePage === 'payments' && (role === 'payroll' || role === 'manager' || role === 'finance') && (
-            <PaymentsPage user={USERS[role]} ctx={payCtx} initialPeriod={payPeriod} onNavigate={(p) => guarded(() => go(p))} />
+          {pageOk && activePage === 'payments' && (
+            <PaymentsPage user={user} ctx={payCtx} initialPeriod={payPeriod} onNavigate={(p) => guarded(() => go(p))} />
           )}
-          {activePage === 'coop-members' && isKsbRole(role) && <CoopMembersPage user={USERS[role]} />}
-          {activePage === 'coop-withdrawals' && isKsbRole(role) && <CoopWithdrawalsPage user={USERS[role]} />}
-          {activePage === 'coop-cash-advance' && isKsbRole(role) && <CoopCashAdvancePage user={USERS[role]} />}
-          {activePage === 'coop-loans' && isKsbRole(role) && <CoopLoansPage user={USERS[role]} />}
-          {activePage === 'coop-payroll-deductions' && isKsbRole(role) && <CoopPayrollDeductionsPage user={USERS[role]} />}
-          {activePage === 'coop-budget' && isKsbRole(role) && <CoopBudgetPage user={USERS[role]} />}
-          {activePage === 'coop-trading' && isKsbRole(role) && <CoopTradingPage user={USERS[role]} />}
-          {activePage === 'coop-settings' && isKsbRole(role) && <CoopSettingsPage user={USERS[role]} />}
-          {activePage === 'coop-shu' && isKsbRole(role) && <CoopShuPage user={USERS[role]} onNavigate={(p) => guarded(() => go(p))} />}
-          {activePage === 'payroll-recon' && role === 'finance' && <PayrollReconPage user={USERS[role]} ctx={payCtx} onNavigate={(p) => guarded(() => go(p))} />}
-          {activePage === 'salary-change' && (role === 'payroll' || role === 'manager') && <SalaryChangePage user={USERS[role]} />}
-          {activePage === 'payroll-components' && (role === 'payroll' || role === 'manager') && <PayrollComponentsPage user={USERS[role]} ctx={payCtx} onNavigate={(p) => guarded(() => go(p))} />}
-          {activePage === 'shift-swap' && (
-            <ShiftSwapPage api={swaps} user={USERS[role]} leaves={leave.requests} octClosed={!!attendance.state.closed} />
+          {pageOk && activePage === 'coop-members' && isKsbRole(role) && <CoopMembersPage user={user} />}
+          {pageOk && activePage === 'coop-withdrawals' && isKsbRole(role) && <CoopWithdrawalsPage user={user} />}
+          {pageOk && activePage === 'coop-cash-advance' && isKsbRole(role) && <CoopCashAdvancePage user={user} />}
+          {pageOk && activePage === 'coop-loans' && isKsbRole(role) && <CoopLoansPage user={user} />}
+          {pageOk && activePage === 'coop-payroll-deductions' && isKsbRole(role) && <CoopPayrollDeductionsPage user={user} />}
+          {pageOk && activePage === 'coop-budget' && isKsbRole(role) && <CoopBudgetPage user={user} />}
+          {pageOk && activePage === 'coop-trading' && isKsbRole(role) && <CoopTradingPage user={user} />}
+          {pageOk && activePage === 'coop-settings' && isKsbRole(role) && <CoopSettingsPage user={user} />}
+          {pageOk && activePage === 'coop-shu' && isKsbRole(role) && <CoopShuPage user={user} onNavigate={(p) => guarded(() => go(p))} />}
+          {pageOk && activePage === 'payroll-recon' && <PayrollReconPage user={user} ctx={payCtx} onNavigate={(p) => guarded(() => go(p))} />}
+          {pageOk && activePage === 'salary-change' && <SalaryChangePage user={user} />}
+          {pageOk && activePage === 'payroll-components' && <PayrollComponentsPage user={user} ctx={payCtx} onNavigate={(p) => guarded(() => go(p))} />}
+          {pageOk && activePage === 'shift-swap' && (
+            <ShiftSwapPage api={swaps} user={user} leaves={leave.requests} octClosed={!!attendance.state.closed} />
           )}
-          {activePage === 'employee-transactions' && (role === 'admin' || role === 'manager' || role === 'supervisor' || role === 'payroll') && (
-            <EmployeeTransactionsPage user={USERS[role]} leaves={leave.requests} periodId={trxPeriod} onClearPeriod={() => setTrxPeriod(undefined)} />
+          {pageOk && activePage === 'employee-transactions' && (
+            <EmployeeTransactionsPage user={user} leaves={leave.requests} periodId={trxPeriod} onClearPeriod={() => setTrxPeriod(undefined)} />
           )}
-          {activePage === 'final-pay' && (role === 'payroll' || role === 'manager' || role === 'finance' || role === 'admin') && (
-            <FinalPayPage user={USERS[role]} leaves={leave.requests} focus={finalPayFocus} onFocusDone={() => setFinalPayFocus(undefined)} />
+          {pageOk && activePage === 'final-pay' && (
+            <FinalPayPage user={user} leaves={leave.requests} focus={finalPayFocus} onFocusDone={() => setFinalPayFocus(undefined)} />
           )}
-          {activePage === 'industrial-relations' && (role === 'admin' || role === 'manager' || role === 'supervisor' || role === 'payroll') && (
-            <IndustrialRelationsPage user={USERS[role]} intent={irIntent} onIntentDone={() => setIrIntent(undefined)} onFinished={cancelAfterExit} />
+          {pageOk && activePage === 'industrial-relations' && (
+            <IndustrialRelationsPage user={user} intent={irIntent} onIntentDone={() => setIrIntent(undefined)} onFinished={cancelAfterExit} />
           )}
-          {activePage === 'employees' && (
+          {pageOk && activePage === 'employees' && (
             <EmployeesPage
-              user={USERS[role]}
+              user={user}
               leaves={leave.requests}
               candidates={candidates}
               drafts={drafts}
@@ -445,12 +476,12 @@ export default function App() {
               onCreateDirect={createDirectDraft}
             />
           )}
-          {activePage === 'employee-draft' && record && (
+          {pageOk && activePage === 'employee-draft' && record && (
             <EmployeeDraftPage
               key={profileKey}
               candidate={candidate}
               record={record}
-              user={USERS[role]}
+              user={user}
               atasan={atasanOfProfile}
               exit={exitedInfo?.exited.keluar}
               backLabel={profileFrom === 'directory' ? 'Kembali ke Direktori' : 'Kembali ke Recruitment'}
@@ -465,6 +496,7 @@ export default function App() {
         </DirectoryNavContext.Provider>
         <AppFooter />
         <Toaster />
+        <IdleGuard />
         <AlertDialog open={pendingNav !== null} onOpenChange={(o) => !o && setPendingNav(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>

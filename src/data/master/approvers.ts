@@ -26,7 +26,7 @@ export type ApproverRule = { pengaju: string; status: 'Aktif' | 'Nonaktif'; hist
 const rule = (pengaju: string, p1: ApproverPosition, p2: ApproverPosition | null = null): ApproverRule => ({
   pengaju,
   status: 'Aktif',
-  history: [{ berlakuMulai: '2026-01-01', value: { p1, p2 }, oleh: 'Admin HRD', alasan: 'Data awal' }],
+  history: [{ berlakuMulai: '2026-01-01', value: { p1, p2 }, oleh: 'Teddy Syahputra', alasan: 'Data awal' }],
 })
 export const APPROVER_RULES: ApproverRule[] = [
   rule('Operator', 'Supervisor / Kepala Section'),
@@ -39,7 +39,7 @@ export const ruleFor = (pengaju: string) => APPROVER_RULES.find((r) => r.pengaju
 export const settingAt = (r: ApproverRule, date: string = DEMO_TODAY) => datedAt(r.history, date).value
 export const PENGAJU_OPTIONS = () => LEVEL_DEFS.filter((l) => l.status === 'Aktif').map((l) => l.nama)
 
-export function saveApprover(r: ApproverRule, value: ApproverSetting, berlakuMulai: string, alasan: string, oleh = 'Admin HRD') {
+export function saveApprover(r: ApproverRule, value: ApproverSetting, berlakuMulai: string, alasan: string, oleh = 'Teddy Syahputra') {
   datedPush(r.history, { berlakuMulai, value, oleh, alasan })
 }
 

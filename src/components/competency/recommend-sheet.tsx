@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { toast } from 'sonner'
 import { PersonCell } from '@/components/payroll/pay/shared'
 import { TypeBadge } from '@/components/training/shared'
@@ -19,7 +20,7 @@ export function RecommendSheet({ target, rows, periodId, user, onClose }: { targ
       })
     : []
   const programs = target ? PROGRAMS.filter((p) => p.status === 'Aktif' && p.kompetensi.some((k) => k.kode === target.kode)) : []
-  const admin = user.role === 'admin'
+  const admin = can(user, 'dev.manage')
   const spv = user.role === 'supervisor'
   return (
     <Sheet open={!!target} onOpenChange={(o) => !o && onClose()}>
@@ -29,7 +30,7 @@ export function RecommendSheet({ target, rows, periodId, user, onClose }: { targ
           <SheetDescription>{target?.nama} <span className="tabular-nums">({target?.kode})</span> · {gapped.length} pegawai dengan gap</SheetDescription>
         </SheetHeader>
         <div className="space-y-6 p-4">
-          {programs.length === 0 && <p className="rounded-md border p-4 text-sm text-muted-foreground">Belum ada program aktif untuk kompetensi ini. Admin HRD dapat membuatnya di People Development › Training.</p>}
+          {programs.length === 0 && <p className="rounded-md border p-4 text-sm text-muted-foreground">Belum ada program aktif untuk kompetensi ini. HR Development & Industrial dapat membuatnya di People Development › Training.</p>}
           {programs.map((p) => {
             const belum = gapped.filter((g) => !enrollmentOf(p.kode, g.r.emp.nik))
             return (
@@ -46,7 +47,7 @@ export function RecommendSheet({ target, rows, periodId, user, onClose }: { targ
                       onClick={() => {
                         const niks = belum.map((g) => g.r.emp.nik)
                         if (admin) { const n = addParticipants(p.kode, niks); toast.success(`${n} pegawai didaftarkan ke ${p.kode}`) }
-                        else { const n = proposeParticipants(p.kode, niks, user); toast.success(`${n} usulan dikirim ke Admin HRD`) }
+                        else { const n = proposeParticipants(p.kode, niks, user); toast.success(`${n} usulan dikirim ke HR Development & Industrial`) }
                       }}
                     >
                       {admin ? `Daftarkan ke ${p.kode}` : `Usulkan ke ${p.kode}`}

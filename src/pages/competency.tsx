@@ -90,7 +90,7 @@ export default function CompetencyPage({ user }: { user: CurrentUser }) {
         <StatCard label="Pegawai dinilai" icon={Users} value={`${stats.dinilai} / ${rows.length}`} hint="Penilaian Diajukan atau Final" />
         <StatCard label="Rata-rata pemenuhan standar" icon={Target} value={pctText(stats.avg)} hint="Dari pegawai yang sudah dinilai" />
         <StatCard label="Kompetensi dengan gap terbanyak" icon={TrendingDown} value={top?.nama ?? '—'} hint={top ? `${top.pegawai} pegawai bergap` : 'Belum ada gap'} />
-        <StatCard label="Menunggu verifikasi" icon={Hourglass} value={stats.menunggu} hint="Diajukan Atasan, menunggu Admin HRD" />
+        <StatCard label="Menunggu verifikasi" icon={Hourglass} value={stats.menunggu} hint="Diajukan Atasan, menunggu HR Development & Industrial" />
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="gap-6">

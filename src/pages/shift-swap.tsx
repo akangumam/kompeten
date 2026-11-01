@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { TransitionAlert } from '@/components/transition-alert'
 import { periodSelectLabel } from '@/data/master/attendance-rules'
 import { useMemo, useState } from 'react'
@@ -107,7 +108,7 @@ export default function ShiftSwapPage({
               ))}
             </SelectContent>
           </Select>
-          {user.role === 'admin' && (
+          {can(user, 'attendance.manage') && (
             <Button onClick={() => setAjukan(true)}>
               <ArrowLeftRight className="size-4" />
               Ajukan Tukar Shift

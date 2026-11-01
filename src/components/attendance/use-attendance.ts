@@ -1,3 +1,5 @@
+import { ROSTER } from '@/data/employees'
+import { notify } from '@/data/notifications'
 import { useCallback, useRef, useState } from 'react'
 import {
   buildInitial,
@@ -20,6 +22,9 @@ const ROSTER_BY_PIN = (pin: string | null) => (pin ? PIN_OWNERS.find((e) => e.pi
 
 export type CorrectionInput = { masuk: string; pulang: string; alasan: string; lampiran?: string }
 
+/** id harian `nik|tanggal` → "Nama (tanggal)". */
+const korLabel = (id: string) => { const [nik, date] = id.split('|'); return `${ROSTER.find((e) => e.nik === nik)?.nama ?? nik} (${date})` }
+
 export function useAttendance() {
   const [state, setState] = useState<AttendanceState>(buildInitial)
   const ref = useRef(state)
@@ -32,6 +37,9 @@ export function useAttendance() {
   const submitCorrection = useCallback(
     (id: string, input: CorrectionInput, actor: CurrentUser) => {
       const at = nowStamp()
+      // Koreksi Atasan dieskalasi ke HR & GA Manager (tidak ada self-approval); selain itu ke HR Personalia.
+      if (actor.role === 'supervisor') notify({ to: 'manager', title: 'Koreksi absen Atasan menunggu approval', body: `${actor.nama} mengajukan koreksi absen ${korLabel(id)}.`, page: 'attendance' })
+      else if (actor.role !== 'hr_personalia') notify({ to: 'hr_personalia', title: 'Koreksi absen diajukan', body: `${actor.nama} mengajukan koreksi absen ${korLabel(id)}.`, page: 'attendance' })
       patch(id, (r) => ({
         ...r,
         pending: { by: actor.nama, role: actor.role, ...input, at },

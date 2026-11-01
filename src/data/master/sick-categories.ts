@@ -3,8 +3,8 @@ import { bump } from '@/data/master/store'
 import { DEMO_TODAY } from '@/lib/today'
 
 /**
- * Master Kategori Sakit (Data Master › Kehadiran). Diisi Admin HRD saat verifikasi Sakit berdasarkan surat dokter.
- * Kategori hanya terlihat oleh Admin HRD dan HR & GA Manager; dashboard menampilkannya sebagai agregat tanpa nama.
+ * Master Kategori Sakit (Data Master › Kehadiran). Diisi HR Personalia saat verifikasi Sakit berdasarkan surat dokter.
+ * Kategori hanya terlihat oleh HR Personalia dan HR & GA Manager; dashboard menampilkannya sebagai agregat tanpa nama.
  */
 export type SickCategory = { nama: string; aktif: boolean }
 export const SICK_CATEGORIES: SickCategory[] = [

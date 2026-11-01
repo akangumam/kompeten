@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { Pager, usePaging } from '@/components/attendance/pager'
 import { PredikatBadge, n1 } from '@/components/kpi/shared'
 import { PersonCell } from '@/components/payroll/pay/shared'
@@ -21,7 +22,7 @@ export function ApprovalTab({ rows, bulan, user, attendance, onOpen }: { rows: K
         <CardDescription>{monthLabel(bulan)} · penyetuju berikutnya dari Matriks Penyetuju; HR &amp; GA Manager boleh mewakili</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {user.role === 'admin' && waiting.length > 0 && <p className="text-sm text-muted-foreground">Persetujuan oleh atasan penilai atau HR &amp; GA Manager. Admin HRD hanya dapat melihat detail.</p>}
+        {can(user, 'dev.manage') && waiting.length > 0 && <p className="text-sm text-muted-foreground">Persetujuan oleh atasan penilai atau HR &amp; GA Manager. HR Development & Industrial hanya dapat melihat detail.</p>}
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">

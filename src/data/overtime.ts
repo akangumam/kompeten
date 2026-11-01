@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { upahHarianAt } from '@/data/payroll/components'
 import { harianPphAt } from '@/data/payroll/statutory'
 import type { Role } from '@/data/users'
@@ -44,7 +45,7 @@ export type OtRecord = {
   pekerjaan: string
   status: OtStatus
   by: string
-  byRole: 'admin' | 'supervisor'
+  byRole: 'hr' | 'supervisor'
   at: string
   dibayar?: number
   kelebihan?: string
@@ -198,10 +199,10 @@ export const canDecide = (user: OtUser, e: RosterEmployee, status: OtStatus) => 
   if (user.role === 'supervisor' && e.atasanId === user.nik) return status === 'menunggu-approval' || status === 'menunggu-validasi'
   return false
 }
-/** Verifikasi HRD: hanya Admin HRD, setelah Atasan memvalidasi realisasi. */
-export const canVerify = (user: OtUser, status: OtStatus) => user.role === 'admin' && status === 'menunggu-verifikasi'
+/** Verifikasi HRD: hanya HR Personalia, setelah Atasan memvalidasi realisasi. */
+export const canVerify = (user: OtUser, status: OtStatus) => can(user, 'attendance.manage') && status === 'menunggu-verifikasi'
 export const canCancel = (user: OtUser, e: RosterEmployee, status: OtStatus) =>
-  (status === 'terjadwal' || status === 'menunggu-approval') && (user.role === 'admin' || (user.role === 'supervisor' && e.atasanId === user.nik))
+  (status === 'terjadwal' || status === 'menunggu-approval') && (can(user, 'attendance.manage') || (user.role === 'supervisor' && e.atasanId === user.nik))
 
 export const onBehalfOf = (user: OtUser, e: RosterEmployee) =>
   user.role === 'manager' && e.atasanId !== 'manager' ? atasanOf(e).nama : null
@@ -366,8 +367,8 @@ export const SEED_OVERTIME: OtRecord[] = [
     decision: { by: SPV, at: '26 Okt 2026, 07.40 WIB' },
   }),
   seed('LBR-2026-0414', HENDRA, '2026-10-24', '08.00', '12.00', 'Audit 5R line injection', 'menunggu-validasi-manager', {
-    by: 'Admin HRD',
-    byRole: 'admin',
+    by: 'Teddy Syahputra',
+    byRole: 'hr',
     at: '22 Okt 2026, 10.05 WIB',
   }),
   seed('LBR-2026-0415', DEDI, '2026-10-27', '15.00', '19.00', 'Stok opname akhir bulan', 'terjadwal', {
@@ -375,8 +376,8 @@ export const SEED_OVERTIME: OtRecord[] = [
     at: '24 Okt 2026, 13.20 WIB',
   }),
   seed('LBR-2026-0416', EKO, '2026-10-29', '15.00', '18.00', 'Persiapan audit pelanggan', 'menunggu-approval', {
-    by: 'Admin HRD',
-    byRole: 'admin',
+    by: 'Teddy Syahputra',
+    byRole: 'hr',
     at: '26 Okt 2026, 08.45 WIB',
   }),
   ...(['0417|2026-10-27', '0418|2026-10-28', '0419|2026-10-29', '0420|2026-10-30'] as const).map((k) => {

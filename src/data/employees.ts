@@ -43,6 +43,8 @@ export type DraftForm = {
   bank: string
   rekening: string
   rekeningNama: string
+  /** Email kantor untuk login (wajib saat Verifikasi & Aktifkan; unik; domain sesuai master Kebijakan Keamanan). */
+  emailKantor?: string
   /** Disalin dari penawaran yang disetujui saat Generate Data Pegawai (hanya HR yang melihat nominalnya). */
   penawaran?: { olNo: string; grade: string; durasi: number; gajiPokok: number; tunjangan: number; makan: number; transport: number }
 }

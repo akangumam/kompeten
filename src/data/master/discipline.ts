@@ -44,8 +44,8 @@ export function deleteViolation(x: ViolationDef) {
 }
 
 /** Masa berlaku SP/Teguran Tertulis (bulan), effective-dated. */
-export const SP_VALIDITY: Dated<number>[] = [{ berlakuMulai: '2020-01-01', value: 6, oleh: 'Admin HRD', alasan: 'Ketentuan awal perusahaan' }]
+export const SP_VALIDITY: Dated<number>[] = [{ berlakuMulai: '2020-01-01', value: 6, oleh: 'Teddy Syahputra', alasan: 'Ketentuan awal perusahaan' }]
 export const spValidityMonths = (date: string = DEMO_TODAY) => datedAt(SP_VALIDITY, date).value
-export function saveSpValidity(value: number, berlakuMulai: string, alasan: string, oleh = 'Admin HRD') {
+export function saveSpValidity(value: number, berlakuMulai: string, alasan: string, oleh = 'Teddy Syahputra') {
   datedPush(SP_VALIDITY, { berlakuMulai, value, oleh, alasan })
 }

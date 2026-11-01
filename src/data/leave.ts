@@ -55,7 +55,7 @@ export type LeaveRequest = {
   decision?: { by: string; at: string; alasan?: string }
   /** Penyetuju yang sudah menyetujui (Matriks Penyetuju), berurutan: Penyetuju 1, lalu Penyetuju 2. */
   approvals?: { step: number; by: string; at: string }[]
-  /** Kategori sakit dari surat dokter, diisi saat verifikasi HRD (hanya terlihat Admin HRD dan HR & GA Manager). */
+  /** Kategori sakit dari surat dokter, diisi saat verifikasi HRD (hanya terlihat HR Personalia dan HR & GA Manager). */
   kategori?: string
   /** Verifikasi HRD (Sakit, Dinas): dikembalikan = Ditolak. */
   verif?: { by: string; at: string; hasil: 'disetujui' | 'dikembalikan'; alasan?: string }
@@ -231,7 +231,7 @@ export const teamLabel = (e: RosterEmployee) => (e.section ? `${e.department} ·
 export const longDate = (iso: string) => `${dayName(iso)}, ${formatDate(iso)}`
 
 /* ---------- seed ---------- */
-const ADM = 'Admin HRD'
+const ADM = 'Teddy Syahputra'
 export const SEED_REQUESTS: LeaveRequest[] = [
   { no: 'CTI-2026-0243', nik: 'PPI-2024-0093', jenis: 'Izin Pulang Cepat', start: '2026-10-27', end: '2026-10-27', hari: 0, jam: '14.00', alasan: 'Mengantar orang tua kontrol ke rumah sakit', status: 'menunggu', by: ADM, at: '26 Okt 2026, 09.10 WIB' },
   { no: 'CTI-2026-0212', nik: 'PPI-2024-0093', jenis: 'Izin Terlambat', start: '2026-10-13', end: '2026-10-13', hari: 0, jam: '07.40', alasan: 'Antar anak ke sekolah, ban motor bocor', status: 'disetujui', by: ADM, at: '12 Okt 2026, 16.00 WIB', decision: { by: 'Hendra Gunawan', at: '12 Okt 2026, 16.30 WIB' } },

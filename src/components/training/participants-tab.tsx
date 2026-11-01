@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { MoreHorizontal, Search } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -26,7 +27,7 @@ export function ParticipantsTab({ programs, user, onDetail, onUji, onCert, onPro
 }) {
   const [q, setQ] = useState('')
   const [fProg, setFProg] = useState(ALL)
-  const admin = user.role === 'admin'
+  const admin = can(user, 'dev.manage')
   const spv = user.role === 'supervisor'
   const codes = new Set(programs.map((p) => p.kode))
   const rows = ENROLLMENTS
@@ -44,7 +45,7 @@ export function ParticipantsTab({ programs, user, onDetail, onUji, onCert, onPro
         <Card>
           <CardHeader>
             <CardTitle>Usulan peserta dari Atasan</CardTitle>
-            <CardDescription>{pending.length} usulan menunggu keputusan Admin HRD</CardDescription>
+            <CardDescription>{pending.length} usulan menunggu keputusan HR Development & Industrial</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="divide-y rounded-md border">

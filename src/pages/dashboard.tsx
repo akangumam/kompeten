@@ -52,7 +52,8 @@ const TAB_LABEL: Record<TabId, string> = { umum: 'Umum & Rekrutmen', produksi: '
 /** Tab Dashboard per peran: Koperasi hanya untuk pengurus KSB; HR dan Payroll tidak pernah melihat tab Koperasi. */
 export function tabsFor(role: Role): TabId[] {
   if (isKsbRole(role)) return ['koperasi']
-  if (role === 'admin' || role === 'manager' || role === 'supervisor') return ['umum', 'produksi', 'presensi']
+  if (role === 'hr_personalia' || role === 'manager' || role === 'supervisor') return ['umum', 'produksi', 'presensi']
+  if (role === 'hr_recruitment' || role === 'hr_development') return ['umum', 'produksi']
   return ['umum']
 }
 

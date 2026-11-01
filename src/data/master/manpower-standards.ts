@@ -29,7 +29,7 @@ const std = (
   standar,
   berlakuMulai,
   status: 'Aktif',
-  history: [{ standar, berlakuMulai, at: '2026-01-01, 08.00 WIB', by: 'Admin HRD' }],
+  history: [{ standar, berlakuMulai, at: '2026-01-01, 08.00 WIB', by: 'Teddy Syahputra' }],
 })
 
 /**
@@ -90,7 +90,7 @@ export function updateManpowerStandard(
   id: string,
   newStandar: number,
   berlakuMulai: string,
-  by = 'Admin HRD',
+  by = 'Teddy Syahputra',
 ) {
   const item = MANPOWER_STANDARDS.find((s) => s.id === id)
   if (!item) return
@@ -118,7 +118,7 @@ export function addManpowerStandard(
   posisi: string,
   standar: number,
   berlakuMulai: string,
-  by = 'Admin HRD',
+  by = 'Teddy Syahputra',
 ) {
   const id = `STD-${Date.now()}`
   const newItem = std(id, department, section, posisi, standar, berlakuMulai)

@@ -9,7 +9,7 @@ import { ROSTER } from '@/data/employees'
 import { PROGRAMS, enrollmentOf, proposeParticipants, PROPOSALS, type Program } from '@/data/training/store'
 import type { CurrentUser } from '@/data/users'
 
-/** Atasan mengusulkan anggota timnya; usulan masuk ke Admin HRD sebagai notifikasi. */
+/** Atasan mengusulkan anggota timnya; usulan masuk ke HR Development & Industrial sebagai notifikasi. */
 export function ProposeDialog({ open, program, user, onClose }: { open: boolean; program?: Program; user: CurrentUser; onClose: () => void }) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -28,14 +28,14 @@ function Form({ program, user, onClose }: { program?: Program; user: CurrentUser
   const submit = () => {
     if (!picked.length) return setErr('Pilih minimal satu anggota tim')
     const n = proposeParticipants(kode, picked, user)
-    toast.success(`${n} usulan dikirim ke Admin HRD`)
+    toast.success(`${n} usulan dikirim ke HR Development & Industrial`)
     onClose()
   }
   return (
     <>
       <DialogHeader>
         <DialogTitle>Usulkan peserta</DialogTitle>
-        <DialogDescription>Usulan masuk ke Admin HRD sebagai notifikasi. Pendaftaran diputuskan Admin HRD.</DialogDescription>
+        <DialogDescription>Usulan masuk ke HR Development & Industrial sebagai notifikasi. Pendaftaran diputuskan HR Development & Industrial.</DialogDescription>
       </DialogHeader>
       <Select value={kode} onValueChange={(v) => { setKode(v); setPicked([]) }}>
         <SelectTrigger aria-label="Program usulan" className="w-full"><SelectValue /></SelectTrigger>

@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { MoreHorizontal, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -27,7 +28,7 @@ const STATUSES: JobStatus[] = ['Draft', 'Menunggu Approval', 'Dibuka', 'Ditutup'
 
 export default function RecruitmentJobsPage({ user, onOpenCandidate }: { user: CurrentUser; onOpenCandidate: (id: string) => void }) {
   useRecruitment()
-  const admin = user.role === 'admin'
+  const admin = can(user, 'recruitment.manage')
   const manager = user.role === 'manager'
   const [q, setQ] = useState('')
   const [status, setStatus] = useState(ALL)

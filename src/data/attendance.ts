@@ -452,7 +452,7 @@ export function buildInitial(): AttendanceState {
     hist.forEach((date, i) => {
       const kind = slots.get(i)
       if (kind === 'alfa') {
-        mk(emp, pin, date, { alfaConfirmed: { by: 'Admin HRD', at: date }, audit: [{ at: `${formatDate(addDays(date, 1))}, 09.00 WIB`, by: 'Admin HRD', action: 'Konfirmasi Alfa', before: 'Alfa (belum dikonfirmasi)', after: 'Alfa (dikonfirmasi)' }] })
+        mk(emp, pin, date, { alfaConfirmed: { by: 'Teddy Syahputra', at: date }, audit: [{ at: `${formatDate(addDays(date, 1))}, 09.00 WIB`, by: 'Teddy Syahputra', action: 'Konfirmasi Alfa', before: 'Alfa (belum dikonfirmasi)', after: 'Alfa (dikonfirmasi)' }] })
         return
       }
       if (kind && kind !== 'telat' && kind !== 'cepat') {
@@ -481,8 +481,8 @@ export function buildInitial(): AttendanceState {
     if (emp.nik === 'PPI-2022-0061') return mk(emp, pin, last, { leave: { type: 'Dinas', note: 'Dinas ke Cikarang' } })
     if (emp.nik === 'PPI-2023-0088')
       return mk(emp, pin, last, {
-        pending: { by: 'Admin HRD', role: 'admin', alasan: 'Lupa scan pulang, pulang 15.05 (konfirmasi leader line 2)', lampiran: 'konfirmasi-leader-line-2.pdf', masuk: '07.00', pulang: '15.05', at: '20 Okt 2026, 16.10 WIB' },
-        audit: [{ at: '20 Okt 2026, 16.10 WIB', by: 'Admin HRD', action: 'Mengajukan koreksi', before: 'Tidak Scan Pulang', after: 'Menunggu Approval' }],
+        pending: { by: 'Teddy Syahputra', role: 'hr_personalia', alasan: 'Lupa scan pulang, pulang 15.05 (konfirmasi leader line 2)', lampiran: 'konfirmasi-leader-line-2.pdf', masuk: '07.00', pulang: '15.05', at: '20 Okt 2026, 16.10 WIB' },
+        audit: [{ at: '20 Okt 2026, 16.10 WIB', by: 'Teddy Syahputra', action: 'Mengajukan koreksi', before: 'Tidak Scan Pulang', after: 'Menunggu Approval' }],
       })
     if (emp.nik === 'PPI-2023-0110')
       return mk(emp, pin, last, {

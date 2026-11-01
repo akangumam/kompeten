@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { CircleCheck, Clock, FileText, Link2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -32,7 +33,7 @@ function Body({ kode, nik, user, onUji }: { kode: string; nik: string; user: Cur
   const emp = empOf(nik)
   if (!p || !e) return null
   const pr = progressOf(p, e)
-  const admin = user.role === 'admin'
+  const admin = can(user, 'dev.manage')
   const paket = paketOf(p.paketId ?? '')
   return (
     <>

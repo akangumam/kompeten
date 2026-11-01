@@ -68,7 +68,7 @@ const OPERATOR_INJ = { ...BASIC, 'JOB-INJ-01': 3, 'JOB-INJ-02': 3, 'JOB-INJ-03':
 const LEADER_INJ = { ...OPERATOR_INJ, 'JOB-INJ-01': 4, 'JOB-INJ-02': 4, 'JOB-INJ-03': 4, 'JOB-INJ-04': 4, 'SUP-02': 3, 'SUP-03': 3 }
 
 const ver = (jobdesk: string, targets: Record<string, number>): StandardVersion[] => [
-  { berlakuMulai: '2026-01-01', jobdesk, targets, at: '5 Jan 2026, 09.00 WIB', by: 'Admin HRD' },
+  { berlakuMulai: '2026-01-01', jobdesk, targets, at: '5 Jan 2026, 09.00 WIB', by: 'Teddy Syahputra' },
 ]
 
 export const POSITION_STANDARDS: PositionStandard[] = [
@@ -114,7 +114,7 @@ export function toggleCompetency(kode: string) {
 }
 
 /** Simpan versi standar baru (atau ganti versi dengan tanggal berlaku yang sama). Penilaian Final tidak terpengaruh karena menyimpan snapshot. */
-export function saveStandard(posisi: string, input: { berlakuMulai: string; jobdesk: string; targets: Record<string, number> }, by = 'Admin HRD') {
+export function saveStandard(posisi: string, input: { berlakuMulai: string; jobdesk: string; targets: Record<string, number> }, by = 'Teddy Syahputra') {
   let s = standardOf(posisi)
   if (!s) { s = { posisi, versions: [] }; POSITION_STANDARDS.push(s) }
   const before = standardAt(posisi, input.berlakuMulai)

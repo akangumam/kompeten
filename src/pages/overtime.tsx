@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { TransitionAlert } from '@/components/transition-alert'
 import { periodSelectLabel } from '@/data/master/attendance-rules'
 import { useMemo, useState } from 'react'
@@ -40,7 +41,7 @@ export default function OvertimePage({
 }) {
   const isSpv = user.role === 'supervisor'
   const showPay = !isSpv
-  const canCreate = user.role === 'admin' || user.role === 'supervisor'
+  const canCreate = can(user, 'attendance.manage') || user.role === 'supervisor'
   const [view, setView] = useState('lembur')
   const [periodId, setPeriodId] = useState(CURRENT_PERIOD_ID)
   const [tab, setTab] = useState<Tab>('all')
@@ -172,7 +173,7 @@ export default function OvertimePage({
                 <TabsList className="h-auto max-w-full flex-wrap justify-start">
                   <TabsTrigger value="all">Semua ({counts.all})</TabsTrigger>
                   <TabsTrigger value="menunggu">Menunggu ({counts.menunggu})</TabsTrigger>
-                  {user.role === 'admin' && <TabsTrigger value="verif">Perlu Verifikasi ({counts.verif})</TabsTrigger>}
+                  {can(user, 'attendance.manage') && <TabsTrigger value="verif">Perlu Verifikasi ({counts.verif})</TabsTrigger>}
                   <TabsTrigger value="terjadwal">Terjadwal ({counts.terjadwal})</TabsTrigger>
                   <TabsTrigger value="tervalidasi">Tervalidasi ({counts.tervalidasi})</TabsTrigger>
                   <TabsTrigger value="lainnya">Lainnya ({counts.lainnya})</TabsTrigger>

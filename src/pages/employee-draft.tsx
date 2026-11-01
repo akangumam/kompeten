@@ -1,3 +1,5 @@
+import { can } from '@/lib/access'
+import { emailKantorError, registerAccount } from '@/data/accounts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { DEMO_TODAY } from '@/lib/today'
 import { BadgeCheck, CalendarCheck, CircleCheck, GraduationCap, Printer, Save, ArrowLeft, TriangleAlert, UserX, type LucideIcon } from 'lucide-react'
@@ -97,7 +99,9 @@ export default function EmployeeDraftPage({
   const activated = record.status === 'aktif'
   const isSpv = user.role === 'supervisor'
   // Atasan dan pegawai nonaktif hanya melihat; Atasan juga tidak melihat identitas pribadi dan tab Asset, Tax & Bank.
-  const viewOnly = isSpv || !!exit || user.role === 'payroll'
+  // Identitas pribadi (KTP), bank, dan pajak hanya untuk HR Personalia, HR & GA Manager, dan Payroll; edit hanya HR Personalia.
+  const limited = !can(user, 'employee.sensitive')
+  const viewOnly = !can(user, 'employee.edit') || !!exit
   const direct = record.source === 'langsung'
   const joining = activated && form.tanggalMasuk > DEMO_TODAY
   const dirty = useMemo(() => JSON.stringify(form) !== JSON.stringify(record.form), [form, record.form])
@@ -107,6 +111,7 @@ export default function EmployeeDraftPage({
     ? Object.fromEntries(personalEmpty.map((k) => [k, PERSONAL_MESSAGES[k]]))
     : {}
   const errors = showErrors ? validate(form) : {}
+  const emailError = showErrors && !activated ? emailKantorError(form.emailKantor ?? '') : ''
   const allFormat = formatErrors(form)
   const formatInvalid = Object.keys(allFormat).length > 0
   const shownFormat = Object.fromEntries(
@@ -150,6 +155,7 @@ export default function EmployeeDraftPage({
     const errs = validate(form)
     const keys = Object.keys(errs) as RequiredKey[]
     setShowErrors(true)
+    const emailErr = emailKantorError(form.emailKantor ?? '')
     if (personalEmpty.length > 0) {
       setTab('personal')
       const first = personalEmpty[0]
@@ -165,6 +171,12 @@ export default function EmployeeDraftPage({
       setTab('kepegawaian')
       requestAnimationFrame(() => document.getElementById(`f-${first}`)?.focus())
       toast.error(`Lengkapi ${keys.length} kolom wajib sebelum aktivasi`)
+      return
+    }
+    if (emailErr) {
+      setTab('kepegawaian')
+      requestAnimationFrame(() => document.getElementById('f-emailKantor')?.focus())
+      toast.error(emailErr)
       return
     }
     if (blockOnFormat()) return
@@ -189,6 +201,7 @@ export default function EmployeeDraftPage({
   )
 
   const confirmActivate = (nik: string) => {
+    registerAccount(nik, form.nama, form.emailKantor ?? '')
     onSave({ form, status: 'aktif', nik, activatedAt: DEMO_TODAY })
     toast.success(`Pegawai berhasil diaktifkan · NIP ${nik}`)
   }
@@ -218,6 +231,11 @@ export default function EmployeeDraftPage({
                 {backLabel}
               </Button>
             </>
+          ) : viewOnly ? (
+            <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="size-4" />
+              {backLabel}
+            </Button>
           ) : (
             <>
               <Button variant="outline" onClick={save}>
@@ -245,7 +263,7 @@ export default function EmployeeDraftPage({
           <CircleCheck />
           <AlertDescription>
             {candidate || direct
-              ? `Pegawai ${joining ? 'akan bergabung' : 'aktif'} mulai ${formatDate(form.tanggalMasuk)}. NIP ${record.nik} diterbitkan pada ${formatDate(record.activatedAt ?? DEMO_TODAY)} oleh Admin HRD.`
+              ? `Pegawai ${joining ? 'akan bergabung' : 'aktif'} mulai ${formatDate(form.tanggalMasuk)}. NIP ${record.nik} diterbitkan pada ${formatDate(record.activatedAt ?? DEMO_TODAY)} oleh HR Personalia.`
               : `Pegawai aktif sejak ${formatDate(form.tanggalMasuk)}. NIP ${record.nik}.`}
           </AlertDescription>
         </Alert>
@@ -297,7 +315,7 @@ export default function EmployeeDraftPage({
                     <TabsTrigger value="kepegawaian" className="flex-none px-3 py-2">Kepegawaian</TabsTrigger>
                     {activated && record.nik && <TabsTrigger value="riwayat" className="flex-none px-3 py-2">Riwayat Kepegawaian</TabsTrigger>}
                     <TabsTrigger value="pengembangan" className="flex-none px-3 py-2">Pengembangan</TabsTrigger>
-                    {!isSpv && <TabsTrigger value="tax" className="flex-none px-3 py-2">Asset, Tax &amp; Bank</TabsTrigger>}
+                    {!limited && <TabsTrigger value="tax" className="flex-none px-3 py-2">Asset, Tax &amp; Bank</TabsTrigger>}
                     <TabsTrigger value="kehadiran" className="flex-none px-3 py-2">Kehadiran &amp; Cuti</TabsTrigger>
                   </TabsList>
                 </div>
@@ -309,21 +327,21 @@ export default function EmployeeDraftPage({
                     required={direct && !activated}
                     requiredErrors={personalErrors}
                     readOnly={viewOnly}
-                    hideIds={isSpv}
+                    hideIds={limited}
                     onBlurField={onBlurField}
                     onChange={patch}
                   />
                   {saveChanges}
                 </TabsContent>
                 <TabsContent value="kepegawaian">
-                  <KepegawaianTab form={form} errors={errors} nik={record.nik} locked={activated} atasan={atasan} showPay={!isSpv} onChange={patch} />
+                  <KepegawaianTab form={form} errors={errors} nik={record.nik} locked={activated || viewOnly} atasan={atasan} showPay={!isSpv} emailError={emailError} onChange={patch} />
                 </TabsContent>
                 {activated && record.nik && (
                   <TabsContent value="riwayat">
                     <RiwayatTab nik={record.nik} user={user} />
                   </TabsContent>
                 )}
-                {!isSpv && (
+                {!limited && (
                   <TabsContent value="tax" className="space-y-6">
                     <TaxTab form={form} errors={shownFormat} readOnly={viewOnly} onBlurField={onBlurField} onChange={patch} />
                     {saveChanges}

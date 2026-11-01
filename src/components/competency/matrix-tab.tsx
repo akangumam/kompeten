@@ -19,7 +19,7 @@ export function MatrixTab({ rows, posisi, periodId, periodLabel, onOpen }: { row
     return (
       <Alert variant="warning">
         <TriangleAlert aria-hidden />
-        <AlertDescription>Standar belum diatur untuk posisi {posisi}. Admin HRD mengaturnya di Data Master › Kompetensi.</AlertDescription>
+        <AlertDescription>Standar belum diatur untuk posisi {posisi}. HR Development & Industrial mengaturnya di Data Master › Kompetensi.</AlertDescription>
       </Alert>
     )
   }

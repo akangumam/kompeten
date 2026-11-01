@@ -16,7 +16,7 @@ export type ShiftSwap = {
   decision?: { by: string; at: string; alasan?: string }
 }
 
-const ADM = 'Admin HRD'
+const ADM = 'Teddy Syahputra'
 
 export const SEED_SWAPS: ShiftSwap[] = [
   {

@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { AlertTriangle, CheckCircle, Clock, UserCheck, Thermometer } from 'lucide-react'
 import { useMemo } from 'react'
 import { BarChartGrouped, BarChartSimple, ChartCard, LineChartCompare } from '@/components/charts'
@@ -64,7 +65,7 @@ export function PresensiTab({
 }) {
   const d = useMemo(() => presensiData(records, requests, user, periodId, dept), [records, requests, user, periodId, dept])
   const spv = user.role === 'supervisor'
-  const showKategori = user.role === 'admin' || user.role === 'manager'
+  const showKategori = can(user, 'attendance.sick-category')
   const noData = 'Belum ada data absensi pada periode ini'
   const monthlyEmptyBefore = d.monthly.slice(0, 9).every((m) => m.hari === 0)
   const shown = d.anomalyRows.slice(0, 5)

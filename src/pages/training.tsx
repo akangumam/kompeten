@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { StatCard } from '@/components/dashboard/stat-card'
@@ -23,7 +24,7 @@ const ALL = 'all'
 
 export default function TrainingPage({ user }: { user: CurrentUser }) {
   useTraining()
-  const admin = user.role === 'admin'
+  const admin = can(user, 'dev.manage')
   const [tahun, setTahun] = useState('2026')
   const [tipe, setTipe] = useState(ALL)
   const [komp, setKomp] = useState(ALL)

@@ -39,7 +39,7 @@ const seed = (no: string, posisi: string, kebutuhan: number, paketIds: string[],
     no, posisi, dept: p.department ?? '', level: p.level, grade: gradeList(p.grade)[0], kebutuhan, jenis: 'Organik', statusKerja: 'Kontrak', durasi: 12,
     buka: '2026-09-01', tutup: '2026-11-30', paketIds, sumber: SRC_ALL, status: 'Dibuka',
     syarat: { pendidikan: 'SMA/SMK', usiaMax: 35, pengalaman: 'Fresh graduate diterima', catatan: '', ...syarat },
-    dibuat: { by: 'Admin HRD', at: '2026-08-25' }, diajukan: { by: 'Admin HRD', at: '2026-08-25' }, disetujui: { by: 'Lestari Wulandari', at: '2026-08-28' },
+    dibuat: { by: 'Okta Maulana', at: '2026-08-25' }, diajukan: { by: 'Okta Maulana', at: '2026-08-25' }, disetujui: { by: 'Lestari Wulandari', at: '2026-08-28' },
   }
 }
 

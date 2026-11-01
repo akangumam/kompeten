@@ -144,20 +144,20 @@ const seed = (o: Omit<Offer, 'tunjangan' | 'makan' | 'transport' | 'riwayat' | '
 seed({
   id: 'OFR-1', kandidatId: 'LMR-2026-0143', olNo: 'OL/HRD-PPI/009/X/2026', posisi: 'Operator Injection', level: 'Operator', grade: 'G1', jenis: 'Organik', statusKerja: 'Kontrak', durasi: 12,
   tanggalMulai: '2026-11-02', gajiPokok: 5_300_000, benefit: 'BPJS Kesehatan dan Ketenagakerjaan, seragam kerja.', status: 'Diterima kandidat',
-  diajukan: { by: 'Admin HRD', at: '2026-10-02' }, disetujui: { by: 'Lestari Wulandari', at: '2026-10-02' }, dikirim: { tanggal: '2026-10-03', batas: '2026-10-06', by: 'Admin HRD' },
-  respon: { jenis: 'Menerima', tanggal: '2026-10-06', by: 'Admin HRD', file: { name: 'OL_009_Andi_Saputra_ttd.pdf', size: 540_000 } },
-  riwayat: [{ at: '2026-10-02', label: 'Penawaran dibuat dan diajukan', by: 'Admin HRD' }, { at: '2026-10-02', label: 'Penawaran disetujui', by: 'Lestari Wulandari' }, { at: '2026-10-03', label: 'Penawaran dikirim ke kandidat (batas jawab 6 Okt 2026)', by: 'Admin HRD' }, { at: '2026-10-06', label: 'Kandidat menerima penawaran', by: 'Admin HRD' }],
+  diajukan: { by: 'Okta Maulana', at: '2026-10-02' }, disetujui: { by: 'Lestari Wulandari', at: '2026-10-02' }, dikirim: { tanggal: '2026-10-03', batas: '2026-10-06', by: 'Okta Maulana' },
+  respon: { jenis: 'Menerima', tanggal: '2026-10-06', by: 'Okta Maulana', file: { name: 'OL_009_Andi_Saputra_ttd.pdf', size: 540_000 } },
+  riwayat: [{ at: '2026-10-02', label: 'Penawaran dibuat dan diajukan', by: 'Okta Maulana' }, { at: '2026-10-02', label: 'Penawaran disetujui', by: 'Lestari Wulandari' }, { at: '2026-10-03', label: 'Penawaran dikirim ke kandidat (batas jawab 6 Okt 2026)', by: 'Okta Maulana' }, { at: '2026-10-06', label: 'Kandidat menerima penawaran', by: 'Okta Maulana' }],
 })
 seed({
   id: 'OFR-2', kandidatId: 'LMR-2026-0144', olNo: 'OL/HRD-PPI/011/X/2026', posisi: 'QC Inspector', level: 'Operator', grade: 'G1', jenis: 'Organik', statusKerja: 'Kontrak', durasi: 12,
   tanggalMulai: '2026-11-02', gajiPokok: 5_500_000, benefit: 'BPJS Kesehatan dan Ketenagakerjaan, seragam kerja.', status: 'Diterima kandidat',
-  diajukan: { by: 'Admin HRD', at: '2026-10-08' }, disetujui: { by: 'Lestari Wulandari', at: '2026-10-08' }, dikirim: { tanggal: '2026-10-09', batas: '2026-10-12', by: 'Admin HRD' },
-  respon: { jenis: 'Menerima', tanggal: '2026-10-15', by: 'Admin HRD', file: { name: 'OL_011_Rina_Marlina_ttd.pdf', size: 612_000 } },
-  riwayat: [{ at: '2026-10-08', label: 'Penawaran dibuat dan diajukan', by: 'Admin HRD' }, { at: '2026-10-08', label: 'Penawaran disetujui', by: 'Lestari Wulandari' }, { at: '2026-10-09', label: 'Penawaran dikirim ke kandidat (batas jawab 12 Okt 2026)', by: 'Admin HRD' }, { at: '2026-10-15', label: 'Kandidat menerima penawaran', by: 'Admin HRD' }],
+  diajukan: { by: 'Okta Maulana', at: '2026-10-08' }, disetujui: { by: 'Lestari Wulandari', at: '2026-10-08' }, dikirim: { tanggal: '2026-10-09', batas: '2026-10-12', by: 'Okta Maulana' },
+  respon: { jenis: 'Menerima', tanggal: '2026-10-15', by: 'Okta Maulana', file: { name: 'OL_011_Rina_Marlina_ttd.pdf', size: 612_000 } },
+  riwayat: [{ at: '2026-10-08', label: 'Penawaran dibuat dan diajukan', by: 'Okta Maulana' }, { at: '2026-10-08', label: 'Penawaran disetujui', by: 'Lestari Wulandari' }, { at: '2026-10-09', label: 'Penawaran dikirim ke kandidat (batas jawab 12 Okt 2026)', by: 'Okta Maulana' }, { at: '2026-10-15', label: 'Kandidat menerima penawaran', by: 'Okta Maulana' }],
 })
 seed({
   id: 'OFR-3', kandidatId: 'LMR-2026-0146', olNo: 'OL/HRD-PPI/013/X/2026', posisi: 'Admin PPIC', level: 'Staff', grade: 'G3', jenis: 'Organik', statusKerja: 'Kontrak', durasi: 12,
   tanggalMulai: '2026-11-16', gajiPokok: 6_200_000, benefit: 'BPJS Kesehatan dan Ketenagakerjaan, seragam kerja.', status: 'Menunggu Approval',
-  diajukan: { by: 'Admin HRD', at: '2026-10-26' },
-  riwayat: [{ at: '2026-10-26', label: 'Penawaran versi 1 diajukan', by: 'Admin HRD' }],
+  diajukan: { by: 'Okta Maulana', at: '2026-10-26' },
+  riwayat: [{ at: '2026-10-26', label: 'Penawaran versi 1 diajukan', by: 'Okta Maulana' }],
 })

@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { addDayIso } from '@/data/contracts'
@@ -147,15 +148,15 @@ function syncContractEnding() {
 }
 
 /* ---------- akses ---------- */
-export const canStartOff = (user: CurrentUser) => user.role === 'admin'
+export const canStartOff = (user: CurrentUser) => can(user, 'ir.manage')
 export function canSeeOff(o: Off, user: CurrentUser) {
-  if (user.role === 'admin' || user.role === 'manager' || user.role === 'payroll') return true
+  if (can(user, 'ir.off-view')) return true
   return user.role === 'supervisor' && personOf(o.nik)?.atasanId === user.nik
 }
-/** Isi exit interview dan Eligible for Rehire hanya untuk Admin HRD dan HR & GA Manager. */
-export const canSeeInterview = (user: CurrentUser) => user.role === 'admin' || user.role === 'manager'
+/** Isi exit interview dan Eligible for Rehire hanya untuk HR Development & Industrial dan HR & GA Manager. */
+export const canSeeInterview = (user: CurrentUser) => can(user, 'ir.interview')
 export const canReviewOff = (o: Off, user: CurrentUser) => o.status === 'berjalan' && o.approval.status === 'menunggu' && user.role === 'manager' && o.diajukan.by !== user.nama
-export const canCancelOff = (o: Off, user: CurrentUser) => user.role === 'admin' && o.status === 'berjalan'
+export const canCancelOff = (o: Off, user: CurrentUser) => can(user, 'ir.manage') && o.status === 'berjalan'
 
 /* ---------- validasi ---------- */
 export type OffInput = {
@@ -333,7 +334,7 @@ export function setClearance(no: string, key: ClearKey, patch: { status: ClearSt
   const o = OFFS.find((x) => x.no === no)
   const c = o?.clearance.find((x) => x.key === key)
   if (!o || !c || o.status !== 'berjalan') return 'Tidak dapat mengubah clearance'
-  if (user_cannot(actor)) return 'Hanya Admin HRD yang mencatat clearance'
+  if (user_cannot(actor)) return 'Hanya HR Development & Industrial atau HR & GA Manager yang mencatat clearance'
   if (key === 'koperasi') return 'Item Koperasi dikonfirmasi oleh Bendahara'
   c.status = patch.status
   c.catatan = patch.catatan?.trim() || c.catatan
@@ -341,7 +342,7 @@ export function setClearance(no: string, key: ClearKey, patch: { status: ClearSt
   bump()
   return ''
 }
-const user_cannot = (u: CurrentUser) => u.role !== 'admin' && u.role !== 'manager'
+const user_cannot = (u: CurrentUser) => !can(u, 'ir.clearance')
 export function exceptClearance(no: string, key: ClearKey, alasan: string, actor: CurrentUser): string {
   const o = OFFS.find((x) => x.no === no)
   const c = o?.clearance.find((x) => x.key === key)
@@ -440,7 +441,7 @@ export function offKpi(list: Off[]) {
 
 /* ---------- seed ---------- */
 function seed() {
-  const ADM = 'Admin HRD'
+  const ADM = 'Teddy Syahputra'
   const done = (n: number, nik: string, reason: OffReason, surat: string | undefined, keluar: string, diajukan: string, iv: Omit<Interview, 'oleh' | 'at'>, skk: number): Off => ({
     no: `OFF-2026-${String(n).padStart(4, '0')}`, nik, reason, tanggalKeluar: keluar, tanggalSurat: surat, dokumen: surat ? 'surat-pengunduran-diri.pdf' : undefined,
     keterangan: '', status: 'selesai', diajukan: { by: ADM, at: `${formatDate(diajukan)}, 09.00 WIB`, tanggal: diajukan },

@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { MoreHorizontal, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -28,7 +29,8 @@ const STATUSES: TestStatus[] = ['Dijadwalkan', 'Sedang dikerjakan', 'Selesai', '
 
 export default function RecruitmentTestsPage({ user, onOpenCandidate }: { user: CurrentUser; onOpenCandidate: (id: string) => void }) {
   useRecruitment()
-  const admin = user.role === 'admin'
+  const admin = can(user, 'tests.package')
+  const assign = can(user, 'tests.manage')
   const [tab, setTab] = useState('paket')
   const [sumber, setSumber] = useState<'Rekrutmen' | 'Training'>('Rekrutmen')
   const [paketSheet, setPaketSheet] = useState<{ paket?: PaketTes; ro: boolean } | null>(null)
@@ -163,8 +165,8 @@ export default function RecruitmentTestsPage({ user, onOpenCandidate }: { user: 
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Aksi"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onSelect={() => setDetail(a)}>Detail</DropdownMenuItem>
-                              {admin && st !== 'Selesai' && <DropdownMenuItem onSelect={() => setScore(a)}>Input nilai</DropdownMenuItem>}
-                              {admin && st !== 'Selesai' && <DropdownMenuItem onSelect={() => setResend(a)}>Kirim ulang undangan</DropdownMenuItem>}
+                              {assign && st !== 'Selesai' && <DropdownMenuItem onSelect={() => setScore(a)}>Input nilai</DropdownMenuItem>}
+                              {assign && st !== 'Selesai' && <DropdownMenuItem onSelect={() => setResend(a)}>Kirim ulang undangan</DropdownMenuItem>}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

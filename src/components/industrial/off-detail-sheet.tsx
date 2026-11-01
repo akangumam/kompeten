@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useEffect, useRef, useState } from 'react'
 import { Check, FileText, Lock, Paperclip } from 'lucide-react'
 import { toast } from 'sonner'
@@ -163,7 +164,7 @@ function StepClearance({ off, user }: { off: Off; user: CurrentUser }) {
   const [except, setExcept] = useState<ClearItem | null>(null)
   const [alasan, setAlasan] = useState('')
   const [error, setError] = useState('')
-  const admin = user.role === 'admin'
+  const admin = can(user, 'ir.manage')
   const open = off.status === 'berjalan'
   return (
     <div className="space-y-3">
@@ -218,7 +219,7 @@ function StepInterview({ off, user }: { off: Off; user: CurrentUser }) {
   const [error, setError] = useState('')
   if (!needsInterview(off)) return <p className="text-sm text-muted-foreground">Exit interview tidak diperlukan untuk alasan Meninggal Dunia.</p>
   if (!canSeeInterview(user)) return (
-    <div className="flex items-start gap-2 text-sm text-muted-foreground"><Lock className="mt-0.5 size-4 shrink-0" aria-hidden />Isi exit interview dan Eligible for Rehire hanya untuk Admin HRD dan HR & GA Manager.</div>
+    <div className="flex items-start gap-2 text-sm text-muted-foreground"><Lock className="mt-0.5 size-4 shrink-0" aria-hidden />Isi exit interview dan Eligible for Rehire hanya untuk HR Development & Industrial dan HR & GA Manager.</div>
   )
   const readOnly = off.status !== 'berjalan' || !!off.interview
   const set = (p: Partial<typeof iv>) => setIv((c) => ({ ...c, ...p }))
@@ -266,7 +267,7 @@ function StepHakAkhir({ off, user }: { off: Off; user: CurrentUser }) {
   const { openFinalPay } = useDirectoryNav()
   const rec = recordOfOff(off.no)
   const koperasi = off.clearance.some((c) => c.key === 'koperasi')
-  const hr = user.role === 'admin' || user.role === 'manager'
+  const hr = can(user, 'ir.interview')
   const info = notEligible(off.nik)
   const st = rec ? statusOf(rec) : undefined
   return (
@@ -322,7 +323,7 @@ function StepSelesai({ off, user, onFinished, onSkk }: { off: Off; user: Current
       {done ? (
         <Alert variant="success"><Check /><AlertDescription>Proses keluar selesai · {off.selesai?.at}. {nonaktif > DEMO_TODAY ? `Terjadwal nonaktif ${formatDate(nonaktif)}; hari ini pegawai masih aktif.` : ''}</AlertDescription></Alert>
       ) : (
-        (user.role === 'admin' || user.role === 'manager') && reached(off) >= 6 && (
+        can(user, 'ir.clearance') && reached(off) >= 6 && (
           <div className="flex justify-end">
             <Button onClick={() => { const r = finishOff(off.no, user); const n = r.off ? onFinished(r.off) : 0; setEffects(r.effects.map((e) => (e.startsWith('Pengajuan') ? `${n} pengajuan pegawai setelah tanggal keluar dibatalkan (alasan "Pegawai keluar")` : e))); toast.success(`Proses keluar ${off.no} selesai`) }}>Selesaikan</Button>
           </div>

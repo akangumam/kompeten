@@ -200,7 +200,7 @@ function ReceiptDialog({ disc, user, onClose }: { disc: Disc; user: CurrentUser;
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Catat Tanda Terima · {disc.suratNo}</DialogTitle>
-          <DialogDescription>{p?.nama} · {disc.jenis}. Dicatat oleh Admin HRD setelah surat diserahkan.</DialogDescription>
+          <DialogDescription>{p?.nama} · {disc.jenis}. Dicatat oleh HR Development & Industrial setelah surat diserahkan.</DialogDescription>
         </DialogHeader>
         <RadioGroup value={mode} onValueChange={(v) => { setMode(v as 'diterima' | 'menolak'); setError('') }} className="gap-2">
           <label htmlFor="rc-ok" className="flex items-center gap-2 text-sm"><RadioGroupItem id="rc-ok" value="diterima" />Surat diterima pegawai</label>

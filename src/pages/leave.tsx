@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { TransitionAlert } from '@/components/transition-alert'
 import { periodSelectLabel } from '@/data/master/attendance-rules'
 import { useMemo, useState } from 'react'
@@ -92,7 +93,7 @@ export default function LeavePage({ api, user, octClosed }: { api: LeaveApi; use
               ))}
             </SelectContent>
           </Select>
-          {user.role === 'admin' && (
+          {can(user, 'attendance.manage') && (
             <Button onClick={() => setAjukan(true)}>
               <CalendarPlus className="size-4" />
               Ajukan
@@ -119,7 +120,7 @@ export default function LeavePage({ api, user, octClosed }: { api: LeaveApi; use
                 <TabsList className="h-auto max-w-full flex-wrap justify-start">
                   <TabsTrigger value="all">Semua ({counts.all})</TabsTrigger>
                   <TabsTrigger value="menunggu">Menunggu ({counts.menunggu})</TabsTrigger>
-                  {user.role === 'admin' && <TabsTrigger value="verif">Perlu Verifikasi ({counts.verif})</TabsTrigger>}
+                  {can(user, 'attendance.manage') && <TabsTrigger value="verif">Perlu Verifikasi ({counts.verif})</TabsTrigger>}
                   <TabsTrigger value="disetujui">Disetujui ({counts.disetujui})</TabsTrigger>
                   <TabsTrigger value="ditolak">Ditolak ({counts.ditolak})</TabsTrigger>
                   <TabsTrigger value="dibatalkan">Dibatalkan ({counts.dibatalkan})</TabsTrigger>

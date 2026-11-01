@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { addDayIso, contractEnd } from '@/data/contracts'
@@ -110,16 +111,16 @@ export const unansweredPanggilan = (nik: string) =>
 export const isOpenPanggilan = (d: Disc) => d.jenis === 'Surat Panggilan' && d.status === 'aktif' && d.panggilan?.tanggapan !== 'hadir' && d.panggilan?.tanggapan !== 'tidak-hadir' && (d.panggilan?.hadir ?? '') >= DEMO_TODAY
 
 /* ---------- akses ---------- */
-/** Catatan disiplin hanya untuk Admin HRD, HR & GA Manager, dan atasan langsung pegawai. */
+/** Catatan disiplin hanya untuk HR Development & Industrial, HR & GA Manager, dan atasan langsung pegawai. */
 export function canSeeDisc(d: Pick<Disc, 'nik'>, user: CurrentUser): boolean {
-  if (user.role === 'admin' || user.role === 'manager') return true
+  if (can(user, 'ir.discipline-view') && user.role !== 'supervisor') return true
   return user.role === 'supervisor' && empOf(d.nik)?.atasanId === user.nik
 }
 export const canSeeDiscipline = (nik: string, user: CurrentUser) => canSeeDisc({ nik }, user)
-export const canCreateDisc = (user: CurrentUser) => user.role === 'admin' || user.role === 'supervisor'
+export const canCreateDisc = (user: CurrentUser) => can(user, 'ir.manage') || user.role === 'supervisor'
 export const canReviewDisc = (d: Disc, user: CurrentUser) => d.status === 'menunggu' && user.role === 'manager' && d.diajukan.by !== user.nama && d.nik !== 'manager'
-export const canCancelDisc = (d: Disc, user: CurrentUser) => user.role === 'admin' && (d.status === 'menunggu' || d.status === 'aktif') && statusOf(d) !== 'kedaluwarsa'
-export const canReceipt = (d: Disc, user: CurrentUser) => user.role === 'admin' && hasLetter(d.jenis) && (d.status === 'aktif') && !d.tandaTerima
+export const canCancelDisc = (d: Disc, user: CurrentUser) => can(user, 'ir.manage') && (d.status === 'menunggu' || d.status === 'aktif') && statusOf(d) !== 'kedaluwarsa'
+export const canReceipt = (d: Disc, user: CurrentUser) => can(user, 'ir.manage') && hasLetter(d.jenis) && (d.status === 'aktif') && !d.tandaTerima
 export const eligibleForCreate = (user: CurrentUser) => ROSTER.filter((e) => e.tanggalMasuk <= DEMO_TODAY && (user.role !== 'supervisor' || e.atasanId === user.nik))
 
 /* ---------- membuat ---------- */
@@ -244,7 +245,7 @@ export const usedViolation = (kode: string) => DISC.filter((d) => d.pelanggaran 
 
 /* ---------- seed ---------- */
 function seed() {
-  const ADM = 'Admin HRD'
+  const ADM = 'Teddy Syahputra'
   const sp1Terbit = '2026-09-02'
   const byName = (n: string) => ROSTER.find((e) => e.nama === n)!.nik
   DISC.push(

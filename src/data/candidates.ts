@@ -75,7 +75,7 @@ const LWG: Record<string, string> = {
   'Operator Injection': 'LWG-2026-018', 'QC Inspector': 'LWG-2026-019', 'Admin PPIC': 'LWG-2026-020', 'Staff Gudang': 'LWG-2026-021',
   'Teknisi Mekanik': 'LWG-2026-022', 'Staff HR': 'LWG-2026-023', 'Operator Blow Molding': 'LWG-2026-024',
 }
-const ADM = 'Admin HRD'
+const ADM = 'Okta Maulana'
 const h = (date: string, label: string, by = ADM, stage?: Stage): HistoryItem => ({ date, label, by, stage })
 const slug = (n: string) => n.replace(/ /g, '_')
 type DS = [DocKey, DocStatus?, string?]
@@ -130,7 +130,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Pondok Aren Raya No. 9, Tangerang Selatan', darurat: { nama: 'Andri Puspita', hubungan: 'Kakak', hp: '085690124400' },
     pendidikan: [edu('S1', 'Universitas Pamulang', 'Psikologi', '2019', '3,52')], pengalaman: [exp('PT Mitra Sejahtera', 'HR Staff', '2019-09-02', '2025-12-31', 'Efisiensi perusahaan')], skills: ['Rekrutmen', 'Administrasi BPJS'],
     docs: docs('Lina Puspita', ALL_DOCS, '2026-10-07'),
-    interview: { tanggal: '2026-10-28', jam: '10.00', lokasi: 'Ruang Meeting HR, Lantai 2', userNik: 'PPI-2016-0003', userNama: 'Lestari Wulandari', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-10-28', jam: '10.00', lokasi: 'Ruang Meeting HR, Lantai 2', userNik: 'PPI-2016-0003', userNama: 'Lestari Wulandari', hrNama: 'Okta Maulana' },
     history: [h('2026-10-06', 'Lamaran diterima (Jobstreet)', 'Pelamar', 'Seleksi Administrasi'), h('2026-10-07', 'Dokumen terverifikasi lengkap'), h('2026-10-08', 'Undangan tes dikirim: Tes Pengetahuan Umum, Psikotes', ADM, 'Tes'), h('2026-10-14', 'Lanjut interview: jadwal 28 Okt 2026, 10.00', ADM, 'Interview')],
   }),
   mk({
@@ -139,7 +139,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Raya Mauk No. 66, Kab. Tangerang', darurat: { nama: 'Sulastri', hubungan: 'Istri', hp: '083844106000' },
     pendidikan: [edu('SMK', 'SMK Muhammadiyah 1 Tangerang', 'Teknik Mesin', '2014', '79,8')], pengalaman: [exp('PT Plastindo Jaya', 'Operator Blow Molding', '2022-03-07', '2024-12-27', 'Kontrak tidak diperpanjang')], skills: ['Blow molding', 'Shift malam'],
     docs: docs('Hendra Wijaya', ALL_DOCS, '2026-10-06'),
-    interview: { tanggal: '2026-10-22', jam: '09.00', lokasi: 'Ruang Meeting Produksi', userNik: 'PPI-2019-0007', userNama: 'Hendra Gunawan', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-10-22', jam: '09.00', lokasi: 'Ruang Meeting Produksi', userNik: 'PPI-2019-0007', userNama: 'Hendra Gunawan', hrNama: 'Okta Maulana' },
     userScore: 72, hrScore: 76, userCatatan: 'Terampil mengoperasikan blow molding, perlu pembekalan SOP K3.',
     notes: 'Pengalaman 2 tahun di mesin blow molding. Siap shift malam, perlu pembekalan SOP K3.',
     history: [h('2026-10-05', 'Lamaran diterima (WA Group)', 'Pelamar', 'Seleksi Administrasi'), h('2026-10-06', 'Dokumen terverifikasi lengkap'), h('2026-10-07', 'Undangan tes dikirim: Tes Pengetahuan Umum, Tes Teknis Operator', ADM, 'Tes'), h('2026-10-12', 'Lanjut interview: jadwal 22 Okt 2026, 09.00', ADM, 'Interview'), h('2026-10-22', 'Nilai User 72 diinput', 'Hendra Gunawan'), h('2026-10-22', 'Nilai HR 76 diinput')],
@@ -150,7 +150,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Hasyim Ashari No. 12, Cipondoh, Kota Tangerang', darurat: { nama: 'Mulyadi', hubungan: 'Ayah', hp: '081966332000' },
     pendidikan: [edu('S1', 'Universitas Muhammadiyah Tangerang', 'Manajemen', '2020', '3,38')], pengalaman: [exp('PT Sinar Packaging', 'Admin Produksi', '2020-10-05', '2026-08-31', 'Mencari pengembangan karier')], skills: ['Microsoft Excel lanjutan', 'Perencanaan produksi'],
     docs: docs('Dewi Lestari', ALL_DOCS, '2026-10-04'),
-    interview: { tanggal: '2026-10-09', jam: '13.00', lokasi: 'Ruang Meeting PPIC', userNik: 'PPI-2018-0022', userNama: 'Dian Puspitasari', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-10-09', jam: '13.00', lokasi: 'Ruang Meeting PPIC', userNik: 'PPI-2018-0022', userNama: 'Dian Puspitasari', hrNama: 'Okta Maulana' },
     userScore: 78, hrScore: 80, userCatatan: 'Paham alur perencanaan produksi dan komunikasi baik.',
     notes: 'Menguasai Excel lanjutan dan paham alur perencanaan produksi. Komunikasi baik.',
     history: [h('2026-10-03', 'Lamaran diterima (Indeed)', 'Pelamar', 'Seleksi Administrasi'), h('2026-10-04', 'Dokumen terverifikasi lengkap'), h('2026-10-05', 'Undangan tes dikirim: Tes Pengetahuan Umum, Psikotes', ADM, 'Tes'), h('2026-10-08', 'Lanjut interview: jadwal 9 Okt 2026, 13.00', ADM, 'Interview'), h('2026-10-09', 'Nilai User 78 diinput', 'Dian Puspitasari'), h('2026-10-09', 'Nilai HR 80 diinput'), h('2026-10-26', 'Penawaran dibuat dan diajukan ke HR & GA Manager', ADM, 'Penawaran')],
@@ -162,7 +162,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Cut Meutia No. 27, Bekasi Timur', darurat: { nama: 'Yuni Astuti', hubungan: 'Istri', hp: '087712098000' },
     pendidikan: [edu('D3', 'Politeknik Manufaktur Bandung', 'Teknik Mesin', '2016', '3,20')], pengalaman: [exp('PT Inti Mekatronika', 'Teknisi Mekanik', '2017-01-09', '2026-06-30', 'Perusahaan menutup lini produksi')], skills: ['Perawatan preventif', 'Hidrolik & pneumatik'],
     docs: docs('Fajar Nugroho', ALL_DOCS, '2026-10-03'),
-    interview: { tanggal: '2026-10-29', jam: '09.00', lokasi: 'Ruang Meeting Maintenance', userNik: 'PPI-2019-0015', userNama: 'Teguh Santoso', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-10-29', jam: '09.00', lokasi: 'Ruang Meeting Maintenance', userNik: 'PPI-2019-0015', userNama: 'Teguh Santoso', hrNama: 'Okta Maulana' },
     history: [h('2026-10-02', 'Lamaran diterima (Referral)', 'Pelamar', 'Seleksi Administrasi'), h('2026-10-03', 'Dokumen terverifikasi lengkap'), h('2026-10-04', 'Undangan tes dikirim: Tes Pengetahuan Umum, Tes Praktik Mesin', ADM, 'Tes'), h('2026-10-07', 'Lanjut interview: jadwal 29 Okt 2026, 09.00', ADM, 'Interview')],
   }),
   mk({
@@ -171,7 +171,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Pahlawan No. 21, Tambun Selatan, Kab. Bekasi', darurat: { nama: 'Budi Santoso', hubungan: 'Ayah', hp: '082144102290' },
     pendidikan: [edu('S1', 'Universitas Bhayangkara Jakarta Raya', 'Teknik Industri', '2021', '3,55')], pengalaman: [exp('PT Delta Kemasan', 'QC Inspector', '2021-09-01', '2026-08-31', 'Kontrak berakhir')], skills: ['ISO 9001', 'Inspeksi AQL', 'Pengukuran dimensi'],
     docs: docs('Rina Marlina', ALL_DOCS, '2026-10-01'),
-    interview: { tanggal: '2026-10-05', jam: '10.00', lokasi: 'Ruang Meeting QA', userNik: 'PPI-2018-0011', userNama: 'Ratih Kusuma', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-10-05', jam: '10.00', lokasi: 'Ruang Meeting QA', userNik: 'PPI-2018-0011', userNama: 'Ratih Kusuma', hrNama: 'Okta Maulana' },
     userScore: 84, hrScore: 86, userCatatan: 'Teliti dan memahami standar inspeksi.',
     notes: 'Teliti, memahami standar inspeksi ISO 9001. Direkomendasikan oleh user dan HR.',
     history: [h('2026-09-30', 'Lamaran diterima (Website)', 'Pelamar', 'Seleksi Administrasi'), h('2026-10-01', 'Dokumen terverifikasi lengkap'), h('2026-10-01', 'Undangan tes dikirim: Tes Pengetahuan Umum, Tes Teknis QC', ADM, 'Tes'), h('2026-10-03', 'Lanjut interview: jadwal 5 Okt 2026, 10.00', ADM, 'Interview'), h('2026-10-05', 'Nilai User 84 diinput', 'Ratih Kusuma'), h('2026-10-05', 'Nilai HR 86 diinput'), h('2026-10-08', 'Penawaran dibuat dan diajukan', ADM, 'Penawaran'), h('2026-10-08', 'Penawaran disetujui', 'Lestari Wulandari'), h('2026-10-09', 'Penawaran dikirim ke kandidat'), h('2026-10-15', 'Kandidat menerima penawaran', ADM, 'Diterima')],
@@ -183,7 +183,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Raya Serang KM 12, Cikupa, Kab. Tangerang', darurat: { nama: 'Sri Wahyuni', hubungan: 'Ibu', hp: '081277314410' },
     pendidikan: [edu('SMK', 'SMK Negeri 2 Tangerang', 'Teknik Pemesinan', '2016', '80,5')], pengalaman: [exp('PT Cipta Plastik', 'Operator Injection', '2017-03-01', '2026-08-15', 'Pindah domisili')], skills: ['Injection 150T', 'Penanganan reject'],
     docs: docs('Andi Saputra', ALL_DOCS, '2026-09-29'),
-    interview: { tanggal: '2026-10-01', jam: '09.00', lokasi: 'Ruang Meeting Produksi', userNik: 'PPI-2019-0007', userNama: 'Hendra Gunawan', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-10-01', jam: '09.00', lokasi: 'Ruang Meeting Produksi', userNik: 'PPI-2019-0007', userNama: 'Hendra Gunawan', hrNama: 'Okta Maulana' },
     userScore: 80, hrScore: 84, userCatatan: 'Berpengalaman di mesin injection dan siap ditempatkan segera.',
     notes: 'Berpengalaman di mesin injection 150T. Disiplin dan siap ditempatkan segera.',
     draftCreatedAt: '2026-10-20',
@@ -196,7 +196,7 @@ export const CANDIDATES: Candidate[] = [
     alamatKtp: 'Jl. Gatot Subroto No. 88, Kota Tangerang', darurat: { nama: 'Wulan', hubungan: 'Kakak', hp: '089655214000' },
     pendidikan: [edu('S1', 'Universitas Pamulang', 'Teknik Industri', '2021', '3,10')], pengalaman: [], belumBekerja: true, skills: ['Microsoft Office'],
     docs: docs('Sari Wulandari', ALL_DOCS, '2026-09-23'),
-    interview: { tanggal: '2026-09-29', jam: '10.00', lokasi: 'Ruang Meeting PPIC', userNik: 'PPI-2018-0022', userNama: 'Dian Puspitasari', hrNama: 'Admin HRD' },
+    interview: { tanggal: '2026-09-29', jam: '10.00', lokasi: 'Ruang Meeting PPIC', userNik: 'PPI-2018-0022', userNama: 'Dian Puspitasari', hrNama: 'Okta Maulana' },
     userScore: 56, hrScore: 60, userCatatan: 'Pemahaman proses PPIC masih dasar.', notes: 'Pemahaman proses PPIC masih dasar.',
     rejectReason: 'Nilai interview di bawah ambang 65', stageSebelum: 'Interview',
     history: [h('2026-09-22', 'Lamaran diterima (Website)', 'Pelamar', 'Seleksi Administrasi'), h('2026-09-23', 'Dokumen terverifikasi lengkap'), h('2026-09-24', 'Undangan tes dikirim: Tes Pengetahuan Umum, Psikotes', ADM, 'Tes'), h('2026-09-28', 'Lanjut interview: jadwal 29 Sep 2026, 10.00', ADM, 'Interview'), h('2026-09-29', 'Nilai User 56 diinput', 'Dian Puspitasari'), h('2026-09-29', 'Nilai HR 60 diinput'), h('2026-10-01', 'Ditolak: Nilai interview di bawah ambang 65', ADM, 'Ditolak')],

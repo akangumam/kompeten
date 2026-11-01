@@ -68,7 +68,7 @@ function Body({ row, periodId, user, onClose }: { row: CompRow; periodId: string
       toast.error(res.error)
       return
     }
-    toast.success(`Penilaian ${row.emp.nama} diajukan ke Admin HRD`)
+    toast.success(`Penilaian ${row.emp.nama} diajukan ke HR Development & Industrial`)
     onClose()
   }
   const verify = () => {

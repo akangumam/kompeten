@@ -40,6 +40,7 @@ type PageId =
   | 'dev-competency'
   | 'dev-training'
   | 'dev-kpi'
+  | 'system-settings'
 
 const PAGE_LABELS: Record<PageId, string> = {
   dashboard: 'Dashboard',
@@ -75,6 +76,7 @@ const PAGE_LABELS: Record<PageId, string> = {
   'dev-competency': 'Penilaian & Matrix Kompetensi',
   'dev-training': 'Program & Offline Training',
   'dev-kpi': 'Evaluasi KPI',
+  'system-settings': 'Pengaturan Sistem',
 }
 
 /**

@@ -1,3 +1,4 @@
+import { can, canOpen } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { buildInitial, periodStats, type DayRecord } from '@/data/attendance'
 import { atasanName } from '@/data/directory'
@@ -134,7 +135,7 @@ export const mewakiliOf = (user: CurrentUser, r: KpiRow) => {
   const a = approverFor(r.emp)
   return user.role === 'manager' && a.id !== 'manager' ? a.nama : undefined
 }
-export const canAccessKpi = (role: Role) => role === 'admin' || role === 'manager' || role === 'supervisor'
+export const canAccessKpi = (role: Role) => canOpen(role, 'dev-kpi')
 
 // ---------- aksi ----------
 function ensure(r: KpiRow, bulan: string, actor: CurrentUser): KpiRecord {
@@ -172,6 +173,7 @@ export function submitKpi(r: KpiRow, bulan: string, manual: Record<string, numbe
   rec.diajukan = { by: actor.nama, at: stamp() }
   rec.dikembalikan = undefined
   const ap = approverFor(r.emp)
+  notify({ to: 'hr_development', title: 'KPI diajukan', body: `${actor.nama} mengajukan KPI ${r.emp.nama} (${monthLabel(bulan)}).`, page: 'dev-kpi' })
   notify({ to: 'manager', title: 'KPI menunggu persetujuan', body: `${actor.nama} mengajukan KPI ${r.emp.nama} (${monthLabel(bulan)}); penyetuju: ${ap.nama}.`, page: 'dev-kpi' })
   bump()
   return {}

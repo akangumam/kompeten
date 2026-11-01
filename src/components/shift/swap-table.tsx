@@ -1,3 +1,4 @@
+import { can } from '@/lib/access'
 import { useState } from 'react'
 import { MoreHorizontal } from 'lucide-react'
 import { LeaveStatusBadge } from '@/components/leave/status'
@@ -108,7 +109,7 @@ export function SwapTable({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onSelect={() => onDetail(s)}>Lihat Detail</DropdownMenuItem>
-                        {isPending(s.status) && user.role === 'admin' && (
+                        {isPending(s.status) && can(user, 'attendance.manage') && (
                           <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => onCancel(s)}>
                             Batalkan
                           </DropdownMenuItem>
