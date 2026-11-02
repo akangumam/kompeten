@@ -1,3 +1,4 @@
+import { auditPresentasi } from '@/lib/presentation-audit'
 import { notify } from '@/data/notifications'
 import { useCallback, useState } from 'react'
 import { nowStamp } from '@/data/attendance'
@@ -53,6 +54,7 @@ export function useLeave() {
   /** Keputusan Atasan. Sakit dan Dinas lanjut ke verifikasi HRD; pembatalan yang disetujui mengembalikan saldo. */
   const approve = useCallback(
     (no: string, actor: CurrentUser) => {
+      auditPresentasi(`Menyetujui pengajuan ${no} (${actor.nama})`)
       // Sakit/Dinas yang disetujui penyetuju terakhir menunggu verifikasi HR Personalia.
       const r0 = requests.find((x) => x.no === no)
       if (r0 && r0.status !== 'pembatalan' && NEEDS_HRD.includes(r0.jenis) && (r0.approvals?.length ?? 0) + 1 >= currentStep(r0).chain.length)
@@ -84,14 +86,16 @@ export function useLeave() {
   )
 
   const reject = useCallback(
-    (no: string, actor: CurrentUser, alasan: string) =>
-      update(no, (r) => {
+    (no: string, actor: CurrentUser, alasan: string) => {
+      auditPresentasi(`Menolak pengajuan ${no} (${actor.nama})`)
+      return update(no, (r) => {
         const by = proxyBy(actor, r)
         if (r.status === 'pembatalan') {
           return { ...r, status: 'disetujui', pembatalan: { ...r.pembatalan!, keputusan: { by, at: nowStamp(), hasil: 'ditolak', alasan } }, riwayat: log(r, by, `Pembatalan ditolak: ${alasan}`) }
         }
         return { ...r, status: 'ditolak', decision: { by, at: nowStamp(), alasan }, riwayat: log(r, by, `Ditolak: ${alasan}`) }
-      }),
+      })
+    },
     [update],
   )
 

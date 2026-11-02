@@ -17,6 +17,7 @@ import {
 import { SECURITY_POLICY } from '@/data/master/security-policy'
 import { ROLE_LABEL } from '@/data/users'
 import { startSession, takeEndNotice } from '@/lib/session'
+import { DEMO_MODE, simLabel } from '@/lib/demo'
 import { ChevronsUpDown } from 'lucide-react'
 
 type View =
@@ -59,7 +60,7 @@ export default function LoginPage({ onOpenPortal }: { onOpenPortal: () => void }
   const proceed = (a: Account) => {
     const roles = rolesOf(a)
     if (roles.length === 0) { setNotice('mobile-reset'); setView({ name: 'masuk' }); return }
-    if (needsOtp(roles)) { const code = issueOtp(a); toast.info(`(simulasi) Kode OTP: ${code}`, { duration: 15000 }); setView({ name: 'otp', account: a, mustChange: false }); return }
+    if (needsOtp(roles)) { const code = issueOtp(a); DEMO_MODE && toast.info(`${simLabel}Kode OTP: ${code}`, { duration: 15000 }); setView({ name: 'otp', account: a, mustChange: false }); return }
     finish(a)
   }
 
@@ -74,7 +75,7 @@ export default function LoginPage({ onOpenPortal }: { onOpenPortal: () => void }
             onForgot={() => { setNotice(null); setView({ name: 'lupa' }) }}
             onSuccess={(a, otp, mustChange) => {
               setNotice(null)
-              if (otp) { const code = issueOtp(a); toast.info(`(simulasi) Kode OTP: ${code}`, { duration: 15000 }); setView({ name: 'otp', account: a, mustChange }) }
+              if (otp) { const code = issueOtp(a); DEMO_MODE && toast.info(`${simLabel}Kode OTP: ${code}`, { duration: 15000 }); setView({ name: 'otp', account: a, mustChange }) }
               else if (mustChange) setView({ name: 'baru', account: a, kind: 'login' })
               else finish(a)
             }}
@@ -114,7 +115,7 @@ function MasukForm({ notice, onOpenPortal, onForgot, onSuccess }: {
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
   const [show, setShow] = useState(false)
-  const [err, setErr] = useState<{ kind: 'salah' | 'terkunci' | 'nonaktif' | 'mobile' | 'kosong'; message: string } | null>(null)
+  const [err, setErr] = useState<{ kind: 'salah' | 'terkunci' | 'nonaktif' | 'mobile' | 'kosong' | 'ditangguhkan'; message: string } | null>(null)
   const btn = useRef<HTMLButtonElement>(null)
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -158,7 +159,7 @@ function MasukForm({ notice, onOpenPortal, onForgot, onSuccess }: {
         </div>
         <Button ref={btn} type="submit" className="w-full">Masuk</Button>
       </form>
-      <DemoAccounts onPick={(a) => { setEmail(a.emailKantor); setPw(DEMO_PASSWORD); setErr(null); setTimeout(() => btn.current?.focus(), 0) }} />
+      {DEMO_MODE && <DemoAccounts onPick={(a) => { setEmail(a.emailKantor); setPw(DEMO_PASSWORD); setErr(null); setTimeout(() => btn.current?.focus(), 0) }} />}
       <p className="text-center text-sm text-muted-foreground">
         Melamar kerja?{' '}
         <button type="button" onClick={onOpenPortal} className="rounded-sm font-medium text-foreground underline underline-offset-4 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">Buka Portal Karier</button>
@@ -183,7 +184,7 @@ function DemoAccounts({ onPick }: { onPick: (a: Account) => void }) {
           <ul className="grid gap-2">
             {items.map((a) => {
               const roles = rolesOf(a)
-              const label = a.status === 'Nonaktif' ? 'Nonaktif (pegawai keluar)' : roles.length === 0 ? 'Karyawan (hanya Mobile)' : roles.map((r) => ROLE_LABEL[r]).join(' + ')
+              const label = a.presentasi ? 'Mode Presentasi · pilih perspektif akun mana pun' : a.status === 'Nonaktif' ? 'Nonaktif (pegawai keluar)' : roles.length === 0 ? 'Karyawan (hanya Mobile)' : roles.map((r) => ROLE_LABEL[r]).join(' + ')
               return (
                 <li key={a.nip}>
                   <button type="button" onClick={() => onPick(a)} className="flex w-full items-center justify-between gap-2 rounded-md border p-2 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
@@ -240,7 +241,7 @@ function OtpForm({ account, onBack, onVerified }: { account: Account; onBack: (h
         <button
           type="button"
           disabled={wait > 0}
-          onClick={() => { const c = issueOtp(account); toast.info(`(simulasi) Kode OTP: ${c}`, { duration: 15000 }); setCode(''); setErr(''); setNow(Date.now()) }}
+          onClick={() => { const c = issueOtp(account); DEMO_MODE && toast.info(`${simLabel}Kode OTP: ${c}`, { duration: 15000 }); setCode(''); setErr(''); setNow(Date.now()) }}
           className="rounded-sm underline-offset-4 enabled:hover:underline disabled:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           {wait > 0 ? `Kirim ulang dalam ${wait} detik` : 'Kirim ulang kode'}
@@ -270,7 +271,7 @@ function LupaForm({ onBack, onOpenLink }: { onBack: () => void; onOpenLink: (a: 
       {sent && (
         <>
           <Alert variant="info" role="status"><Info aria-hidden /><AlertDescription>Jika email terdaftar, tautan reset telah dikirim (berlaku {SECURITY_POLICY.resetMinutes} menit).</AlertDescription></Alert>
-          {target && sent.token && <Button type="button" variant="outline" className="w-full" onClick={() => onOpenLink(target, sent.token!)}>(simulasi) Buka tautan reset</Button>}
+          {DEMO_MODE && target && sent.token && <Button type="button" variant="outline" className="w-full" onClick={() => onOpenLink(target, sent.token!)}>{simLabel}Buka tautan reset</Button>}
         </>
       )}
       <form onSubmit={submit} className="space-y-4" noValidate>

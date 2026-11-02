@@ -31,6 +31,7 @@ import type { PageId } from '@/App'
 import { markRead, notifsFor, unreadOf, useNotifs } from '@/data/notifications'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { ROLE_LABEL, type CurrentUser, type Role } from '@/data/users'
+import { DEMO_MODE } from '@/lib/demo'
 import type { Account } from '@/data/accounts'
 import { ChangePasswordDialog } from '@/components/change-password-dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
@@ -226,6 +227,8 @@ export function Topbar({
               </>
             )}
             <DropdownMenuSeparator />
+            {DEMO_MODE && (
+              <>
             <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">Skenario (demo)</DropdownMenuLabel>
             {attendanceClosed ? (
               <Tooltip>
@@ -252,6 +255,8 @@ export function Topbar({
               <DropdownMenuItem onSelect={onFinishPayroll}><Wallet className="size-4" />Selesaikan payroll Oktober 2026</DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onSelect={() => setPwOpen(true)}><KeyRound className="size-4" />Ganti kata sandi</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setLogoutOpen(true)}><LogOut className="size-4" />Keluar</DropdownMenuItem>
           </DropdownMenuContent>

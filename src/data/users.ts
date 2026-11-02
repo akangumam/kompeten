@@ -3,6 +3,7 @@ export type Role =
   | 'hr_personalia'
   | 'hr_development'
   | 'manager'
+  | 'direksi'
   | 'supervisor'
   | 'payroll'
   | 'finance'
@@ -19,6 +20,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   hr_personalia: 'HR Personalia',
   hr_development: 'HR Development & Industrial',
   manager: 'HR & GA Manager',
+  direksi: 'Direksi',
   supervisor: 'Atasan',
   payroll: 'Payroll Officer',
   finance: 'Finance',

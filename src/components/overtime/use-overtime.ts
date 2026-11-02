@@ -1,3 +1,4 @@
+import { auditPresentasi } from '@/lib/presentation-audit'
 import { notify } from '@/data/notifications'
 import { useCallback, useState } from 'react'
 import { nowStamp } from '@/data/attendance'
@@ -58,10 +59,11 @@ export function useOvertime() {
   return {
     records,
     create,
-    approve: (id: string, actor: OtUser) => patch(id, actor, { status: 'terjadwal' }),
+    approve: (id: string, actor: OtUser) => { auditPresentasi(`Menyetujui lembur ${id.split('|')[0]} (${actor.nama})`); return patch(id, actor, { status: 'terjadwal' }) },
     reject: (id: string, actor: OtUser, alasan: string) => patch(id, actor, { status: 'ditolak' }, alasan),
     /** Validasi Atasan atas realisasi; data berlaku setelah verifikasi HRD. */
     validate: (id: string, actor: OtUser, dibayar: number, kelebihan?: string, istirahat = 0) => {
+      auditPresentasi(`Memvalidasi realisasi lembur ${id.split('|')[0]} (${actor.nama})`)
       notify({ to: 'hr_personalia', title: 'Realisasi lembur menunggu verifikasi', body: `Lembur ${id.split('|')[0]} (${ROSTER.find((e) => e.nik === id.split('|')[1])?.nama ?? id.split('|')[1]}) divalidasi ${actor.nama}.`, page: 'overtime' })
       return patch(id, actor, { status: 'menunggu-verifikasi', dibayar, kelebihan, istirahat }, kelebihan)
     },

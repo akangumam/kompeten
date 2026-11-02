@@ -61,6 +61,9 @@ import type { CurrentUser, Role } from '@/data/users'
 import { canOpen } from '@/lib/access'
 import { endSession, switchRole, useSession, type Session } from '@/lib/session'
 import LoginPage from '@/pages/login'
+import PerspectivePicker from '@/pages/perspective-picker'
+import { PresentationBanner } from '@/components/system/presentation-banner'
+import { can } from '@/lib/access'
 import SystemSettingsPage from '@/pages/system-settings'
 import { IdleGuard } from '@/components/idle-guard'
 import { ROLE_LABEL } from '@/data/users'
@@ -101,7 +104,7 @@ function useDraftState() {
   return { drafts, setDrafts, rosterEdits, setRosterEdits }
 }
 
-const PAGE_HASH: Record<string, PageId> = { kehadiran: 'attendance', cuti: 'leave', lembur: 'overtime', payroll: 'payroll-run', kpi: 'dev-kpi', training: 'dev-training', kompetensi: 'dev-competency', koperasi: 'coop-members', rekrutmen: 'recruitment', direktori: 'employees', master: 'master-data' }
+const PAGE_HASH: Record<string, PageId> = { draft: 'employee-draft', pengaturan: 'system-settings', kehadiran: 'attendance', cuti: 'leave', lembur: 'overtime', payroll: 'payroll-run', kpi: 'dev-kpi', training: 'dev-training', kompetensi: 'dev-competency', koperasi: 'coop-members', rekrutmen: 'recruitment', direktori: 'employees', master: 'master-data' }
 /** Tautan dalam (#/kehadiran, dst.) hanya untuk pengujian; halaman tetap diperiksa terhadap peran aktif. */
 const pageFromHash = (): PageId | null => PAGE_HASH[window.location.hash.replace(/^#\/?/, '')] ?? null
 const landingFor = (role: Role): PageId => (canOpen(role, 'dashboard') ? 'dashboard' : 'system-settings')
@@ -126,7 +129,8 @@ export default function App() {
     )
   }
   if (!session) return <LoginPage onOpenPortal={() => setPortalPersona('visitor')} />
-  return <AppShell key={session.account.nip} session={session} data={shared} />
+  if (session.presentasi && !session.presentasi.viewing) return <PerspectivePicker host={session.presentasi.host} />
+  return <AppShell key={session.account.nip + (session.presentasi ? '~' : '')} session={session} data={shared} />
 }
 
 function NoAccess({ onBack }: { onBack: () => void }) {
@@ -266,7 +270,9 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
     prevRole.current = role
     if (!canOpen(role, activePage === 'employee-draft' ? 'employee-draft' : activePage)) setActivePage(landingFor(role))
   }, [role, activePage])
-  const pageOk = canOpen(role, activePage)
+  // Halaman profil dipakai untuk Draft dan pegawai aktif: draft hanya untuk yang berhak (HR Recruitment, HR Personalia, HR & GA Manager).
+  const draftBlocked = activePage === 'employee-draft' && profile.kind === 'draft' && !can(user, 'draft.view')
+  const pageOk = canOpen(role, activePage) && !draftBlocked
 
   // Atasan hanya boleh membuka profil anggota timnya; selain itu kembali ke Direktori.
   useEffect(() => {
@@ -377,6 +383,7 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
         role={role}
       />
       <SidebarInset className="h-svh min-w-0 flex-col overflow-hidden">
+        {session.presentasi?.viewing && <PresentationBanner session={session} />}
         <Topbar
           activePage={activePage}
           dashTab={dashTab}
@@ -395,7 +402,7 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
         <DirectoryNavContext.Provider value={{ openDirectory, openEmployee, openOffboarding, openDiscipline, openFinalPay }}>
         <main ref={mainRef} className="flex-1 overflow-y-auto">
           {!pageOk && <NoAccess onBack={() => setActivePage(landingFor(role))} />}
-          {pageOk && activePage === 'system-settings' && <SystemSettingsPage user={user} />}
+          {pageOk && activePage === 'system-settings' && <SystemSettingsPage user={user} account={session.account} />}
           {pageOk && activePage === 'dashboard' && (
             <DashboardPage user={user} records={attendance.state.records} requests={leave.requests} tab={dashTab} onTabChange={setDashTab} onNavigate={(p, id) => guarded(() => go(p, id ?? null))} />
           )}

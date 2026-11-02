@@ -139,7 +139,9 @@ export function CandidateSheet({ candidate, onClose, user, actions }: { candidat
   // Nilai User diinput Atasan department peminta; bila pewawancara user bukan persona Atasan, HR Recruitment menginput atas namanya.
   const canUserScore = !!c && c.stage === 'Interview' && ((spv && c.dept === myDept) || (admin && c.interview?.userNik !== USERS.supervisor.nik))
   const a = c ? avg(c) : null
-  const hist = c ? (spv ? c.history.filter((h) => h.stage || h.label.startsWith('Nilai')) : c.history) : []
+  const hist0 = c ? (spv ? c.history.filter((h) => h.stage || h.label.startsWith('Nilai')) : c.history) : []
+  // Direksi tidak melihat nilai interview per orang, termasuk di riwayat status.
+  const hist = user.role === 'direksi' ? hist0.map((h) => ({ ...h, label: h.label.replace(/(Nilai (?:HR|User)) \d+/, '$1') })) : hist0
   const showDocs = !!c && !spv
   const showTests = !!c && reachedStage(c, 'Tes')
   const showInterview = !!c && reachedStage(c, 'Interview')
@@ -218,7 +220,7 @@ export function CandidateSheet({ candidate, onClose, user, actions }: { candidat
                   {hr && c.stage === 'Interview' && a !== null && a < ambangInterview() && (
                     <Alert variant="warning"><TriangleAlert /><AlertDescription>Rata-rata {a} di bawah ambang {ambangInterview()}. HR tetap dapat membuat penawaran dengan catatan.</AlertDescription></Alert>
                   )}
-                  <InterviewSection c={c} internal={hr} canUserScore={canUserScore} canHrScore={admin && c.stage === 'Interview'} canEdit={admin && c.stage === 'Interview'} onUser={() => setWho('user')} onHr={() => setWho('hr')} onEdit={() => setSched('edit')} />
+                  <InterviewSection c={c} internal={hr} showScores={user.role !== 'direksi'} canUserScore={canUserScore} canHrScore={admin && c.stage === 'Interview'} canEdit={admin && c.stage === 'Interview'} onUser={() => setWho('user')} onHr={() => setWho('hr')} onEdit={() => setSched('edit')} />
                 </Section>
               )}
 

@@ -1,4 +1,4 @@
-# KOMPETEN — Jenis Akun, Peran & Hak Akses (v2.1 · 1 Nov 2026)
+# KOMPETEN — Jenis Akun, Peran & Hak Akses (v2.2 · 1 Nov 2026)
 
 Disusun dari PRD v1.1.34 dan perilaku prototipe sampai prompt 11d. Dokumen ini menjadi dasar untuk halaman Login (12a), Pengaturan Sistem (12b), spesifikasi API (12c), dan aplikasi Flutter.
 
@@ -33,36 +33,37 @@ Satu akun pegawai bisa punya lebih dari satu peran. Contoh: Ratna Dewi adalah Ka
 | Payroll Officer | Ditetapkan Super Admin | |
 | Finance | Ditetapkan Super Admin | |
 | KSB Sekretaris / Bendahara / Ketua | Ditetapkan Ketua KSB atau Super Admin, berlaku per masa jabatan pengurus | Koperasi entitas terpisah |
+| Direksi | Ditetapkan Super Admin | Baca saja: dashboard dan laporan lintas modul, tanpa tombol persetujuan, tanpa data identitas sensitif, tanpa kategori sakit per orang, tanpa slip/gaji per pegawai, tanpa data koperasi |
 | Super Admin IT | Ditetapkan Super Admin lain | Tidak melihat data gaji, kesehatan, KTP, hasil tes, atau saldo koperasi; hanya akun, peran, kebijakan keamanan, dan audit. Tidak bisa mengubah perannya sendiri |
 
 ## 3. Matriks akses menu (web)
 
 Kode: P = penuh · S = setujui · B = baca · T = hanya tim sendiri · — = tidak ada akses
 
-| Menu | HR Rekrut. | HR Personalia | HR Dev & Ind. | HR & GA Mgr | Atasan | Payroll | Finance | KSB | Super Admin |
-|---|---|---|---|---|---|---|---|---|---|
-| Dashboard Umum & Rekrutmen | P | P | B | P | T | B | B | — | — |
-| Dashboard Produksi | B | P | B | P | T (section sendiri) | — | — | — | — |
-| Dashboard Presensi (kategori sakit hanya agregat) | — | P | — | P | T | — | — | — | — |
-| Dashboard Koperasi | — | — | — | — | — | — | — | P | — |
-| Recruitment: lowongan, kandidat, DICAP, penawaran | P | — | — | S (lowongan, penawaran) | T (interview dept sendiri, tanpa gaji) | — | — | — | — |
-| Recruitment: Menu Tes (bank soal) | P | — | P (paket sumber Training) | B | — | — | — | — | — |
-| Direktori Pegawai | B (tanpa KTP/bank/pajak) | P | B (tanpa KTP/bank/pajak) | B | T (baca, tanpa KTP/bank/pajak) | B (termasuk KTP/bank/pajak/BPJS untuk penggajian; tanpa catatan disiplin & exit interview) | — | — | — |
-| Draft Pegawai | B (hasil generate) | P (verifikasi & aktifkan) | — | B | — | — | — | — | — |
-| Transaksi Kepegawaian | — | P | B | S (akhir) | S (langkah 1, tim) | B (yang disetujui) | — | — | — |
-| Hubungan Industrial | — | B (Pegawai Keluar) | P | S | T (draf SP tim; tanpa exit interview) | B (Pegawai Keluar) | — | konfirmasi clearance koperasi | — |
-| Kehadiran (absensi, cuti, tukar shift, lembur) + kategori sakit | — | P | — | S (eskalasi) | S (tim, tanpa kategori sakit) | B (rekap) | — | — | — |
-| People Development (kompetensi, training, KPI) | — | — | P (verifikasi, template) | S (mewakili) / B | T (menilai, input KPI, usul peserta) | — | — | — | — |
-| Payroll: proses, komponen, slip, perubahan gaji | — | — | — | S (baca + approval) | — | P | — | — | — |
-| Payroll: Daftar Pembayaran & Rekonsiliasi | — | — | — | B | — | P | P (pembayaran) | — | — |
-| Kompensasi & Pesangon | — | — | B | S | — | P | P (pembayaran) | — | — |
-| Koperasi (semua halaman) | — | — | — | — | — | — | — | P sesuai jabatan | — |
-| Data Master: organisasi, posisi, grade, shift, cuti, libur, Matriks Penyetuju, standar tenaga kerja, tier | — | P | B | B | — | B (grade, komponen) | — | — | — |
-| Data Master: rekrutmen (sumber lowongan, ambang interview, masa simpan data pelamar, nilai tes ke pelamar) | P | B | — | B | — | — | — | — | — |
-| Data Master: kompetensi, standar posisi, template & predikat KPI, parameter HI (SP, pelanggaran, alasan keluar, uang pisah, pengali) | — | B | P | B | — | B (pengali & uang pisah) | — | — | — |
-| Pengaturan Koperasi | — | — | — | — | — | — | — | P (Ketua) | — |
-| Pengaturan Sistem: pengguna, peran, kebijakan keamanan | — | — | — | — | — | — | — | — | P |
-| Pengaturan Sistem: audit log | — | — | — | B | — | — | — | — | P |
+| Menu | HR Rekrut. | HR Personalia | HR Dev & Ind. | HR & GA Mgr | Direksi | Atasan | Payroll | Finance | KSB | Super Admin |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Dashboard Umum & Rekrutmen | P | P | B | P | B | T | B | B | — | — |
+| Dashboard Produksi | B | P | B | P | B | T (section sendiri) | — | — | — | — |
+| Dashboard Presensi (kategori sakit hanya agregat) | — | P | — | P | B (agregat) | T | — | — | — | — |
+| Dashboard Koperasi | — | — | — | — | — | — | — | — | P | — |
+| Recruitment: lowongan, kandidat, DICAP, penawaran | P | — | — | S (lowongan, penawaran) | B (tanpa catatan internal & nilai interview per orang) | T (interview dept sendiri, tanpa gaji) | — | — | — | — |
+| Recruitment: Menu Tes (bank soal) | P | — | P (paket sumber Training) | B | — | — | — | — | — | — |
+| Direktori Pegawai | B (tanpa KTP/bank/pajak) | P | B (tanpa KTP/bank/pajak) | B | B (tanpa KTP/bank/pajak) | T (baca, tanpa KTP/bank/pajak) | B (termasuk KTP/bank/pajak/BPJS untuk penggajian; tanpa catatan disiplin & exit interview) | — | — | — |
+| Draft Pegawai | B (hasil generate) | P (verifikasi & aktifkan) | — | B | — | — | — | — | — | — |
+| Transaksi Kepegawaian | — | P | B | S (akhir) | B | S (langkah 1, tim) | B (yang disetujui) | — | — | — |
+| Hubungan Industrial | — | B (Pegawai Keluar) | P | S | B (tanpa exit interview) | T (draf SP tim; tanpa exit interview) | B (Pegawai Keluar) | — | konfirmasi clearance koperasi | — |
+| Kehadiran (absensi, cuti, tukar shift, lembur) + kategori sakit | — | P | — | S (eskalasi) | B (rekap, tanpa kategori sakit) | S (tim, tanpa kategori sakit) | B (rekap) | — | — | — |
+| People Development (kompetensi, training, KPI) | — | — | P (verifikasi, template) | S (mewakili) / B | B | T (menilai, input KPI, usul peserta) | — | — | — | — |
+| Payroll: proses, komponen, slip, perubahan gaji | — | — | — | S (baca + approval) | — | — | P | — | — | — |
+| Payroll: Daftar Pembayaran & Rekonsiliasi | — | — | — | B | — | — | P | P (pembayaran) | — | — |
+| Kompensasi & Pesangon | — | — | B | S | — | — | P | P (pembayaran) | — | — |
+| Koperasi (semua halaman) | — | — | — | — | — | — | — | — | P sesuai jabatan | — |
+| Data Master: organisasi, posisi, grade, shift, cuti, libur, Matriks Penyetuju, standar tenaga kerja, tier | — | P | B | B | — | — | B (grade, komponen) | — | — | — |
+| Data Master: rekrutmen (sumber lowongan, ambang interview, masa simpan data pelamar, nilai tes ke pelamar) | P | B | — | B | — | — | — | — | — | — |
+| Data Master: kompetensi, standar posisi, template & predikat KPI, parameter HI (SP, pelanggaran, alasan keluar, uang pisah, pengali) | — | B | P | B | — | — | B (pengali & uang pisah) | — | — | — |
+| Pengaturan Koperasi | — | — | — | — | — | — | — | — | P (Ketua) | — |
+| Pengaturan Sistem: pengguna, peran, kebijakan keamanan | — | — | — | — | — | — | — | — | — | P |
+| Pengaturan Sistem: audit log | — | — | — | B | — | — | — | — | — | P |
 
 Aturan lintas peran yang tetap berlaku:
 
@@ -73,6 +74,8 @@ Aturan lintas peran yang tetap berlaku:
 - Notifikasi yang dulu ditujukan ke "Admin HRD" kini diarahkan ke peran HR pemilik prosesnya. Contoh: DICAP masuk → HR Recruitment; verifikasi Sakit/Dinas/lembur → HR Personalia; usulan peserta training dan KPI → HR Development & Industrial.
 
 Catatan v2.1: Payroll membaca Direktori karena butuh data identitas, rekening, NPWP/PTKP, dan BPJS untuk penggajian. Master rekrutmen dipegang HR Recruitment.
+
+Catatan v2.2: peran Direksi untuk produksi. Akses ringkasan biaya payroll (agregat) dan dashboard koperasi untuk Direksi masih menunggu keputusan Primaplast dan KSB.
 
 ## 4. Keamanan login
 
@@ -91,3 +94,4 @@ Semua nilai di bawah adalah master Kebijakan Keamanan yang diatur Super Admin.
 - Domain email kantor resmi (prototipe memakai contoh @primaplast.co.id, diatur di master).
 - Apakah Primaplast memakai Google Workspace atau Microsoft 365, sehingga login SSO bisa ditambahkan di samping email + kata sandi.
 - Operator yang belum punya email kantor: dibuatkan email sungguhan atau alias yang diteruskan (mis. ke email atasan)? Prototipe menganggap semua pegawai sudah punya email kantor.
+- Direksi: perlu ringkasan biaya payroll agregat? Dashboard Koperasi boleh dilihat Direksi bila KSB setuju?

@@ -1,4 +1,4 @@
-import { can } from '@/lib/access'
+import { can, hidesPay } from '@/lib/access'
 import { TransitionAlert } from '@/components/transition-alert'
 import { periodSelectLabel } from '@/data/master/attendance-rules'
 import { useMemo, useState } from 'react'
@@ -40,7 +40,7 @@ export default function OvertimePage({
   octClosed: boolean
 }) {
   const isSpv = user.role === 'supervisor'
-  const showPay = !isSpv
+  const showPay = !hidesPay(user)
   const canCreate = can(user, 'attendance.manage') || user.role === 'supervisor'
   const [view, setView] = useState('lembur')
   const [periodId, setPeriodId] = useState(CURRENT_PERIOD_ID)

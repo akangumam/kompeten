@@ -116,10 +116,12 @@ const Score = ({ label, value }: { label: string; value?: number }) => (
   </div>
 )
 
-export function InterviewSection({ c, internal, canUserScore, canHrScore, canEdit, onUser, onHr, onEdit }: {
+export function InterviewSection({ c, internal, showScores = true, canUserScore, canHrScore, canEdit, onUser, onHr, onEdit }: {
   c: Candidate
   /** Catatan Internal HRD hanya untuk HR Recruitment dan HR & GA Manager. */
   internal: boolean
+  /** Direksi tidak melihat nilai interview per orang. */
+  showScores?: boolean
   canUserScore: boolean
   canHrScore: boolean
   canEdit: boolean
@@ -140,6 +142,8 @@ export function InterviewSection({ c, internal, canUserScore, canHrScore, canEdi
           <Row label="Pewawancara HR">{iv.hrNama}</Row>
         </dl>
       )}
+      {showScores ? (
+      <>
       <div className="space-y-2">
         <Score label="Nilai User" value={c.userScore} />
         <Score label="Nilai HR" value={c.hrScore} />
@@ -157,6 +161,8 @@ export function InterviewSection({ c, internal, canUserScore, canHrScore, canEdi
         {canEdit && iv && <Button size="sm" variant="ghost" onClick={onEdit}>Ubah jadwal</Button>}
       </div>
       {c.userCatatan && <div className="space-y-1"><p className="text-sm text-muted-foreground">Catatan User</p><p className="text-sm">{c.userCatatan}</p></div>}
+      </>
+      ) : <p className="text-sm text-muted-foreground">Nilai interview per orang tidak ditampilkan untuk peran Anda.</p>}
       {internal && c.notes && <div className="space-y-1"><p className="text-sm text-muted-foreground">Catatan Internal HRD</p><p className="text-sm">{c.notes}</p></div>}
       {internal && c.lanjutCatatan && <Alert variant="warning"><AlertDescription>Dilanjutkan di bawah ambang: {c.lanjutCatatan}</AlertDescription></Alert>}
     </div>

@@ -195,7 +195,7 @@ export function PresensiTab({
                     <TableHead className={head}>Pegawai</TableHead>
                     <TableHead className={head}>Department</TableHead>
                     <TableHead className={head}>Jenis anomali</TableHead>
-                    <TableHead className={`text-right ${head}`}>Aksi</TableHead>
+                    {user.role !== 'direksi' && <TableHead className={`text-right ${head}`}>Aksi</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -205,7 +205,7 @@ export function PresensiTab({
                       <TableCell className="font-medium">{r.nama}</TableCell>
                       <TableCell className="text-muted-foreground">{r.department}</TableCell>
                       <TableCell>{r.jenis}</TableCell>
-                      <TableCell className="text-right"><Button variant="outline" size="sm" onClick={() => onNavigate('attendance', r.id)}>Selesaikan</Button></TableCell>
+                      {user.role !== 'direksi' && <TableCell className="text-right"><Button variant="outline" size="sm" onClick={() => onNavigate('attendance', r.id)}>Selesaikan</Button></TableCell>}
                     </TableRow>
                   ))}
                 </TableBody>

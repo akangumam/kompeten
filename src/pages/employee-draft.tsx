@@ -1,4 +1,4 @@
-import { can } from '@/lib/access'
+import { can, hidesPay } from '@/lib/access'
 import { emailKantorError, registerAccount } from '@/data/accounts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { DEMO_TODAY } from '@/lib/today'
@@ -334,7 +334,7 @@ export default function EmployeeDraftPage({
                   {saveChanges}
                 </TabsContent>
                 <TabsContent value="kepegawaian">
-                  <KepegawaianTab form={form} errors={errors} nik={record.nik} locked={activated || viewOnly} atasan={atasan} showPay={!isSpv} emailError={emailError} onChange={patch} />
+                  <KepegawaianTab form={form} errors={errors} nik={record.nik} locked={activated || viewOnly} atasan={atasan} showPay={!hidesPay(user)} emailError={emailError} onChange={patch} />
                 </TabsContent>
                 {activated && record.nik && (
                   <TabsContent value="riwayat">

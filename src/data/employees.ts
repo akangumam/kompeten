@@ -392,7 +392,7 @@ export const SUPERVISORS: Supervisor[] = [
   { id: 'PPI-2016-0002', nama: 'Agus Setiadi', jabatan: 'Manager Produksi' },
   { id: 'PPI-2015-0001', nama: 'Wahyudi Santoso', jabatan: 'Plant Manager' },
   { id: 'manager', nama: 'Lestari Wulandari', jabatan: 'Manager HR & GA' },
-  { id: 'direksi', nama: 'Direksi', jabatan: 'Direksi' },
+  { id: 'direksi', nama: 'Benny Tjandra', jabatan: 'Direktur Utama' },
 ]
 export const atasanOf = (e: RosterEmployee) => SUPERVISORS.find((x) => x.id === e.atasanId)!
 /** Pegawai yang sendiri menjadi atasan/approver: pengajuannya naik satu tingkat ke atasannya. */

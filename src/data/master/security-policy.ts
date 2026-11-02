@@ -25,5 +25,5 @@ export const SECURITY_POLICY: {
   otpMinutes: 5,
   otpResendSeconds: 60,
   resetMinutes: 30,
-  otpRoles: ['manager', 'payroll', 'finance', 'bendahara', 'ketua', 'superadmin'],
+  otpRoles: ['manager', 'direksi', 'payroll', 'finance', 'bendahara', 'ketua', 'superadmin'],
 }

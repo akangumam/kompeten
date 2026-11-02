@@ -1,3 +1,4 @@
+import { simLabel } from '@/lib/demo'
 import { can } from '@/lib/access'
 import { useEffect, useState } from 'react'
 import { FileText, Paperclip } from 'lucide-react'
@@ -207,9 +208,9 @@ export function TinjauSheet({
                       <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-card"><FileText className="size-5 text-muted-foreground" aria-hidden /></span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{req.lampiran}</p>
-                        <p className="text-xs text-muted-foreground">Pratinjau dokumen (simulasi)</p>
+                        <p className="text-xs text-muted-foreground">Pratinjau dokumen{simLabel ? ' (simulasi)' : ''}</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => toast.info(`Pratinjau ${req.lampiran} (simulasi)`)}>Buka</Button>
+                      <Button variant="outline" size="sm" onClick={() => toast.info(`Pratinjau ${req.lampiran}${simLabel ? ' (simulasi)' : ''}`)}>Buka</Button>
                     </div>
                   ) : (
                     <p className="flex items-center gap-2 text-sm">
@@ -217,7 +218,7 @@ export function TinjauSheet({
                       <button
                         type="button"
                         className="rounded-sm underline underline-offset-4 hover:text-primary focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                        onClick={() => toast.info(`Pratinjau ${req.lampiran} (simulasi)`)}
+                        onClick={() => toast.info(`Pratinjau ${req.lampiran}${simLabel ? ' (simulasi)' : ''}`)}
                       >
                         {req.lampiran}
                       </button>

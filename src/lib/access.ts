@@ -9,28 +9,29 @@ type R = Role
 const REC: R = 'hr_recruitment'
 const PERS: R = 'hr_personalia'
 const DEV: R = 'hr_development'
+const DIR: R = 'direksi'
 const KSB: R[] = ['sekretaris', 'bendahara', 'ketua']
 
 /** Urutan peran (kolom matriks): peran aktif default = peran pertama akun menurut urutan ini. */
-export const ROLE_ORDER: R[] = ['hr_recruitment', 'hr_personalia', 'hr_development', 'manager', 'supervisor', 'payroll', 'finance', 'sekretaris', 'bendahara', 'ketua', 'superadmin']
+export const ROLE_ORDER: R[] = ['hr_recruitment', 'hr_personalia', 'hr_development', 'manager', 'direksi', 'supervisor', 'payroll', 'finance', 'sekretaris', 'bendahara', 'ketua', 'superadmin']
 
 export const PAGE_ROLES: Record<PageId | 'system-settings', R[]> = {
-  dashboard: [REC, PERS, DEV, 'manager', 'supervisor', 'payroll', 'finance', ...KSB],
-  recruitment: [REC, 'manager', 'supervisor'],
+  dashboard: [REC, PERS, DEV, 'manager', DIR, 'supervisor', 'payroll', 'finance', ...KSB],
+  recruitment: [REC, 'manager', DIR, 'supervisor'],
   'recruitment-jobs': [REC, 'manager'],
   'recruitment-form': [REC],
   'recruitment-tests': [REC, DEV, 'manager'],
-  employees: [REC, PERS, DEV, 'manager', 'supervisor', 'payroll'],
-  'employee-draft': [REC, PERS, DEV, 'manager', 'supervisor', 'payroll'],
-  'employee-transactions': [PERS, DEV, 'manager', 'supervisor', 'payroll'],
-  'industrial-relations': [PERS, DEV, 'manager', 'supervisor', 'payroll'],
-  attendance: [PERS, 'manager', 'supervisor', 'payroll'],
-  leave: [PERS, 'manager', 'supervisor', 'payroll'],
-  'shift-swap': [PERS, 'manager', 'supervisor', 'payroll'],
-  overtime: [PERS, 'manager', 'supervisor', 'payroll'],
-  'dev-competency': [DEV, 'manager', 'supervisor'],
-  'dev-training': [DEV, 'manager', 'supervisor'],
-  'dev-kpi': [DEV, 'manager', 'supervisor'],
+  employees: [REC, PERS, DEV, 'manager', DIR, 'supervisor', 'payroll'],
+  'employee-draft': [REC, PERS, DEV, 'manager', DIR, 'supervisor', 'payroll'],
+  'employee-transactions': [PERS, DEV, 'manager', DIR, 'supervisor', 'payroll'],
+  'industrial-relations': [PERS, DEV, 'manager', DIR, 'supervisor', 'payroll'],
+  attendance: [PERS, 'manager', DIR, 'supervisor', 'payroll'],
+  leave: [PERS, 'manager', DIR, 'supervisor', 'payroll'],
+  'shift-swap': [PERS, 'manager', DIR, 'supervisor', 'payroll'],
+  overtime: [PERS, 'manager', DIR, 'supervisor', 'payroll'],
+  'dev-competency': [DEV, 'manager', DIR, 'supervisor'],
+  'dev-training': [DEV, 'manager', DIR, 'supervisor'],
+  'dev-kpi': [DEV, 'manager', DIR, 'supervisor'],
   'payroll-run': ['payroll', 'manager'],
   payslips: ['payroll', 'manager'],
   'salary-change': ['payroll', 'manager'],
@@ -101,4 +102,34 @@ export function masterAccess(role: Role, tab: MasterTab): 'edit' | 'read' | unde
   return undefined
 }
 
+/** Peran yang tidak boleh melihat Rupiah per pegawai (Atasan dan Direksi). */
+export const hidesPay = (user: Pick<CurrentUser, 'role'>) => user.role === 'supervisor' || user.role === 'direksi'
+
 export const NO_ACCESS_TITLE = 'Anda tidak memiliki akses ke halaman ini'
+
+/** Matriks akses menu (docs/peran-dan-akses.md §3 v2.2). Kolom: HR Rekrut., HR Personalia, HR Dev & Ind., HR & GA Mgr, Direksi, Atasan, Payroll, Finance, KSB, Super Admin. [kode, catatan] */
+export const MATRIX_COLS = ['HR Rekrut.', 'HR Personalia', 'HR Dev & Ind.', 'HR & GA Mgr', 'Direksi', 'Atasan', 'Payroll', 'Finance', 'KSB', 'Super Admin'] as const
+export const MATRIX: { menu: string; cells: [string, string][] }[] = [
+  { menu: "Dashboard Umum & Rekrutmen", cells: [["P", ""], ["P", ""], ["B", ""], ["P", ""], ["B", ""], ["T", ""], ["B", ""], ["B", ""], ["—", ""], ["—", ""]] },
+  { menu: "Dashboard Produksi", cells: [["B", ""], ["P", ""], ["B", ""], ["P", ""], ["B", ""], ["T", "section sendiri"], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Dashboard Presensi (kategori sakit hanya agregat)", cells: [["—", ""], ["P", ""], ["—", ""], ["P", ""], ["B", "agregat"], ["T", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Dashboard Koperasi", cells: [["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["P", ""], ["—", ""]] },
+  { menu: "Recruitment: lowongan, kandidat, DICAP, penawaran", cells: [["P", ""], ["—", ""], ["—", ""], ["S", "lowongan, penawaran"], ["B", "tanpa catatan internal & nilai interview per orang"], ["T", "interview dept sendiri, tanpa gaji"], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Recruitment: Menu Tes (bank soal)", cells: [["P", ""], ["—", ""], ["P", "paket sumber Training"], ["B", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Direktori Pegawai", cells: [["B", "tanpa KTP/bank/pajak"], ["P", ""], ["B", "tanpa KTP/bank/pajak"], ["B", ""], ["B", "tanpa KTP/bank/pajak"], ["T", "baca, tanpa KTP/bank/pajak"], ["B", "termasuk KTP/bank/pajak/BPJS untuk penggajian; tanpa catatan disiplin & exit interview"], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Draft Pegawai", cells: [["B", "hasil generate"], ["P", "verifikasi & aktifkan"], ["—", ""], ["B", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Transaksi Kepegawaian", cells: [["—", ""], ["P", ""], ["B", ""], ["S", "akhir"], ["B", ""], ["S", "langkah 1, tim"], ["B", "yang disetujui"], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Hubungan Industrial", cells: [["—", ""], ["B", "Pegawai Keluar"], ["P", ""], ["S", ""], ["B", "tanpa exit interview"], ["T", "draf SP tim; tanpa exit interview"], ["B", "Pegawai Keluar"], ["—", ""], ["*", "konfirmasi clearance koperasi"], ["—", ""]] },
+  { menu: "Kehadiran (absensi, cuti, tukar shift, lembur) + kategori sakit", cells: [["—", ""], ["P", ""], ["—", ""], ["S", "eskalasi"], ["B", "rekap, tanpa kategori sakit"], ["S", "tim, tanpa kategori sakit"], ["B", "rekap"], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "People Development (kompetensi, training, KPI)", cells: [["—", ""], ["—", ""], ["P", "verifikasi, template"], ["S", "mewakili / B"], ["B", ""], ["T", "menilai, input KPI, usul peserta"], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Payroll: proses, komponen, slip, perubahan gaji", cells: [["—", ""], ["—", ""], ["—", ""], ["S", "baca + approval"], ["—", ""], ["—", ""], ["P", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Payroll: Daftar Pembayaran & Rekonsiliasi", cells: [["—", ""], ["—", ""], ["—", ""], ["B", ""], ["—", ""], ["—", ""], ["P", ""], ["P", "pembayaran"], ["—", ""], ["—", ""]] },
+  { menu: "Kompensasi & Pesangon", cells: [["—", ""], ["—", ""], ["B", ""], ["S", ""], ["—", ""], ["—", ""], ["P", ""], ["P", "pembayaran"], ["—", ""], ["—", ""]] },
+  { menu: "Koperasi (semua halaman)", cells: [["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["P", "sesuai jabatan"], ["—", ""]] },
+  { menu: "Data Master: organisasi, posisi, grade, shift, cuti, libur, Matriks Penyetuju, standar tenaga kerja, tier", cells: [["—", ""], ["P", ""], ["B", ""], ["B", ""], ["—", ""], ["—", ""], ["B", "grade, komponen"], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Data Master: rekrutmen (sumber lowongan, ambang interview, masa simpan data pelamar, nilai tes ke pelamar)", cells: [["P", ""], ["B", ""], ["—", ""], ["B", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Data Master: kompetensi, standar posisi, template & predikat KPI, parameter HI (SP, pelanggaran, alasan keluar, uang pisah, pengali)", cells: [["—", ""], ["B", ""], ["P", ""], ["B", ""], ["—", ""], ["—", ""], ["B", "pengali & uang pisah"], ["—", ""], ["—", ""], ["—", ""]] },
+  { menu: "Pengaturan Koperasi", cells: [["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["P", "Ketua"], ["—", ""]] },
+  { menu: "Pengaturan Sistem: pengguna, peran, kebijakan keamanan", cells: [["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["P", ""]] },
+  { menu: "Pengaturan Sistem: audit log", cells: [["—", ""], ["—", ""], ["—", ""], ["B", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["—", ""], ["P", ""]] },
+]

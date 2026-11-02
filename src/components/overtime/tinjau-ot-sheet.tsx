@@ -1,3 +1,4 @@
+import { hidesPay } from '@/lib/access'
 import { useEffect, useMemo, useState } from 'react'
 import { CircleCheck, CircleX, Info } from 'lucide-react'
 import { OtStatusBadge } from '@/components/overtime/status'
@@ -107,7 +108,7 @@ export function TinjauOtSheet({
   const emp = rec ? empOf(rec.nik) : null
   const status = rec ? effStatus(rec) : null
   const real = useMemo(() => (rec ? realisasiOf(rec, scans, istirahat) : null), [rec, scans, istirahat])
-  const showPay = user.role !== 'supervisor'
+  const showPay = !hidesPay(user)
 
   if (!rec || !emp || !status || !real) {
     return <Sheet open={false}><SheetContent /></Sheet>

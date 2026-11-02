@@ -1,4 +1,4 @@
-import { can } from '@/lib/access'
+import { can, hidesPay } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { CONTRACT_ENDING, CONTRACT_FLAGS, daysFromToday, CONTRACT_WARN_DAYS, ROSTER, type ContractFlag, type RosterEmployee } from '@/data/employees'
@@ -157,7 +157,7 @@ export function canSee(t: Trx, user: CurrentUser): boolean {
 }
 export const canCreate = (user: CurrentUser) => can(user, 'trx.manage')
 export const canCancel = (t: Trx, user: CurrentUser) => can(user, 'trx.manage') && t.status === 'menunggu'
-export const showsPay = (user: CurrentUser) => user.role !== 'supervisor'
+export const showsPay = (user: CurrentUser) => !hidesPay(user)
 export const isFuture = (t: Trx) => t.status === 'disetujui' && !t.applied
 export const waitingFor = (t: Trx) => currentStep(t)?.person
 
