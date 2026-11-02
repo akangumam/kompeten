@@ -53,7 +53,7 @@ export function OtTable({
 }) {
   const [scrolled, setScrolled] = useState(false)
   const stick = cn('sticky left-0 z-10 bg-card', scrolled && 'border-r')
-  const cols = showPay ? 10 : 9
+  const cols = showPay ? 9 : 8
   return (
     <div className="overflow-x-auto" onScroll={(e) => setScrolled(e.currentTarget.scrollLeft > 0)}>
       <Table className="[&_td]:px-1.5 [&_th]:px-1.5">
@@ -62,8 +62,7 @@ export function OtTable({
             <TableHead className={cn(stick, head)}>No. SPL</TableHead>
             <TableHead className={head}>Tanggal</TableHead>
             <TableHead className={head}>Pegawai</TableHead>
-            <TableHead className={head}>Rencana</TableHead>
-            <TableHead className={head}>Scan</TableHead>
+            <TableHead className={head}>Rencana / Scan</TableHead>
             <TableHead className={cn('text-right', head)}>Realisasi</TableHead>
             <TableHead className={cn('text-right', head)}>Dibayar</TableHead>
             {showPay && <TableHead className={cn('text-right', head)}>Nominal</TableHead>}
@@ -106,8 +105,10 @@ export function OtTable({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap tabular-nums">{rencanaText(rec)}</TableCell>
-                <TableCell className="whitespace-nowrap tabular-nums">{showReal ? real.scanText : '—'}</TableCell>
+                <TableCell className="whitespace-nowrap tabular-nums">
+                  <div>{rencanaText(rec)}</div>
+                  <div className="text-xs text-muted-foreground">Scan {showReal ? real.scanText : '—'}</div>
+                </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {showReal ? (
                     <div className="flex flex-col items-end leading-tight">

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { BarChartSimple, ChartCard, DonutChart } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
-import { ROSTER, type RosterEmployee } from '@/data/employees'
+import { ROSTER } from '@/data/employees'
 import { rosterForm } from '@/data/profiles'
 import { TENURE_TIERS, AGE_TIERS } from '@/data/master/tier-ranges'
 import { DEMO_TODAY } from '@/lib/today'

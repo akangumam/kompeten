@@ -14,9 +14,7 @@ import { COMPETENCIES, LEVELS, LEVEL_NAMES } from '@/data/master/competencies'
 import { PAKET } from '@/data/recruitment/tests'
 import { ROSTER } from '@/data/employees'
 import { hasLeft } from '@/data/offboarding'
-import {
-  MATERIAL_KINDS, TRAINING_TYPES, employeesWithGap, empOf, enrollmentsOf, nextProgramKode, saveProgram, type Material, type MaterialKind, type Program, type ProgramStatus, type TrainingType,
-} from '@/data/training/store'
+import { MATERIAL_KINDS, TRAINING_TYPES, employeesWithGap, empOf, enrollmentsOf, nextProgramKode, saveProgram, type MaterialKind, type Program, type ProgramStatus, type TrainingType } from '@/data/training/store'
 import { SHEET_720 } from '@/components/training/detail-sheet'
 import { DEMO_TODAY } from '@/lib/today'
 

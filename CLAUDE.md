@@ -3,3 +3,4 @@
 @.agents/rules/02-kompeten-visual.md
 @.agents/rules/03-kompeten-komponen-format.md
 @.agents/rules/04-kompeten-aturan-bisnis.md
+@.agents/rules/05-kompeten-arsitektur.md

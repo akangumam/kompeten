@@ -1,4 +1,3 @@
-import { DEMO_TODAY } from '@/lib/today'
 import { bump } from '@/data/recruitment/store'
 import { ASSIGNS, assignOf, paketOf } from '@/data/recruitment/tests'
 import { inputNilai } from '@/data/recruitment/flow'

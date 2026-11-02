@@ -1,4 +1,4 @@
-import { can, canOpen } from '@/lib/access'
+import { canOpen } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { buildInitial, periodStats, type DayRecord } from '@/data/attendance'
 import { atasanName } from '@/data/directory'

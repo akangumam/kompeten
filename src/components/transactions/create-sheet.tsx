@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { departments, KELOMPOK, posisiOptions, ROSTER, SUPERVISORS, type RosterEmployee } from '@/data/employees'
+import { departments, KELOMPOK, posisiOptions, ROSTER, SUPERVISORS } from '@/data/employees'
 import { contractsOf } from '@/data/contracts'
 import { isPending, type LeaveRequest } from '@/data/leave'
 import { contractLimitMonths, monthsText } from '@/data/master/contract-limit'

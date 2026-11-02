@@ -4,9 +4,7 @@ import { DepartmentChart } from '@/components/dashboard/department-chart'
 import { EmployeeTrendChart } from '@/components/dashboard/employee-trend-chart'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KoperasiTab } from '@/components/dashboard/koperasi-tab'
 import { PresensiTab } from '@/components/dashboard/presensi-tab'
@@ -32,19 +30,6 @@ const DEPARTMENTS = [
   'Semua Department', 'Produksi', 'Quality Assurance', 'Maintenance', 'PPIC', 'Warehouse',
   'Engineering', 'HR & GA', 'Finance', 'IT', 'Purchasing',
 ]
-
-function Placeholder() {
-  return (
-    <Card>
-      <CardContent className="space-y-4">
-        <Skeleton className="h-6 w-1/3" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-        <p className="text-sm text-muted-foreground">Konten tab ini dibuat di tahap berikutnya</p>
-      </CardContent>
-    </Card>
-  )
-}
 
 export type TabId = 'umum' | 'produksi' | 'presensi' | 'koperasi'
 const TAB_LABEL: Record<TabId, string> = { umum: 'Umum & Rekrutmen', produksi: 'Produksi', presensi: 'Presensi', koperasi: 'Koperasi' }

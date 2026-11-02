@@ -1,12 +1,15 @@
-import { Clock, Landmark, ListChecks, Search, Wallet } from 'lucide-react'
+import { Clock, Landmark, ListChecks, MoreHorizontal, Search, Wallet } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { descId, Field } from '@/components/employee/field'
-import { CoopCombobox, Meta, MoneyField, ReviewSheet, rp, SHEET_W } from '@/components/koperasi/shared'
+import { AlasanField, alasanOk, CoopCombobox, Meta, MoneyField, ReviewSheet, rp, SHEET_W } from '@/components/koperasi/shared'
+import { ALASAN_ERROR } from '@/lib/validators'
 import { TransferDialog } from '@/components/koperasi/transfer-dialog'
 import { KPI_GRID, PageHeader, PersonCell, StatCard } from '@/components/payroll/pay/shared'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -52,6 +55,9 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
   const [review, setReview] = useState<Loan | null>(null)
   const [cair, setCair] = useState<Loan | null>(null)
   const [verif, setVerif] = useState<Loan | null>(null)
+  const [batal, setBatal] = useState<Loan | null>(null)
+  const [batalAlasan, setBatalAlasan] = useState('')
+  const [batalErr, setBatalErr] = useState('')
   const [view, setView] = useState<'aplikasi' | 'semua'>('aplikasi')
 
   const all = tab === 'koperasi' ? koperasiLoans() : nonLoans()
@@ -134,12 +140,28 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      {isSek && l.status === 'menunggu-sekretaris' && <Button variant="outline" size="sm" onClick={() => setVerif(l)}>Verifikasi</Button>}
-                      {isKetua && l.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(l)}>Tinjau</Button>}
-                      {isBend && l.status === 'disetujui' && <Button variant="outline" size="sm" onClick={() => setCair(l)}>Cairkan</Button>}
-                      <Button variant="ghost" size="sm" onClick={() => setDetail(l.id)}>Detail</Button>
-                    </div>
+                    {(() => {
+                      const canBatal = isSek && (l.status === 'menunggu-sekretaris' || l.status === 'menunggu-ketua' || l.status === 'disetujui')
+                      const primary =
+                        isSek && l.status === 'menunggu-sekretaris' ? { label: 'Verifikasi', run: () => setVerif(l) }
+                        : isKetua && l.status === 'menunggu-ketua' ? { label: 'Tinjau', run: () => setReview(l) }
+                        : isBend && l.status === 'disetujui' ? { label: 'Cairkan', run: () => setCair(l) }
+                        : { label: 'Detail', run: () => setDetail(l.id) }
+                      return (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="outline" size="sm" onClick={primary.run}>{primary.label}</Button>
+                          {(canBatal || primary.label !== 'Detail') && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Aksi"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {primary.label !== 'Detail' && <DropdownMenuItem onSelect={() => setDetail(l.id)}>Detail</DropdownMenuItem>}
+                                {canBatal && <DropdownMenuItem variant="destructive" onSelect={() => { setBatalAlasan(''); setBatalErr(''); setBatal(l) }}>Batalkan</DropdownMenuItem>}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </TableCell>
                 </TableRow>
               ))}
@@ -147,6 +169,20 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!batal} onOpenChange={(o) => !o && setBatal(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Batalkan {batal?.id}?</AlertDialogTitle>
+            <AlertDialogDescription>Plafon yang dipesan dikembalikan.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlasanField id="batal-pinjaman-alasan" label="Alasan pembatalan" value={batalAlasan} onChange={(v) => { setBatalAlasan(v); setBatalErr('') }} error={batalErr} />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Kembali</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={(e) => { if (!alasanOk(batalAlasan)) { e.preventDefault(); setBatalErr(ALASAN_ERROR); return } cancelLoan(batal!.id, batalAlasan.trim(), user.nama); toast.success(`${batal!.id} dibatalkan`); setBatal(null) }}>Batalkan Pinjaman</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {ajukan && <AjukanSheet actor={user.nama} onClose={() => setAjukan(false)} />}
       {nonSheet && <NonKopSheet actor={user.nama} onClose={() => setNonSheet(false)} />}

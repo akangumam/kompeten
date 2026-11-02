@@ -9,7 +9,8 @@ import { AlasanField, alasanOk, MoneyField, rp, SHEET_W } from '@/components/kop
 import { KPI_GRID, PageHeader, StatCard } from '@/components/payroll/pay/shared'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Card, CardContent } from '@/components/ui/card'
 import type { ChartConfig } from '@/components/ui/chart'
 import { FilePicker, type PickedFile } from '@/components/ui/file-picker'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -70,28 +71,30 @@ export default function CoopTradingPage({ user }: { user: CurrentUser }) {
       <Card>
         <CardContent>
           <div className="overflow-x-auto">
-            <Table className="min-w-[1100px]">
+            <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className={head}>No.</TableHead><TableHead className={head}>Tanggal</TableHead><TableHead className={head}>Jenis</TableHead><TableHead className={head}>Kategori</TableHead><TableHead className={head}>Keterangan</TableHead>
+                  <TableHead className={head}>No. / Tanggal</TableHead><TableHead className={head}>Jenis</TableHead><TableHead className={head}>Kategori</TableHead><TableHead className={head}>Keterangan</TableHead>
                   <TableHead className={`text-right ${head}`}>Nominal</TableHead><TableHead className={head}>Bukti</TableHead><TableHead className={head}>Dicatat oleh</TableHead><TableHead className={`text-right ${head}`}>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">Belum ada transaksi pada bulan ini.</TableCell></TableRow>}
+                {rows.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">Belum ada transaksi pada bulan ini.</TableCell></TableRow>}
                 {rows.map((t) => (
                   <TableRow key={t.id} className="h-12 hover:bg-muted/50">
-                    <TableCell className="font-medium tabular-nums">{t.migrasi ? '—' : t.id}</TableCell>
-                    <TableCell className="whitespace-nowrap tabular-nums">{formatDate(t.tanggal)}</TableCell>
+                    <TableCell className="whitespace-nowrap tabular-nums"><div className="font-medium">{t.migrasi ? '—' : t.id}</div><div className="text-xs text-muted-foreground">{formatDate(t.tanggal)}</div></TableCell>
                     <TableCell><StatusBadge variant={t.jenis === 'Masuk' ? 'success' : 'neutral'}>{t.jenis}</StatusBadge></TableCell>
-                    <TableCell>{t.kategori}</TableCell>
-                    <TableCell className="max-w-[280px] whitespace-normal">
-                      {t.keterangan}
+                    <TableCell className="whitespace-nowrap">{t.kategori}</TableCell>
+                    <TableCell className="max-w-[240px]">
+                      <Tooltip>
+                        <TooltipTrigger asChild><span tabIndex={0} className="block truncate">{t.keterangan}</span></TooltipTrigger>
+                        <TooltipContent className="max-w-xs">{t.keterangan}</TooltipContent>
+                      </Tooltip>
                       {t.dikoreksiOleh && <span className="block text-xs text-muted-foreground">Dikoreksi oleh {t.dikoreksiOleh}</span>}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{rp(t.nominal)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right tabular-nums">{rp(t.nominal)}</TableCell>
                     <TableCell>{t.migrasi ? <span className="text-muted-foreground">—</span> : <Button variant="link" size="sm" className="h-auto p-0" onClick={() => toast.info(`Pratinjau ${t.bukti} (simulasi)`)}><Paperclip aria-hidden />Bukti</Button>}</TableCell>
-                    <TableCell>{t.oleh}</TableCell>
+                    <TableCell className="whitespace-nowrap">{t.oleh}</TableCell>
                     <TableCell className="text-right">{isBend && !t.migrasi && !t.dikoreksiOleh && !t.koreksiDari && <Button variant="ghost" size="sm" onClick={() => setSheet({ koreksi: t })}>Koreksi</Button>}</TableCell>
                   </TableRow>
                 ))}

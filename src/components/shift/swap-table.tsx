@@ -59,21 +59,19 @@ export function SwapTable({
       <Table className="[&_td]:px-1.5 [&_th]:px-1.5">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={cn(stick, head)}>No. Pengajuan</TableHead>
-            <TableHead className={head}>Tanggal</TableHead>
+            <TableHead className={cn(stick, head)}>No. Pengajuan / Tanggal</TableHead>
             <TableHead className={head}>Pegawai A</TableHead>
             <TableHead className={head}>Pegawai B</TableHead>
             <TableHead className={head}>Perubahan</TableHead>
             <TableHead className={head}>Status</TableHead>
             <TableHead className={head}>Diajukan oleh</TableHead>
-            <TableHead className={head}>Diajukan</TableHead>
             <TableHead className={cn('text-right', head)}>Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.length === 0 && (
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">
+              <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
                 Tidak ada pengajuan tukar shift yang sesuai dengan filter.
               </TableCell>
             </TableRow>
@@ -83,8 +81,10 @@ export function SwapTable({
             const b = empByNik(s.nikB)!
             return (
               <TableRow key={s.no} className="group h-12 hover:bg-muted/50">
-                <TableCell className={cn(stick, 'font-medium tabular-nums group-hover:bg-muted')}>{s.no}</TableCell>
-                <TableCell className="whitespace-nowrap tabular-nums">{formatDate(s.date)}</TableCell>
+                <TableCell className={cn(stick, 'font-medium tabular-nums group-hover:bg-muted')}>
+                  <div>{s.no}</div>
+                  <div className="whitespace-nowrap text-xs font-normal text-muted-foreground">{formatDate(s.date)}</div>
+                </TableCell>
                 <TableCell><Person nik={s.nikA} /></TableCell>
                 <TableCell><Person nik={s.nikB} /></TableCell>
                 <TableCell>
@@ -98,9 +98,9 @@ export function SwapTable({
                   <div className="flex flex-col items-start gap-0.5 leading-tight">
                     <span className="whitespace-nowrap">{s.by}</span>
                     <SourceBadge sumber={s.diajukanOleh === 'pegawai' ? 'aplikasi' : 'web'} />
+                    <span className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">{s.at.split(',')[0]}</span>
                   </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">{s.at.split(',')[0]}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
                     {canReviewSwap(s, user) && (

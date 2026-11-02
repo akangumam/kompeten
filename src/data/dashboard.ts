@@ -85,7 +85,6 @@ export type PresensiData = {
 }
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-const dayLabel = (iso: string) => `${Number(iso.slice(8))} ${BULAN[Number(iso.slice(5, 7)) - 1]}`
 const DOW = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 const dow = (iso: string) => DOW[new Date(`${iso}T00:00:00Z`).getUTCDay()]
 

@@ -25,7 +25,7 @@ import { simLabel } from '@/lib/demo'
 import { inScope, teamNote, type CurrentUser } from '@/data/users'
 
 const ALL = 'all'
-type Tab = 'all' | 'menunggu' | 'validasi' | 'verif' | 'terjadwal' | 'tervalidasi' | 'lainnya'
+type Tab = 'all' | 'menunggu' | 'verif' | 'terjadwal' | 'tervalidasi' | 'lainnya'
 
 export default function OvertimePage({
   api,
@@ -87,7 +87,7 @@ export default function OvertimePage({
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return rows.filter((r) => {
-      if (tab === 'validasi' ? !isAwaitingValidation(r.status) : tab === 'verif' ? r.status !== 'menunggu-verifikasi' : tab !== 'all' && group(r.status) !== tab) return false
+      if (tab === 'verif' ? r.status !== 'menunggu-verifikasi' : tab !== 'all' && group(r.status) !== tab) return false
       if (dayType !== ALL && dayTypeOf(r.emp, r.rec.date) !== dayType) return false
       if (q && !`${r.emp.nama} ${r.emp.nik} ${r.rec.no}`.toLowerCase().includes(q)) return false
       return true
@@ -98,6 +98,14 @@ export default function OvertimePage({
   const jamValid = validated.reduce((s, r) => s + (r.paid?.jam ?? 0), 0)
   const biaya = validated.reduce((s, r) => s + (r.paid?.nominal ?? 0), 0)
   const waiting = rows.filter((r) => isAwaitingValidation(r.status)).length
+  const nApproval = rows.filter((r) => r.status === 'menunggu-approval').length
+  const nPegawai = rows.filter((r) => r.status === 'menunggu-persetujuan-pegawai').length
+  const waitingHint = [
+    waiting && `${waiting} validasi atasan`,
+    nPegawai && `${nPegawai} persetujuan pegawai`,
+    nApproval && `${nApproval} approval atasan`,
+    counts.verif && `${counts.verif} verifikasi`,
+  ].filter(Boolean).join(' · ')
   const scheduled = rows.filter((r) => r.status === 'terjadwal').length
   const people = new Set(validated.map((r) => r.rec.nik)).size
 
@@ -142,14 +150,14 @@ export default function OvertimePage({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Jam Lembur Tervalidasi" value={`${fj(jamValid)} jam`} icon={Clock} hint={`${validated.length} lembur tervalidasi`} />
         <StatCard
-          label="Menunggu Validasi"
-          value={String(waiting)}
+          label="Menunggu"
+          value={String(counts.menunggu)}
           icon={Hourglass}
-          hint={waiting ? 'Perlu divalidasi atasan' : 'Tidak ada antrean'}
-          active={tab === 'validasi'}
+          hint={waitingHint || 'Tidak ada antrean'}
+          active={tab === 'menunggu'}
           onClick={() => {
             setView('lembur')
-            setTab((t) => (t === 'validasi' ? 'all' : 'validasi'))
+            setTab((t) => (t === 'menunggu' ? 'all' : 'menunggu'))
           }}
         />
         <StatCard label="Lembur Terjadwal" value={`${scheduled} SPL`} icon={CalendarClock} hint="Belum dilaksanakan" />

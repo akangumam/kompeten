@@ -96,8 +96,6 @@ export type PageId = 'dashboard' | 'recruitment' | 'recruitment-jobs' | 'recruit
 
 type Profile = { kind: 'draft'; id: string } | { kind: 'roster'; nik: string } | { kind: 'exited'; nik: string }
 
-const PAYROLL_PAGES: PageId[] = ['final-pay', 'payroll-components', 'salary-change', 'payroll-run', 'payslips', 'payments', 'payroll-recon']
-const COOP_PAGES: PageId[] = ['coop-members', 'coop-withdrawals', 'coop-cash-advance', 'coop-loans', 'coop-payroll-deductions', 'coop-budget', 'coop-shu', 'coop-settings', 'coop-trading']
 
 function useDraftState() {
   const [drafts, setDrafts] = useState<Record<string, DraftRecord>>({})
@@ -378,6 +376,16 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
 
   return (
     <SidebarProvider open={open} onOpenChange={onSidebarOpenChange}>
+      <a
+        href="#konten"
+        onClick={(e) => {
+          e.preventDefault()
+          document.getElementById('konten')?.focus()
+        }}
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:shadow-md focus:ring-2 focus:ring-ring"
+      >
+        Lewati ke konten
+      </a>
       <AppSidebar
         activePage={activePage}
         onNavigate={(p) => guarded(() => { setTrxPeriod(undefined); setIrIntent(undefined); go(p) })}
@@ -401,7 +409,7 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
           onFinishPayroll={finishPayroll}
         />
         <DirectoryNavContext.Provider value={{ openDirectory, openEmployee, openOffboarding, openDiscipline, openFinalPay }}>
-        <main ref={mainRef} className="flex-1 overflow-y-auto">
+        <main id="konten" tabIndex={-1} ref={mainRef} className="flex-1 overflow-y-auto outline-none">
           {!pageOk && <NoAccess onBack={() => setActivePage(landingFor(role))} />}
           {pageOk && activePage === 'system-settings' && <SystemSettingsPage user={user} account={session.account} />}
           {pageOk && activePage === 'dashboard' && (

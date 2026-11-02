@@ -99,7 +99,6 @@ export default function EmployeeDraftPage({
   const [showAllFormat, setShowAllFormat] = useState(false)
 
   const activated = record.status === 'aktif'
-  const isSpv = user.role === 'supervisor'
   // Atasan dan pegawai nonaktif hanya melihat; Atasan juga tidak melihat identitas pribadi dan tab Asset, Tax & Bank.
   // Identitas pribadi (KTP), bank, dan pajak hanya untuk HR Personalia, HR & GA Manager, dan Payroll; edit hanya HR Personalia.
   const limited = !can(user, 'employee.sensitive')

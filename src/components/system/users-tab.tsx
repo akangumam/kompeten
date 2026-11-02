@@ -1,4 +1,4 @@
-import { KeyRound, Lock, LockOpen, MoreHorizontal, ShieldCheck, ShieldOff, UserCog, Users, UserX, CircleCheck } from 'lucide-react'
+import { KeyRound, Lock, LockOpen, MoreHorizontal, ShieldCheck, ShieldOff, UserCog, UserX, CircleCheck } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { usePaging, Pager } from '@/components/attendance/pager'

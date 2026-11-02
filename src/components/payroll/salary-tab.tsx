@@ -114,13 +114,11 @@ export function SalaryTab({ canEdit, actor, onHistory, onGotoChange }: Props) {
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className={`sticky left-0 z-10 bg-card ${head}`}>Pegawai</TableHead>
-              <TableHead className={head}>Department · Posisi</TableHead>
-              <TableHead className={head}>Grade</TableHead>
+              <TableHead className={head}>Department · Posisi · Grade</TableHead>
               <TableHead className={`text-right ${head}`}>Gaji Pokok</TableHead>
               <TableHead className={`text-right ${head}`}>Tunjangan Jabatan</TableHead>
               <TableHead className={`text-right ${head}`}>Upah BPJS</TableHead>
-              <TableHead className={head}>PTKP · TER</TableHead>
-              <TableHead className={head}>Rekening</TableHead>
+              <TableHead className={head}>Rekening / PTKP · TER</TableHead>
               <TableHead className={head}>Berlaku mulai</TableHead>
               <TableHead className={`text-right ${head}`}>Aksi</TableHead>
             </TableRow>
@@ -128,7 +126,7 @@ export function SalaryTab({ canEdit, actor, onHistory, onGotoChange }: Props) {
           <TableBody>
             {rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={10} className="h-28 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={8} className="h-28 text-center text-sm text-muted-foreground">
                   Tidak ada pegawai yang sesuai filter.
                   <Button variant="link" className="ml-1 h-auto p-0" onClick={reset}>Reset filter</Button>
                 </TableCell>
@@ -153,17 +151,18 @@ export function SalaryTab({ canEdit, actor, onHistory, onGotoChange }: Props) {
                   <TableCell className="whitespace-normal">
                     <div className="flex flex-col leading-tight">
                       <span>{e.department}</span>
-                      <span className="text-xs text-muted-foreground">{e.posisi}</span>
+                      <span className="text-xs text-muted-foreground">{e.posisi} · Grade {e.grade}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="tabular-nums">{e.grade}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {e.kelompok === 'Harian' ? <span title="Rp 100.000/hari (Upah Harian)">{idr(upahHarianAt(DEMO_TODAY))} / hari</span> : idr(e.gajiPokok)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{e.kelompok === 'Harian' ? '—' : idr(e.tunjanganTetap)}</TableCell>
                   <TableCell className="text-right tabular-nums">{e.kelompok === 'Harian' ? <span className="text-muted-foreground">Dari upah periode</span> : idr(upahBpjs(e))}</TableCell>
-                  <TableCell className="tabular-nums">{terLabel(e.ptkp)}</TableCell>
-                  <TableCell className="tabular-nums">{maskRekening(e.bank, e.nomorRekening)}</TableCell>
+                  <TableCell className="whitespace-nowrap tabular-nums">
+                    <div>{maskRekening(e.bank, e.nomorRekening)}</div>
+                    <div className="text-xs text-muted-foreground">{terLabel(e.ptkp)}</div>
+                  </TableCell>
                   <TableCell className="tabular-nums">
                     <div className="flex flex-col items-start gap-1">
                       <span>{formatDate(entry.berlakuMulai)}</span>

@@ -31,7 +31,6 @@ const FEMALE = new Set([
 const CITIES = ['Tangerang', 'Bekasi', 'Bogor', 'Serang', 'Jakarta', 'Bandung', 'Karawang', 'Cirebon', 'Garut', 'Purwakarta', 'Cilegon', 'Depok', 'Subang', 'Sukabumi']
 const STREETS = ['Jl. Raya Serang', 'Jl. Pahlawan', 'Jl. Merdeka', 'Jl. Kenanga', 'Jl. Melati', 'Jl. Cendrawasih', 'Jl. Dr. Soetomo', 'Jl. Imam Bonjol', 'Jl. Veteran', 'Jl. Mawar']
 const DISTRICTS = ['Cikupa', 'Balaraja', 'Cikarang Barat', 'Tambun Selatan', 'Jatiuwung', 'Cibitung', 'Citeureup', 'Kosambi', 'Curug', 'Pasar Kemis']
-const BANKS = ['BCA', 'Mandiri', 'BNI', 'BRI']
 const HP_PREFIX = ['12', '13', '21', '52', '57', '78', '56', '38']
 const KINS: [string, boolean][] = [['Ayah', false], ['Ibu', true], ['Suami', false], ['Istri', true], ['Kakak', true], ['Adik', false]]
 const SMA_MAJORS = ['Teknik Pemesinan', 'Teknik Otomotif', 'Teknik Elektro', 'IPA', 'IPS', 'Teknik Kimia Industri', 'Akuntansi']
@@ -66,7 +65,6 @@ export function rosterForm(e: RosterEmployee, over: ProfileOverrides = {}): Draf
   const bd = 1 + Math.floor(r() * 28)
   const tanggalLahir = over.tanggalLahir ?? BIRTH_SEED[e.nik] ?? `${birthY}-${pad(bm, 2)}-${pad(bd, 2)}`
   const [by, bmo, bda] = tanggalLahir.split('-').map(Number)
-  const age = 2026 - by
 
   const ktp = `32${pad(Math.floor(r() * 90) + 1, 2)}${pad(Math.floor(r() * 30) + 1, 2)}${pad(bda + (female ? 40 : 0), 2)}${pad(bmo, 2)}${pad(by % 100, 2)}${pad(Math.floor(r() * 9000) + 1, 4)}`
   // Status pernikahan mengikuti PTKP (satu sumber: data payroll pegawai).

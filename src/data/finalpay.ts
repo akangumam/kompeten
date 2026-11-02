@@ -1,4 +1,4 @@
-import { can, canOpen } from '@/lib/access'
+import { canOpen } from '@/lib/access'
 import { useSyncExternalStore } from 'react'
 import { nowStamp } from '@/data/attendance'
 import { addDayIso, contractsOf, kpkHook, monthsBetween, type Contract } from '@/data/contracts'

@@ -1,4 +1,4 @@
-import { Banknote, Clock, HandCoins, Hourglass, Info, Search, TriangleAlert } from 'lucide-react'
+import { Banknote, Clock, HandCoins, Hourglass, Info, MoreHorizontal, Search, TriangleAlert } from 'lucide-react'
 import { ALASAN_ERROR } from '@/lib/validators'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -73,6 +74,8 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
   const inMonth = KASBON.filter((k) => k.bulan === bulan)
   const total = inMonth.filter((k) => !['ditolak', 'dibatalkan'].includes(k.status)).reduce((a, k) => a + k.nominal, 0)
 
+  const menungguNominal = inMonth.filter((k) => k.status === 'menunggu-sekretaris').reduce((a, k) => a + k.nominal, 0)
+
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 p-6">
       <PageHeader title="Kasbon" subtitle="Kasbon bulanan anggota, dilunasi lewat potong gaji">
@@ -99,7 +102,7 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
       )}
 
       <div className={KPI_GRID}>
-        <StatCard label="Total kasbon bulan ini" value={rp(total)} icon={Banknote} hint={`${bulanName(bulan)} ${bulan.slice(0, 4)}`} />
+        <StatCard label="Total kasbon bulan ini" value={rp(total)} icon={Banknote} hint={`${bulanName(bulan)} ${bulan.slice(0, 4)}${menungguNominal > 0 ? ` · termasuk ${rp(menungguNominal)} menunggu proses` : ''}`} />
         <StatCard label="Menunggu Ketua" value={inMonth.filter((k) => k.status === 'menunggu-ketua').length.toLocaleString('id-ID')} icon={Hourglass} hint="Perlu ditinjau" />
         <StatCard label="Menunggu pencairan" value={inMonth.filter((k) => k.status === 'disetujui').length.toLocaleString('id-ID')} icon={Clock} hint="Disetujui, belum dicairkan" />
         <StatCard label="Pendapatan biaya admin (terkumpul, 2026)" value={rp(adminIncome(Number(DEMO_TODAY.slice(0, 4))))} icon={HandCoins} hint="Dari buku keuangan Koperasi, untuk SHU" />
@@ -120,13 +123,11 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
             <Input aria-label="Cari kasbon" placeholder="Cari anggota atau nomor…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           <div className="overflow-x-auto">
-          <Table className="min-w-[1100px]">
+          <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className={head}>No.</TableHead>
                 <TableHead className={head}>Anggota</TableHead>
-                <TableHead className={`text-right ${head}`}>Nominal</TableHead>
-                <TableHead className={`text-right ${head}`}>Biaya admin</TableHead>
                 <TableHead className={`text-right ${head}`}>Total tagihan</TableHead>
                 <TableHead className={head}>Penyelesaian</TableHead>
                 <TableHead className={head}>Diajukan</TableHead>
@@ -135,7 +136,7 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {list.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">Belum ada kasbon pada bulan ini.</TableCell></TableRow>}
+              {list.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">Belum ada kasbon pada bulan ini.</TableCell></TableRow>}
               {list.map((k) => (
                 <TableRow key={k.id} className="h-12 hover:bg-muted/50">
                   <TableCell className="font-medium tabular-nums">{k.id}</TableCell>
@@ -145,10 +146,11 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
                       <SourceBadge sumber={k.sumber} />
                     </div>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{rp(k.nominal)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{closed(k) ? '—' : rp(k.admin)}</TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">{closed(k) ? '—' : rp(kasbonTotal(k))}</TableCell>
-                  <TableCell>{k.penyelesaian === 'potong' ? 'Potong gaji' : 'Tunai ke Bendahara'}</TableCell>
+                  <TableCell className="text-right whitespace-nowrap tabular-nums">
+                    <div className="font-medium">{closed(k) ? '—' : rp(kasbonTotal(k))}</div>
+                    <div className="text-xs text-muted-foreground">{closed(k) ? `${rp(k.nominal)} · tidak ditagihkan` : `${rp(k.nominal)} + admin ${rp(k.admin)}`}</div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{k.penyelesaian === 'potong' ? 'Potong gaji' : 'Tunai ke Bendahara'}</TableCell>
                   <TableCell className="whitespace-nowrap tabular-nums">{formatDate(k.diajukan)}</TableCell>
                   <TableCell>
                     <div className="flex max-w-[220px] flex-col items-start gap-1">
@@ -168,14 +170,32 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      {isSek && k.status === 'menunggu-sekretaris' && <Button variant="outline" size="sm" onClick={() => setVerif(k)}>Verifikasi</Button>}
-                      {isKetua && k.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(k)}>Tinjau</Button>}
-                      {isBend && k.status === 'disetujui' && <Button variant="outline" size="sm" onClick={() => setCair(k)}>Cairkan</Button>}
-                      {isBend && k.status === 'dicairkan' && <Button variant="outline" size="sm" onClick={() => setTunai(k)}>Terima tunai</Button>}
-                      {isSek && (k.status === 'menunggu-sekretaris' || k.status === 'menunggu-ketua' || k.status === 'disetujui') && <Button variant="ghost" size="sm" onClick={() => { setBatalAlasan(''); setBatal(k) }}>Batalkan</Button>}
-                      {(closed(k) || k.status === 'menunggu-ketua' || k.status === 'lunas' || k.status === 'ditagihkan' || k.status === 'tertahan') && <Button variant="ghost" size="sm" onClick={() => setDetail(k)}>Detail</Button>}
-                    </div>
+                    {(() => {
+                      const canBatal = isSek && (k.status === 'menunggu-sekretaris' || k.status === 'menunggu-ketua' || k.status === 'disetujui')
+                      const hasDetail = closed(k) || k.status === 'menunggu-ketua' || k.status === 'lunas' || k.status === 'ditagihkan' || k.status === 'tertahan'
+                      const primary =
+                        isSek && k.status === 'menunggu-sekretaris' ? { label: 'Verifikasi', run: () => setVerif(k) }
+                        : isKetua && k.status === 'menunggu-ketua' ? { label: 'Tinjau', run: () => setReview(k) }
+                        : isBend && k.status === 'disetujui' ? { label: 'Cairkan', run: () => setCair(k) }
+                        : isBend && k.status === 'dicairkan' ? { label: 'Terima tunai', run: () => setTunai(k) }
+                        : hasDetail ? { label: 'Detail', run: () => setDetail(k) }
+                        : null
+                      const menuDetail = hasDetail && primary?.label !== 'Detail'
+                      return (
+                        <div className="flex items-center justify-end gap-1">
+                          {primary && <Button variant="outline" size="sm" onClick={primary.run}>{primary.label}</Button>}
+                          {(canBatal || menuDetail) && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Aksi"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {menuDetail && <DropdownMenuItem onSelect={() => setDetail(k)}>Detail</DropdownMenuItem>}
+                                {canBatal && <DropdownMenuItem variant="destructive" onSelect={() => { setBatalAlasan(''); setBatalErr(''); setBatal(k) }}>Batalkan</DropdownMenuItem>}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </TableCell>
                 </TableRow>
               ))}

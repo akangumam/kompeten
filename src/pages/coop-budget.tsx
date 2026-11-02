@@ -1,4 +1,4 @@
-import { Banknote, Paperclip, PiggyBank, Plus, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
+import { Banknote, MoreHorizontal, Paperclip, PiggyBank, Plus, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { ALASAN_ERROR } from '@/lib/validators'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -10,7 +10,9 @@ import { KPI_GRID, PageHeader, StatCard } from '@/components/payroll/pay/shared'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Card, CardContent } from '@/components/ui/card'
 import type { ChartConfig } from '@/components/ui/chart'
 import { FilePicker, type PickedFile } from '@/components/ui/file-picker'
 import { Input } from '@/components/ui/input'
@@ -247,32 +249,48 @@ function PengeluaranTab({ bulan, isBend, isKetua, actor }: { bulan: string; isBe
       <Card>
         <CardContent>
           <div className="overflow-x-auto">
-            <Table className="min-w-[1200px]">
+            <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className={head}>No.</TableHead><TableHead className={head}>Tanggal</TableHead><TableHead className={head}>Pos</TableHead><TableHead className={head}>Keterangan</TableHead><TableHead className={head}>Penerima</TableHead><TableHead className={head}>Metode</TableHead>
+                  <TableHead className={head}>No. / Tanggal</TableHead><TableHead className={head}>Pos</TableHead><TableHead className={head}>Keterangan</TableHead><TableHead className={head}>Penerima / Metode</TableHead>
                   <TableHead className={`text-right ${head}`}>Nominal</TableHead><TableHead className={head}>Bukti</TableHead><TableHead className={head}>Dicatat oleh</TableHead><TableHead className={head}>Status</TableHead><TableHead className={`text-right ${head}`}>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {list.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={11} className="h-24 text-center text-sm text-muted-foreground">{bulan < '2026-10' ? 'Bulan ini berisi ringkasan data migrasi per pos (lihat tab Budget).' : 'Belum ada pengeluaran pada bulan ini.'}</TableCell></TableRow>}
+                {list.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">{bulan < '2026-10' ? 'Bulan ini berisi ringkasan data migrasi per pos (lihat tab Budget).' : 'Belum ada pengeluaran pada bulan ini.'}</TableCell></TableRow>}
                 {list.map((p) => (
                   <TableRow key={p.id} className="h-12 hover:bg-muted/50">
-                    <TableCell className="font-medium tabular-nums">{p.id}</TableCell><TableCell className="whitespace-nowrap tabular-nums">{formatDate(p.tanggal)}</TableCell>
-                    <TableCell>{p.pos}</TableCell><TableCell className="max-w-[240px] whitespace-normal">{p.keterangan}</TableCell><TableCell>{p.penerima}</TableCell><TableCell>{p.metode}</TableCell>
-                    <TableCell className="text-right tabular-nums">{rp(p.nominal)}</TableCell>
+                    <TableCell className="whitespace-nowrap tabular-nums"><div className="font-medium">{p.id}</div><div className="text-xs text-muted-foreground">{formatDate(p.tanggal)}</div></TableCell>
+                    <TableCell className="whitespace-nowrap">{p.pos}</TableCell>
+                    <TableCell className="max-w-[200px]">
+                      <Tooltip>
+                        <TooltipTrigger asChild><span tabIndex={0} className="block truncate">{p.keterangan}</span></TooltipTrigger>
+                        <TooltipContent className="max-w-xs">{p.keterangan}</TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell><div className="whitespace-nowrap">{p.penerima}</div><div className="text-xs text-muted-foreground">{p.metode}</div></TableCell>
+                    <TableCell className="whitespace-nowrap text-right tabular-nums">{rp(p.nominal)}</TableCell>
                     <TableCell><Button variant="link" size="sm" className="h-auto p-0" onClick={() => toast.info(`Pratinjau ${p.bukti} (simulasi)`)}><Paperclip aria-hidden />Nota</Button></TableCell>
                     <TableCell>{p.oleh}</TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
                         <StatusBadge variant={PKO_VARIANT[p.status]}>{PKO_LABEL[p.status]}</StatusBadge>
-                        {p.disetujui && <span className="text-xs text-muted-foreground">Disetujui {p.disetujui.oleh} {formatDate(p.disetujui.tanggal)}</span>}
+                        {p.disetujui && <span className="max-w-[170px] text-xs text-muted-foreground">Disetujui {p.disetujui.oleh} {formatDate(p.disetujui.tanggal)}</span>}
                         {p.tolak && <span className="max-w-[200px] truncate text-xs text-muted-foreground" title={p.tolak.alasan}>{p.tolak.alasan}</span>}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {isKetua && p.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(p)}>Tinjau</Button>}
-                      {isBend && p.status === 'menunggu-ketua' && <Button variant="ghost" size="sm" onClick={() => { setAlasan(''); setBatalErr(''); setBatal(p) }}>Batalkan</Button>}
+                      <div className="flex items-center justify-end gap-1">
+                        {isKetua && p.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(p)}>Tinjau</Button>}
+                        {isBend && p.status === 'menunggu-ketua' && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Aksi"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem variant="destructive" onSelect={() => { setAlasan(''); setBatalErr(''); setBatal(p) }}>Batalkan</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { nowStamp } from '@/data/attendance'
-import { empOf, longDate, teamLabel, type LeavePeriod } from '@/data/leave'
+import { empOf, teamLabel, type LeavePeriod } from '@/data/leave'
 import { dayTypeLabel, dayTypeOf, fj, rp, type RekapRow } from '@/data/overtime'
 import { formatDate } from '@/lib/format'
 

@@ -1,4 +1,4 @@
-import { Lock, type LucideIcon } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,6 @@ import { SELECTABLE_PERIODS } from '@/data/payroll/disbursement'
 import type { Kelompok } from '@/data/master/levels'
 import { KELOMPOK_LIST } from '@/data/master/levels'
 import type { PeriodId } from '@/data/payroll/runs'
-import { cn } from '@/lib/utils'
 
 export const idr = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
 

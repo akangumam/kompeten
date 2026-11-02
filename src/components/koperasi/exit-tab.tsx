@@ -54,12 +54,12 @@ export function CoopExitTab({ user }: { user: CurrentUser }) {
                     <TableCell className="whitespace-nowrap tabular-nums">{formatDate(o.tanggalKeluar)}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       <span className="block font-medium">{rp(kb.saldo)}</span>
-                      <span className="block text-xs text-muted-foreground">Pokok {rp(kb.pokok)} · Wajib {rp(kb.wajib)} · Sukarela {rp(kb.sukarela)}</span>
+                      <span className="ml-auto block max-w-[240px] text-xs text-muted-foreground">Pokok {rp(kb.pokok)} · Wajib {rp(kb.wajib)} · Sukarela {rp(kb.sukarela)}</span>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       <span className="block font-medium">{rp(kb.kewajiban)}</span>
-                      <span className="block text-xs text-muted-foreground">Kasbon {rp(kb.kasbon)} · Pinjaman {rp(kb.pinjaman)}</span>
-                      {kb.nonN > 0 && <span className="block text-xs text-muted-foreground">Non-Koperasi (bukan dana koperasi): {kb.nonN} aktif · sisa {rp(kb.nonSisa)}</span>}
+                      <span className="ml-auto block max-w-[240px] text-xs text-muted-foreground">Kasbon {rp(kb.kasbon)} · Pinjaman {rp(kb.pinjaman)}</span>
+                      {kb.nonN > 0 && <span className="ml-auto block max-w-[240px] text-xs text-muted-foreground">Non-Koperasi (bukan dana koperasi): {kb.nonN} aktif · sisa {rp(kb.nonSisa)}</span>}
                     </TableCell>
                     <TableCell>
                       {!item ? <StatusBadge variant="neutral">Menunggu approval keluar</StatusBadge> : item.status === 'Selesai' ? <StatusBadge variant="success">Selesai</StatusBadge> : <StatusBadge variant="warning">Perlu konfirmasi</StatusBadge>}

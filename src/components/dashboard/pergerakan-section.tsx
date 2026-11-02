@@ -11,7 +11,6 @@ import { HEADCOUNT } from '@/data/headcount'
 import { ROSTER } from '@/data/employees'
 import { formatTenure } from '@/data/directory'
 import { formatDate } from '@/lib/format'
-import { DEMO_TODAY } from '@/lib/today'
 import type { CurrentUser } from '@/data/users'
 import type { PageId } from '@/App'
 

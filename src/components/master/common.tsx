@@ -1,6 +1,5 @@
 import { History, MoreHorizontal, Pencil, Power, Search, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { toast } from 'sonner'
 import type { DirPreset } from '@/data/directory'
 import { useDirectoryNav } from '@/lib/directory-nav'
 import { DatePicker } from '@/components/employee/date-picker'

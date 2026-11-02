@@ -1,25 +1,14 @@
 import { useMemo } from 'react'
-import {
-  AlertTriangle,
-  CheckCircle2,
-  MinusCircle,
-  PlusCircle,
-  Users,
-  Target,
-  Percent,
-  UserMinus,
-  Briefcase,
-} from 'lucide-react'
+import { AlertTriangle, CheckCircle2, PlusCircle, Users, Target, Percent, UserMinus, Briefcase } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import type { ChartConfig } from '@/components/ui/chart'
 import { BarChartGrouped, ChartCard, LineChartCompare } from '@/components/charts'
 import { StatCard } from '@/components/dashboard/stat-card'
-import { ROSTER, type RosterEmployee } from '@/data/employees'
+import { ROSTER } from '@/data/employees'
 import { MANPOWER_STANDARDS } from '@/data/master/manpower-standards'
 import { JOBS, terisi } from '@/data/recruitment/jobs'
-import { OFFS } from '@/data/offboarding'
 import { DEMO_TODAY } from '@/lib/today'
 import type { CurrentUser } from '@/data/users'
 import type { PageId } from '@/App'

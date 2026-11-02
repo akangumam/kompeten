@@ -29,29 +29,37 @@ export function ScheduleTab({ programs, user, onAttend }: { programs: Program[];
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className={head}>Tanggal</TableHead>
-              <TableHead className={head}>Jam (WIB)</TableHead>
+              <TableHead className={head}>Tanggal / Jam (WIB)</TableHead>
               <TableHead className={head}>Program</TableHead>
-              <TableHead className={head}>Lokasi</TableHead>
-              <TableHead className={head}>Trainer</TableHead>
+              <TableHead className={head}>Lokasi / Trainer</TableHead>
               <TableHead className={`text-right ${head}`}>Kuota terisi</TableHead>
               <TableHead className={head}>Kehadiran</TableHead>
               {admin && <TableHead className={`text-right ${head}`}>Aksi</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={admin ? 8 : 7} className="h-24 text-center text-sm text-muted-foreground">Tidak ada sesi offline.</TableCell></TableRow>}
+            {rows.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={admin ? 6 : 5} className="h-24 text-center text-sm text-muted-foreground">Tidak ada sesi offline.</TableCell></TableRow>}
             {paging.rows.map(({ p, s, no }) => {
               const past = s.tanggal <= DEMO_TODAY
               const rec = sessionRecorded(p.kode, s.id)
               const terisi = enrollmentsOf(p.kode).length
               return (
                 <TableRow key={s.id} className="h-12">
-                  <TableCell className="whitespace-nowrap font-medium tabular-nums">{formatDate(s.tanggal)}</TableCell>
-                  <TableCell className="whitespace-nowrap tabular-nums">{s.mulai}–{s.selesai}</TableCell>
-                  <TableCell><span className="font-medium">{p.judul}</span> <span className="text-xs text-muted-foreground tabular-nums">{p.kode} · sesi {no}</span></TableCell>
-                  <TableCell>{s.lokasi}</TableCell>
-                  <TableCell>{s.trainer}</TableCell>
+                  <TableCell className="whitespace-nowrap tabular-nums">
+                    <div className="font-medium">{formatDate(s.tanggal)}</div>
+                    <div className="text-xs text-muted-foreground">{s.mulai}–{s.selesai}</div>
+                  </TableCell>
+                  <TableCell className="max-w-[280px]">
+                    <Tooltip>
+                      <TooltipTrigger asChild><span tabIndex={0} className="block truncate font-medium">{p.judul}</span></TooltipTrigger>
+                      <TooltipContent className="max-w-xs">{p.judul}</TooltipContent>
+                    </Tooltip>
+                    <span className="text-xs text-muted-foreground tabular-nums">{p.kode} · sesi {no}</span>
+                  </TableCell>
+                  <TableCell className="max-w-[220px]">
+                    <span className="block truncate">{s.lokasi}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{s.trainer}</span>
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">{terisi}{p.kuota ? `/${p.kuota}` : ''}</TableCell>
                   <TableCell>{rec ? <StatusBadge variant="success">Tercatat</StatusBadge> : <StatusBadge variant="neutral">{past ? 'Belum dicatat' : 'Belum berlangsung'}</StatusBadge>}</TableCell>
                   {admin && (

@@ -77,11 +77,9 @@ export default function SalaryChangePage({ user }: { user: CurrentUser }) {
               <TableRow className="hover:bg-transparent">
                 <TableHead className={head}>No</TableHead>
                 <TableHead className={head}>Pegawai</TableHead>
-                <TableHead className={head}>Group</TableHead>
                 <TableHead className={`text-right ${head}`}>Lama → Baru</TableHead>
-                <TableHead className={head}>Berlaku mulai</TableHead>
+                <TableHead className={head}>Berlaku mulai / Sumber</TableHead>
                 <TableHead className={head}>Alasan</TableHead>
-                <TableHead className={head}>Sumber</TableHead>
                 <TableHead className={head}>Status</TableHead>
                 <TableHead className={`text-right ${head}`}>Aksi</TableHead>
               </TableRow>
@@ -96,18 +94,28 @@ export default function SalaryChangePage({ user }: { user: CurrentUser }) {
                 return (
                   <TableRow key={c.id} className="h-12 hover:bg-muted/50">
                     <TableCell className="font-medium tabular-nums">{c.id}</TableCell>
-                    <TableCell>{batch ? <span className="font-medium">{c.items.length.toLocaleString('id-ID')} pegawai</span> : emp && <PersonCell nama={emp.nama} nik={emp.nik} />}</TableCell>
-                    <TableCell>{batch ? (groups.length > 2 ? 'Beberapa group' : groups.join(', ')) : emp?.kelompok}</TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell>
                       {batch ? (
-                        <span>+{idr(totalOf(c))}/bulan <span className="text-muted-foreground">· {pctText(avgOf(c))}</span></span>
-                      ) : (
-                        <span>{idr(first.lama)} → <span className="font-medium">{idr(first.baru)}</span> <span className="text-muted-foreground">({pctText(pct(first.lama, first.baru))})</span></span>
+                        <div className="flex flex-col leading-tight">
+                          <span className="whitespace-nowrap font-medium">{c.items.length.toLocaleString('id-ID')} pegawai</span>
+                          <span className="text-xs text-muted-foreground">{groups.length > 2 ? 'Beberapa group' : groups.join(', ')}</span>
+                        </div>
+                      ) : emp && (
+                        <PersonCell nama={emp.nama} nik={emp.nik} extra={<span className="text-xs text-muted-foreground">{emp.kelompok}</span>} />
                       )}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap tabular-nums">{formatDate(first.berlaku)}</TableCell>
-                    <TableCell className="max-w-[220px] whitespace-normal">{c.kategori}</TableCell>
-                    <TableCell>{c.sumber}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {batch ? (
+                        <><div className="whitespace-nowrap">+{idr(totalOf(c))}/bulan</div><div className="text-xs text-muted-foreground">rata-rata {pctText(avgOf(c))}</div></>
+                      ) : (
+                        <><div className="whitespace-nowrap">{idr(first.lama)} → <span className="font-medium">{idr(first.baru)}</span></div><div className="text-xs text-muted-foreground">{pctText(pct(first.lama, first.baru))}</div></>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap tabular-nums">
+                      <div>{formatDate(first.berlaku)}</div>
+                      <div className="text-xs text-muted-foreground">{c.sumber}</div>
+                    </TableCell>
+                    <TableCell className="max-w-[200px] whitespace-normal">{c.kategori}</TableCell>
                     <TableCell><StatusBadge variant={st.variant}><st.icon aria-hidden />{st.label}</StatusBadge></TableCell>
                     <TableCell className="text-right">
                       {approver && c.status === 'menunggu' ? (

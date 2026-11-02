@@ -1,8 +1,7 @@
-import { Banknote, Clock, HandCoins, Hourglass, Search } from 'lucide-react'
+import { Banknote, Clock, HandCoins, Hourglass, MoreHorizontal, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { DirectoryFooter } from '@/components/employees/directory-footer'
-import { Field } from '@/components/employee/field'
 import { DisburseDialog } from '@/components/koperasi/disburse-dialog'
 import { ReviewWithdrawal } from '@/components/koperasi/review-sheets'
 import { AlasanField, rp, WD_LABEL, WdBadge } from '@/components/koperasi/shared'
@@ -11,10 +10,10 @@ import { KPI_GRID, PageHeader, PersonCell, StatCard } from '@/components/payroll
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
 import { SourceBadge } from '@/components/mobile/source-badge'
 import { VerifySheet } from '@/components/koperasi/verify-sheet'
 import { appCount, wdChecks } from '@/data/koperasi/mobile'
@@ -105,17 +104,16 @@ export default function CoopWithdrawalsPage({ user }: { user: CurrentUser }) {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className={head}>No.</TableHead>
+                <TableHead className={head}>No. / Diajukan</TableHead>
                 <TableHead className={head}>Anggota</TableHead>
                 <TableHead className={`text-right ${head}`}>Nominal</TableHead>
                 <TableHead className={head}>Saldo sukarela · tersedia</TableHead>
-                <TableHead className={head}>Diajukan</TableHead>
                 <TableHead className={head}>Status</TableHead>
                 <TableHead className={head}>Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {list.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">Tidak ada pencairan yang sesuai.</TableCell></TableRow>}
+              {list.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">Tidak ada pencairan yang sesuai.</TableCell></TableRow>}
               {pageRows.map((w) => {
                 const canReview = w.status === 'menunggu-ketua' && reviewerOf(w).role === user.role
                 const canPay = w.status === 'disetujui' && disburserOf(w).role === user.role
@@ -123,7 +121,7 @@ export default function CoopWithdrawalsPage({ user }: { user: CurrentUser }) {
                 const cap = caption(w)
                 return (
                   <TableRow key={w.id} className="h-12 hover:bg-muted/50">
-                    <TableCell className="whitespace-nowrap font-medium tabular-nums">{w.id}</TableCell>
+                    <TableCell className="whitespace-nowrap tabular-nums"><div className="font-medium">{w.id}</div><div className="text-xs text-muted-foreground">{formatDate(w.diajukan)}</div></TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
                         <PersonCell nama={nameOf(w)} nik={w.nik} />
@@ -131,8 +129,10 @@ export default function CoopWithdrawalsPage({ user }: { user: CurrentUser }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-medium tabular-nums">{rp(w.nominal)}</TableCell>
-                    <TableCell className="whitespace-nowrap tabular-nums">{rp(saldoSukarela(w.nik))} <span className="text-muted-foreground">· {rp(tersedia(w.nik))}</span></TableCell>
-                    <TableCell className="whitespace-nowrap tabular-nums">{formatDate(w.diajukan)}</TableCell>
+                    <TableCell className="whitespace-nowrap tabular-nums">
+                      <div>{rp(saldoSukarela(w.nik))}</div>
+                      <div className="text-xs text-muted-foreground">tersedia {rp(tersedia(w.nik))}</div>
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
                         <WdBadge s={w.status} />
@@ -140,11 +140,18 @@ export default function CoopWithdrawalsPage({ user }: { user: CurrentUser }) {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex items-center gap-1">
                         {isSek && w.status === 'menunggu-sekretaris' && <Button variant="outline" size="sm" onClick={() => setVerif(w)}>Verifikasi</Button>}
                         {canReview && <Button variant="outline" size="sm" onClick={() => setReview(w)}>Tinjau</Button>}
                         {canPay && <Button variant="outline" size="sm" onClick={() => setCairkan(w)}>Cairkan</Button>}
-                        {canCancel && <Button variant="outline" size="sm" onClick={() => { setAlasan(''); setErr(''); setBatal(w) }}>Batalkan</Button>}
+                        {canCancel && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Aksi"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem variant="destructive" onSelect={() => { setAlasan(''); setErr(''); setBatal(w) }}>Batalkan</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
