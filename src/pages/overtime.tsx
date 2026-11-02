@@ -1,7 +1,7 @@
 import { can, hidesPay } from '@/lib/access'
 import { TransitionAlert } from '@/components/transition-alert'
 import { periodSelectLabel } from '@/data/master/attendance-rules'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CalendarClock, Clock, FilePlus, Hourglass, Search, Users, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Pager, usePaging } from '@/components/attendance/pager'
@@ -21,6 +21,7 @@ import type { Scan } from '@/data/attendance'
 import { ROSTER } from '@/data/employees'
 import { empOf, inPeriod, isPeriodClosed, CURRENT_PERIOD_ID, LEAVE_PERIODS, type LeaveRequest } from '@/data/leave'
 import { dayTypeOf, effStatus, fj, isAwaitingValidation, paidOf, realisasiOf, rekapFor, rp, type OtRecord, type RekapRow } from '@/data/overtime'
+import { simLabel } from '@/lib/demo'
 import { inScope, teamNote, type CurrentUser } from '@/data/users'
 
 const ALL = 'all'
@@ -52,6 +53,10 @@ export default function OvertimePage({
   const [cancelId, setCancelId] = useState<string | null>(null)
   const [slip, setSlip] = useState<RekapRow | null>(null)
 
+  // Kedaluwarsa: SPL tanpa jawaban pegawai yang jam mulainya sudah lewat dibatalkan saat halaman dibuka.
+  const { expire } = api
+  useEffect(() => { expire() }, [expire])
+
   const period = LEAVE_PERIODS.find((p) => p.id === periodId)!
   const final = isPeriodClosed(period, octClosed)
 
@@ -69,7 +74,7 @@ export default function OvertimePage({
   )
 
   const group = (s: OtRow['status']): Tab =>
-    s === 'menunggu-approval' || isAwaitingValidation(s) || s === 'menunggu-verifikasi' ? 'menunggu' : s === 'terjadwal' ? 'terjadwal' : s === 'tervalidasi' ? 'tervalidasi' : 'lainnya'
+    s === 'menunggu-approval' || s === 'menunggu-persetujuan-pegawai' || isAwaitingValidation(s) || s === 'menunggu-verifikasi' ? 'menunggu' : s === 'terjadwal' ? 'terjadwal' : s === 'tervalidasi' ? 'tervalidasi' : 'lainnya'
   const counts = {
     all: rows.length,
     menunggu: rows.filter((r) => group(r.status) === 'menunggu').length,
@@ -241,8 +246,8 @@ export default function OvertimePage({
           const res = api.create(input, actor)
           setBuat(false)
           toast.success(
-            res.status === 'terjadwal'
-              ? `SPL ${res.no} diterbitkan untuk ${input.niks.length} pegawai`
+            res.status === 'menunggu-persetujuan-pegawai'
+              ? `SPL ${res.no} diterbitkan untuk ${input.niks.length} pegawai, menunggu persetujuan pegawai`
               : `SPL ${res.no} diajukan ke ${res.approvers.join(', ')} untuk approval`,
           )
         }}
@@ -259,6 +264,8 @@ export default function OvertimePage({
         onReject={(r, a) => { api.reject(r.id, actor, a); setSheet(null); toast.success(`SPL ${r.no} untuk ${emp(r)} ditolak`) }}
         onValidate={(r, j, k, ist) => { api.validate(r.id, actor, j, k, ist); setSheet(null); toast.success(`Lembur ${emp(r)} divalidasi (${fj(j)} jam), menunggu verifikasi HRD`) }}
         onVerify={(r, j, ist) => { api.verify(r.id, actor, j, ist); setSheet(null); toast.success(`Lembur ${emp(r)} diverifikasi (${fj(j)} jam)`) }}
+        onConsent={(r, ket, via) => { api.consent(r.id, actor, via, ket); setSheet(null); toast.success(`${via === 'aplikasi' ? simLabel : ''}Persetujuan ${emp(r)} untuk SPL ${r.no} dicatat, SPL terjadwal`) }}
+        onRefuse={(r, a) => { api.refuse(r.id, actor, a); setSheet(null); toast.success(`${simLabel}Penolakan ${emp(r)} untuk SPL ${r.no} dicatat`) }}
         onTidak={(r) => { api.markTidak(r.id, actor); setSheet(null); toast.success(`Lembur ${emp(r)} ditandai tidak terealisasi`) }}
       />
       <CancelOtDialog

@@ -5,7 +5,7 @@ import { contractEndError, CORE as ROSTER, SUPERVISORS, type RosterEmployee } fr
 import { rule } from '@/data/master/attendance-rules'
 import { isHoliday } from '@/data/master/holidays'
 import { isJamKerja, isPending, teamLabel, type LeaveRequest } from '@/data/leave'
-import type { ShiftSwap, WorkShift } from '@/data/shift-swaps'
+import { isSwapPending, type ShiftSwap, type WorkShift } from '@/data/shift-swaps'
 import { formatDate } from '@/lib/format'
 
 export type Cell = WorkShift | 'libur'
@@ -24,7 +24,7 @@ export const SCHEDULED = ROSTER.filter((e) => !SUPERVISOR_NIKS.includes(e.nik) &
 export const SECTIONS = [...new Set(SCHEDULED.map(sectionOf))].sort()
 export const DEFAULT_SECTION = 'Produksi · Injection'
 
-export const isActiveSwap = (s: ShiftSwap) => isPending(s.status) || s.status === 'disetujui'
+export const isActiveSwap = (s: ShiftSwap) => isSwapPending(s.status) || s.status === 'disetujui'
 
 export type Ctx = { swaps: ShiftSwap[]; leaves: LeaveRequest[] }
 

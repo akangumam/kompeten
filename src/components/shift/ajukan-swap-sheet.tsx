@@ -6,8 +6,6 @@ import { descId, Field } from '@/components/employee/field'
 import { EmployeeCombobox } from '@/components/shift/employee-combobox'
 import type { NewSwap } from '@/components/shift/use-shift-swaps'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { isPeriodClosed, periodOf } from '@/data/leave'
 import {
@@ -47,11 +45,10 @@ export function AjukanSwapSheet({
   const [nikB, setNikB] = useState('')
   const [alasan, setAlasan] = useState('')
   const [touched, setTouched] = useState(false)
-  const [consent, setConsent] = useState(false)
 
   useEffect(() => {
     if (open) {
-      setDate(''); setNikA(''); setNikB(''); setAlasan(''); setTouched(false); setConsent(false)
+      setDate(''); setNikA(''); setNikB(''); setAlasan(''); setTouched(false)
     }
   }, [open])
 
@@ -84,7 +81,7 @@ export function AjukanSwapSheet({
 
   const alasanError = touched && !validAlasan(alasan) ? ALASAN_ERROR : ''
   const valid =
-    !!date && !dateError && !!a && !!b && issuesA.length === 0 && issuesB.length === 0 && !errA && !errB && validAlasan(alasan) && consent
+    !!date && !dateError && !!a && !!b && issuesA.length === 0 && issuesB.length === 0 && !errA && !errB && validAlasan(alasan)
 
   const emptyPartners = `Tidak ada rekan di ${a ? `${sectionOf(a)} · ${levelOf(a)}` : 'section ini'} dengan shift berbeda pada tanggal ini.`
 
@@ -98,7 +95,7 @@ export function AjukanSwapSheet({
       <SheetContent className="w-full overflow-y-auto sm:max-w-[480px]">
         <SheetHeader>
           <SheetTitle>Ajukan Tukar Shift</SheetTitle>
-          <SheetDescription>Input atas nama pegawai setelah keduanya sepakat. Atasan langsung akan menyetujui.</SheetDescription>
+          <SheetDescription>Kedua pegawai diminta mengonfirmasi lebih dulu; setelah semua setuju, Atasan langsung menyetujui.</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-4">
           <Field id="tks-tanggal" label="Tanggal" required error={dateError} helper="Hanya tanggal hari ini atau setelahnya pada periode yang masih terbuka">
@@ -187,13 +184,6 @@ export function AjukanSwapSheet({
 
           <AlasanField id="tks-alasan" label="Alasan" value={alasan} onChange={setAlasan} error={alasanError} onBlur={() => alasan && setTouched(true)} />
 
-          <div className="flex items-start gap-3">
-            <Checkbox id="tks-setuju" checked={consent} onCheckedChange={(v) => setConsent(v === true)} className="mt-0.5" />
-            <Label htmlFor="tks-setuju" className="flex-col items-start gap-0.5 font-normal leading-snug">
-              <span className="font-medium">Kedua pegawai sudah menyetujui tukar shift ini <span aria-hidden className="text-danger">*</span><span className="sr-only">(wajib)</span></span>
-              <span className="text-xs text-muted-foreground">{a && b ? `${a.nama} dan ${b.nama}` : 'Nama kedua pegawai tampil setelah dipilih'}</span>
-            </Label>
-          </div>
         </div>
         <SheetFooter className="flex-row justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>

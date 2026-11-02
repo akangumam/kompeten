@@ -29,6 +29,7 @@ import { ProfileCard } from '@/components/employee/profile-card'
 import { TaxTab } from '@/components/employee/tax-tab'
 import type { Candidate } from '@/data/candidates'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { pendingOf, usePcs } from '@/data/profile-changes'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,6 +89,7 @@ export default function EmployeeDraftPage({
   onOpenApplication,
   generateNik,
 }: Props) {
+  usePcs()
   const [form, setForm] = useState<DraftForm>(record.form)
   const [tab, setTab] = useState(record.status === 'aktif' ? 'personal' : 'kepegawaian')
   const [showErrors, setShowErrors] = useState(false)
@@ -276,6 +278,13 @@ export default function EmployeeDraftPage({
               ? `Draft dibuat dari lamaran ${candidate.id} pada ${formatDate(candidate.draftCreatedAt ?? DEMO_TODAY)}. Lengkapi data Kepegawaian sebelum aktivasi.`
               : `Draft dibuat dari input langsung pada ${formatDate(record.createdAt ?? DEMO_TODAY)}. Lengkapi data Personal dan Kepegawaian sebelum aktivasi.`}
           </AlertDescription>
+        </Alert>
+      )}
+
+      {!exit && activated && record.nik && can(user, 'employee.edit') && pendingOf(record.nik).length > 0 && (
+        <Alert variant="warning">
+          <TriangleAlert />
+          <AlertDescription>Ada perubahan data menunggu verifikasi ({pendingOf(record.nik).map((c) => c.id).join(', ')}). Buka Direktori › Perubahan data untuk meninjau.</AlertDescription>
         </Alert>
       )}
 

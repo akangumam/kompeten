@@ -9,6 +9,7 @@ import { stageActor } from '@/data/koperasi/ksb'
 import { bump } from '@/data/koperasi/store'
 import { PAYROLL_PERIOD } from '@/data/payroll/period'
 import { maskRekening, salaryAt } from '@/data/payroll/salaries'
+import { notify } from '@/data/notifications'
 import { formatDate } from '@/lib/format'
 import { DEMO_TODAY } from '@/lib/today'
 
@@ -16,10 +17,10 @@ const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
 export const empOf = (nik: string) => ROSTER.find((e) => e.nik === nik)
 const nameOf = (nik: string) => empOf(nik)?.nama ?? memberOf(nik)?.nama ?? nik
 
-type Decision = { oleh: string; tanggal: string; alasan?: string }
+import type { Decision, Verif } from '@/data/koperasi/loans'
 
 /* ============================ Pendaftaran ============================ */
-export type RegStatus = 'menunggu' | 'disetujui' | 'ditolak'
+export type RegStatus = 'menunggu-sekretaris' | 'menunggu' | 'disetujui' | 'ditolak'
 export type Registration = {
   id: string
   nik: string
@@ -31,6 +32,8 @@ export type Registration = {
   diajukan: string
   diinputOleh: string
   status: RegStatus
+  sumber?: 'web' | 'aplikasi'
+  verif?: Verif
   keputusan?: Decision
 }
 export const REGISTRATIONS: Registration[] = [
@@ -48,7 +51,7 @@ export function eligibilityReason(nik: string, jenis: string, aktif = true): str
   if (!aktif) return 'Belum menjadi pegawai aktif'
   if (!ELIGIBLE_JENIS.includes(jenis)) return `Karyawan ${jenis} tidak dapat menjadi anggota koperasi`
   if (memberOf(nik)) return 'Sudah menjadi anggota'
-  if (REGISTRATIONS.some((r) => r.nik === nik && r.status === 'menunggu')) return 'Pendaftaran sedang diproses'
+  if (REGISTRATIONS.some((r) => r.nik === nik && (r.status === 'menunggu' || r.status === 'menunggu-sekretaris'))) return 'Pendaftaran sedang diproses'
   return ''
 }
 export function registrationCandidates(): Candidate[] {
@@ -139,7 +142,7 @@ export const scheduledChange = (nik: string, jenis: SetoranJenis) => {
 }
 
 /* ============================== Pencairan ============================== */
-export type WdStatus = 'menunggu-ketua' | 'disetujui' | 'dicairkan' | 'ditolak' | 'dibatalkan'
+export type WdStatus = 'menunggu-sekretaris' | 'menunggu-ketua' | 'disetujui' | 'dicairkan' | 'ditolak' | 'dibatalkan'
 export type Withdrawal = {
   id: string
   nik: string
@@ -148,6 +151,8 @@ export type Withdrawal = {
   diajukan: string
   diinputOleh: string
   status: WdStatus
+  sumber?: 'web' | 'aplikasi'
+  verif?: Verif
   keputusan?: Decision
   cair?: { oleh: string; tanggal: string; ref: string; bukti: string }
   batal?: Decision
@@ -159,9 +164,11 @@ export const WITHDRAWALS: Withdrawal[] = [
   { id: 'PCS-2026-0016', nik: 'PPI-2022-0045', nominal: 300_000, alasan: 'Keperluan keluarga mendesak', diajukan: '2026-10-08', diinputOleh: 'Ratna Dewi', status: 'ditolak', keputusan: { oleh: 'Rudi Hartanto', tanggal: '2026-10-10', alasan: 'Saldo sukarela tidak mencukupi saat diperiksa' } },
   { id: 'PCS-2026-0009', nik: 'PPI-2023-0088', nominal: 1_500_000, alasan: 'Keperluan biaya berobat', diajukan: '2026-06-10', diinputOleh: 'Ratna Dewi', status: 'dicairkan', keputusan: { oleh: 'Rudi Hartanto', tanggal: '2026-06-11' }, cair: { oleh: 'Nina Marlina', tanggal: '2026-06-15', ref: 'TRF-150626-001', bukti: 'bukti-transfer-pcs-0009.pdf' } },
 ]
-let pcsSeq = 19
+WITHDRAWALS.unshift({ id: 'PCS-2026-0019', nik: 'PPI-2021-0019', nominal: 200_000, alasan: 'Keperluan biaya berobat keluarga', diajukan: '2026-10-25', diinputOleh: 'Joko Susilo (aplikasi)', status: 'menunggu-sekretaris', sumber: 'aplikasi' })
+notify({ to: 'sekretaris', title: 'Pencairan dari aplikasi', body: 'Pencairan sukarela dari aplikasi — Joko Susilo Rp 200.000', page: 'coop-withdrawals' })
+let pcsSeq = 20
 
-export const RESERVING: WdStatus[] = ['menunggu-ketua', 'disetujui']
+export const RESERVING: WdStatus[] = ['menunggu-sekretaris', 'menunggu-ketua', 'disetujui']
 export const dipesan = (nik: string) => WITHDRAWALS.filter((w) => w.nik === nik && RESERVING.includes(w.status)).reduce((a, w) => a + w.nominal, 0)
 export const saldoSukarela = (nik: string) => balanceOf(nik).Sukarela
 /** Saldo tersedia = saldo sukarela − dipesan (pencairan yang belum selesai). */
@@ -213,6 +220,16 @@ export function cancelWithdrawal(id: string, alasan: string, by: string) {
   w.status = 'dibatalkan'
   w.batal = { oleh: by, tanggal: DEMO_TODAY, alasan }
   bump()
+}
+
+// Seed pendaftaran dari aplikasi: pegawai pertama (urut nama) yang memenuhi syarat dan belum punya pendaftaran berjalan.
+{
+  const c = registrationCandidates().find((x) => !x.reason)
+  if (c) {
+    REGISTRATIONS.unshift({ id: 'REG-2026-0013', nik: c.nik, nama: c.nama, department: c.department, statusKerja: c.statusKerja, wajib: 50_000, sukarela: 0, diajukan: '2026-10-26', diinputOleh: `${c.nama} (aplikasi)`, status: 'menunggu-sekretaris', sumber: 'aplikasi' })
+    regSeq = 14
+    notify({ to: 'sekretaris', title: 'Pendaftaran anggota dari aplikasi', body: `Pendaftaran anggota dari aplikasi — ${c.nama}`, page: 'coop-members' })
+  }
 }
 
 export const reviewerOf = (w: Withdrawal) => stageActor('ketua', w.nik)

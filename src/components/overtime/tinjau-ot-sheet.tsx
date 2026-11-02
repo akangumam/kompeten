@@ -1,6 +1,7 @@
-import { hidesPay } from '@/lib/access'
+import { can, hidesPay } from '@/lib/access'
 import { useEffect, useMemo, useState } from 'react'
-import { CircleCheck, CircleX, Info } from 'lucide-react'
+import { CircleCheck, CircleX, Info, UserCheck } from 'lucide-react'
+import { DEMO_MODE, simLabel } from '@/lib/demo'
 import { OtStatusBadge } from '@/components/overtime/status'
 import {
   AlertDialog,
@@ -23,6 +24,7 @@ import { empOf, longDate, teamLabel, type LeaveRequest } from '@/data/leave'
 import {
   breakdownOf,
   canDecide,
+  canRecordConsent,
   canVerify,
   dayTypeLabel,
   dayTypeOf,
@@ -79,6 +81,8 @@ export function TinjauOtSheet({
   onReject,
   onValidate,
   onVerify,
+  onConsent,
+  onRefuse,
   onTidak,
 }: {
   rec: OtRecord | null
@@ -92,6 +96,8 @@ export function TinjauOtSheet({
   onReject: (r: OtRecord, alasan: string) => void
   onValidate: (r: OtRecord, dibayar: number, kelebihan: string | undefined, istirahat: number) => void
   onVerify: (r: OtRecord, dibayar: number, istirahat: number) => void
+  onConsent: (r: OtRecord, keterangan: string | undefined, via: 'aplikasi' | 'dicatat-atasan' | 'dicatat-hr') => void
+  onRefuse: (r: OtRecord, alasan: string) => void
   onTidak: (r: OtRecord) => void
 }) {
   const [choice, setChoice] = useState<'rencana' | 'lebih'>('rencana')
@@ -101,7 +107,11 @@ export function TinjauOtSheet({
   const [confirmTolak, setConfirmTolak] = useState(false)
   const [confirmTidak, setConfirmTidak] = useState(false)
   const [istirahat, setIstirahat] = useState(0)
+  const [lisan, setLisan] = useState<'catat' | 'tolak' | null>(null)
+  const [ket, setKet] = useState('')
+  const [ketErr, setKetErr] = useState('')
   useEffect(() => {
+    setLisan(null); setKet(''); setKetErr('')
     setChoice('rencana'); setAlasan(''); setTolak(''); setError(''); setConfirmTolak(false); setConfirmTidak(false); setIstirahat(rec?.istirahat ?? 0)
   }, [rec?.id, mode]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -175,7 +185,7 @@ export function TinjauOtSheet({
             </Row>
             <Row label="Rencana"><span className="font-medium tabular-nums">{rencanaText(rec)}</span></Row>
             <Row label="Pekerjaan">{rec.pekerjaan}</Row>
-            {(approval || status === 'terjadwal' || status === 'menunggu-approval') && (
+            {(approval || status === 'terjadwal' || status === 'menunggu-approval' || status === 'menunggu-persetujuan-pegawai') && (
               <>
                 {type === 'kerja' && (
                   <Row label="Minggu ini">
@@ -284,6 +294,32 @@ export function TinjauOtSheet({
             </section>
           )}
 
+          <section className="space-y-2 rounded-md border p-4" aria-label="Persetujuan pegawai">
+            <h3 className="flex items-center gap-1.5 text-sm font-medium"><UserCheck className="size-4" aria-hidden />Persetujuan pegawai</h3>
+            {rec.persetujuanPegawai ? (
+              <div className="space-y-1 text-sm">
+                <p className={rec.persetujuanPegawai.setuju ? 'font-medium text-success' : 'font-medium text-danger'}>{rec.persetujuanPegawai.setuju ? 'Disetujui' : 'Ditolak'} pegawai</p>
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  {rec.persetujuanPegawai.at} · {rec.persetujuanPegawai.via === 'aplikasi' ? 'Dari aplikasi' : rec.persetujuanPegawai.via === 'dicatat-atasan' ? `Dicatat Atasan (${rec.persetujuanPegawai.oleh})` : `Dicatat HR Personalia (${rec.persetujuanPegawai.oleh})`}
+                </p>
+                {rec.persetujuanPegawai.alasan && <p className="text-sm text-muted-foreground">{rec.persetujuanPegawai.setuju ? 'Keterangan' : 'Alasan'}: {rec.persetujuanPegawai.alasan}</p>}
+              </div>
+            ) : status === 'menunggu-persetujuan-pegawai' ? (
+              <p className="text-sm text-muted-foreground">Menunggu jawaban pegawai. SPL dibatalkan otomatis bila tidak dijawab sampai jam mulai ({rec.start}).</p>
+            ) : status === 'menunggu-approval' ? (
+              <p className="text-sm text-muted-foreground">Belum diminta; SPL meminta persetujuan pegawai setelah disetujui Atasan.</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">{status === 'dibatalkan' && rec.decision?.by === 'Sistem' ? 'Tidak dijawab pegawai sampai jam mulai.' : 'Tidak ada catatan persetujuan pegawai.'}</p>
+            )}
+            {status === 'menunggu-persetujuan-pegawai' && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {canRecordConsent(user, emp, status) && <Button size="sm" variant="outline" onClick={() => { setLisan('catat'); setKet(''); setKetErr('') }}>Catat persetujuan lisan</Button>}
+                {DEMO_MODE && <Button size="sm" variant="outline" onClick={() => onConsent(rec, undefined, 'aplikasi')}>{simLabel}Pegawai menyetujui di aplikasi</Button>}
+                {DEMO_MODE && <Button size="sm" variant="outline" onClick={() => { setLisan('tolak'); setKet(''); setKetErr('') }}>{simLabel}Pegawai menolak</Button>}
+              </div>
+            )}
+          </section>
+
           {approval && (
             <AlasanField id="ot-tolak" label="Alasan penolakan" value={tolak} onChange={(v) => { setTolak(v); setError('') }} error={error} placeholder="Tulis alasan jika SPL ditolak…" />
           )}
@@ -308,6 +344,27 @@ export function TinjauOtSheet({
           </SheetFooter>
         )}
 
+        <AlertDialog open={lisan !== null} onOpenChange={(o) => !o && setLisan(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{lisan === 'tolak' ? `Pegawai menolak SPL ${rec.no}` : `Catat persetujuan lisan · ${emp.nama}`}</AlertDialogTitle>
+              <AlertDialogDescription>{lisan === 'tolak' ? 'SPL menjadi Ditolak dan Atasan diberi tahu.' : 'SPL menjadi Terjadwal; keterangan dan pencatat disimpan di SPL.'}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlasanField id="ot-lisan" label={lisan === 'tolak' ? 'Alasan penolakan pegawai' : 'Keterangan'} value={ket} onChange={(v) => { setKet(v); setKetErr('') }} error={ketErr} placeholder={lisan === 'tolak' ? 'Mis. Ada acara keluarga, tidak bisa lembur' : 'Mis. Disetujui lisan di briefing pagi'} />
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <Button
+                onClick={() => {
+                  if (!validAlasan(ket)) return setKetErr(ALASAN_ERROR)
+                  if (lisan === 'tolak') onRefuse(rec, ket.trim())
+                  else onConsent(rec, ket.trim(), can(user, 'attendance.manage') && user.role !== 'supervisor' ? 'dicatat-hr' : 'dicatat-atasan')
+                }}
+              >
+                {lisan === 'tolak' ? 'Catat penolakan' : 'Catat persetujuan'}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <AlertDialog open={confirmTolak} onOpenChange={setConfirmTolak}>
           <AlertDialogContent>
             <AlertDialogHeader>

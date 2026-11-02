@@ -35,7 +35,8 @@ export type Program = {
 }
 
 export type MaterialProgress = { status: 'selesai' | 'tervalidasi'; selesai: string; validasi?: { by: string; at: string } }
-export type Attempt = { nilai: number; lulus: boolean; tanggal: string; sumber: 'simulasi' | 'aplikasi' }
+/** `aplikasi` = dikerjakan di aplikasi karyawan; `manual` = diinput HR (jam & keluarApp hanya untuk aplikasi, oleh hanya untuk manual). */
+export type Attempt = { nilai: number; lulus: boolean; tanggal: string; sumber: 'manual' | 'aplikasi'; jam?: string; keluarApp?: number; oleh?: string }
 export type Enrollment = {
   programKode: string
   nik: string
@@ -165,8 +166,8 @@ const ROMAWI = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI
 let certSeq = 0
 const certNo = (tanggal: string) => `SRT/TRN-PPI/${String(++certSeq).padStart(3, '0')}/${ROMAWI[Number(tanggal.slice(5, 7)) - 1]}/${tanggal.slice(0, 4)}`
 
-/** Input nilai uji manual (simulasi). Lulus bila nilai ≥ passing grade; sertifikat terbit otomatis. */
-export function inputUji(kode: string, nik: string, nilai: number): { error?: string; certNo?: string; lulus?: boolean } {
+/** Input nilai uji manual (sumber 'manual'). Lulus bila nilai ≥ passing grade; sertifikat terbit otomatis. */
+export function inputUji(kode: string, nik: string, nilai: number, oleh: string): { error?: string; certNo?: string; lulus?: boolean } {
   const p = programOf(kode)
   const e = enrollmentOf(kode, nik)
   if (!p || !e || !p.paketId) return { error: 'Program ini tidak punya uji akhir' }
@@ -175,7 +176,7 @@ export function inputUji(kode: string, nik: string, nilai: number): { error?: st
   if (pr.uji === 'lulus') return { error: 'Peserta sudah lulus uji' }
   if (!Number.isFinite(nilai) || nilai < 0 || nilai > 100) return { error: 'Nilai harus 0–100' }
   const lulus = nilai >= passingOf(p)
-  e.uji.push({ nilai, lulus, tanggal: DEMO_TODAY, sumber: 'simulasi' })
+  e.uji.push({ nilai, lulus, tanggal: DEMO_TODAY, sumber: 'manual', oleh })
   if (lulus && !e.sertifikat) {
     const no = certNo(DEMO_TODAY)
     CERTS.push({ no, programKode: kode, nik, nilai, tanggal: DEMO_TODAY })
@@ -269,7 +270,7 @@ function seed() {
     for (const s of s3) enr.hadir[s.id] = 'hadir'
     const gagal = i === 7 || i === 13
     const nilai = gagal ? (i === 7 ? 52 : 55) : 62 + ((i * 7) % 34)
-    enr.uji.push({ nilai, lulus: !gagal, tanggal: '2026-08-26', sumber: 'aplikasi' })
+    enr.uji.push({ nilai, lulus: !gagal, tanggal: '2026-08-26', sumber: 'aplikasi', jam: `${String(8 + (i % 5)).padStart(2, '0')}.${String((i * 13) % 60).padStart(2, '0')}`, keluarApp: (i * 5) % 3 })
     if (!gagal) {
       const no = certNo('2026-08-26')
       CERTS.push({ no, programKode: 'TRN-2026-003', nik: e.nik, nilai, tanggal: '2026-08-26' })

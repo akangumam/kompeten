@@ -17,12 +17,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { addDays, empByNik } from '@/data/attendance'
 import { ROSTER } from '@/data/employees'
-import { approverLabel, inPeriod, isPending, CURRENT_PERIOD_ID, LEAVE_PERIODS, rangeLabel, type LeaveRequest } from '@/data/leave'
+import { inPeriod, CURRENT_PERIOD_ID, LEAVE_PERIODS, rangeLabel, type LeaveRequest } from '@/data/leave'
 import { DEFAULT_SECTION, SCHEDULED, SECTIONS, sectionOf, THIS_WEEK, weekDays, type Ctx } from '@/data/shift-schedule'
+import { simLabel } from '@/lib/demo'
+import type { SwapStatus } from '@/data/shift-swaps'
 import { inScope, teamNote, type CurrentUser } from '@/data/users'
 
 const ALL = 'all'
-type Tab = 'all' | 'menunggu' | 'disetujui' | 'ditolak' | 'dibatalkan'
+const awaitingApproval = (st: SwapStatus) => st === 'menunggu' || st === 'menunggu-manager'
+type Tab = 'all' | 'konfirmasi' | 'menunggu' | 'disetujui' | 'ditolak' | 'dibatalkan'
 const FIRST_WEEK = '2026-11-02'
 
 export default function ShiftSwapPage({
@@ -58,7 +61,8 @@ export default function ShiftSwapPage({
   const inPer = useMemo(() => swaps.filter((s) => inPeriod(s.date, period)), [swaps, period])
   const counts = {
     all: inPer.length,
-    menunggu: inPer.filter((s) => isPending(s.status)).length,
+    konfirmasi: inPer.filter((s) => s.status === 'menunggu-konfirmasi').length,
+    menunggu: inPer.filter((s) => awaitingApproval(s.status)).length,
     disetujui: inPer.filter((s) => s.status === 'disetujui').length,
     ditolak: inPer.filter((s) => s.status === 'ditolak').length,
     dibatalkan: inPer.filter((s) => s.status === 'dibatalkan').length,
@@ -69,7 +73,7 @@ export default function ShiftSwapPage({
     return inPer.filter((s) => {
       const a = empByNik(s.nikA)!
       const b = empByNik(s.nikB)!
-      if (tab === 'menunggu' ? !isPending(s.status) : tab !== 'all' && s.status !== tab) return false
+      if (tab === 'menunggu' ? !awaitingApproval(s.status) : tab !== 'all' && s.status !== tab) return false
       if (section !== ALL && sectionOf(a) !== section) return false
       if (q && !`${a.nama} ${a.nik} ${b.nama} ${b.nik} ${s.no}`.toLowerCase().includes(q)) return false
       return true
@@ -90,7 +94,7 @@ export default function ShiftSwapPage({
 
   const summary = `Menampilkan ${filtered.length} pengajuan periode ${period.label} (${period.cutoff})${
     filterActive ? ' dengan filter aktif' : ''
-  }, ${filtered.filter((s) => isPending(s.status)).length} menunggu approval.`
+  }, ${filtered.filter((s) => awaitingApproval(s.status)).length} menunggu approval, ${filtered.filter((s) => s.status === 'menunggu-konfirmasi').length} menunggu konfirmasi.`
 
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 p-6">
@@ -134,7 +138,8 @@ export default function ShiftSwapPage({
               <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
                 <TabsList className="h-auto max-w-full flex-wrap justify-start">
                   <TabsTrigger value="all">Semua ({counts.all})</TabsTrigger>
-                  <TabsTrigger value="menunggu">Menunggu ({counts.menunggu})</TabsTrigger>
+                  <TabsTrigger value="konfirmasi">Menunggu Konfirmasi ({counts.konfirmasi})</TabsTrigger>
+                  <TabsTrigger value="menunggu">Menunggu Approval ({counts.menunggu})</TabsTrigger>
                   <TabsTrigger value="disetujui">Disetujui ({counts.disetujui})</TabsTrigger>
                   <TabsTrigger value="ditolak">Ditolak ({counts.ditolak})</TabsTrigger>
                   <TabsTrigger value="dibatalkan">Dibatalkan ({counts.dibatalkan})</TabsTrigger>
@@ -230,7 +235,7 @@ export default function ShiftSwapPage({
         onSubmit={(input) => {
           const s = api.submit(input, user)
           setAjukan(false)
-          toast.success(`Pengajuan ${s.no} dikirim ke ${approverLabel(s.nikA)}`)
+          toast.success(`Pengajuan ${s.no} dikirim, menunggu konfirmasi kedua pegawai`)
         }}
       />
       <TinjauSwapSheet
@@ -239,6 +244,10 @@ export default function ShiftSwapPage({
         ctx={ctx}
         user={user}
         onClose={() => setSheet(null)}
+        onConfirm={(s, nik, setuju, via, ket) => {
+          api.confirm(s.no, nik, setuju, via, user, ket)
+          toast.success(`${via === 'aplikasi' ? simLabel : ''}${setuju ? 'Konfirmasi' : 'Penolakan'} ${ROSTER.find((e) => e.nik === nik)?.nama} untuk ${s.no} dicatat`)
+        }}
         onApprove={(s) => {
           api.approve(s.no, user)
           setSheet(null)

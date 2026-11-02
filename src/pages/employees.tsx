@@ -56,7 +56,9 @@ import {
   type DirRow,
   type DirTab,
 } from '@/data/directory'
-import { departments, levels, sectionNames, STATUS_KERJA, type DraftRecord } from '@/data/employees'
+import { departments, levels, sectionNames, STATUS_KERJA, type DraftForm, type DraftRecord } from '@/data/employees'
+import { ProfileChangeTab } from '@/components/employees/profile-change-tab'
+import { pendingChanges, usePcs } from '@/data/profile-changes'
 import { JENIS_LIST } from '@/data/master/jenis'
 import { KELOMPOK_LIST } from '@/data/master/levels'
 import { POLA_DEFS, SHIFT_DEFS } from '@/data/master/shifts'
@@ -91,10 +93,16 @@ type Props = {
   onOpen: (ref: DirRef) => void
   onGenerate: (id: string) => void
   onCreateDirect: () => void
+  formOf: (nik: string) => DraftForm | undefined
+  onApplyProfile: (nik: string, apply: (f: DraftForm) => DraftForm) => void
 }
 
-export default function EmployeesPage({ user, leaves, candidates, drafts, filters, setFilters, onOpen, onGenerate, onCreateDirect }: Props) {
+export default function EmployeesPage({ user, leaves, candidates, drafts, filters, setFilters, onOpen, onGenerate, onCreateDirect, formOf, onApplyProfile }: Props) {
   const trxVersion = useTrx()
+  usePcs()
+  const [pcView, setPcView] = useState(false)
+  const canVerifyChanges = can(user, 'employee.edit')
+  const pcCount = pendingChanges().length
   const [trxCreate, setTrxCreate] = useState<{ jenis?: TrxJenis; nik?: string } | null>(null)
   const isSpv = user.role === 'supervisor'
   const canAdd = can(user, 'employee.add')
@@ -274,15 +282,21 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
           <CardDescription>{team ? `Menampilkan tim Anda: ${team.department} · ${team.section}` : 'Cari, saring, dan buka profil pegawai'}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs value={tab} onValueChange={(v) => patch({ tab: v as DirTab })}>
+          <Tabs value={pcView && canVerifyChanges ? 'perubahan' : tab} onValueChange={(v) => { if (v === 'perubahan') setPcView(true); else { setPcView(false); patch({ tab: v as DirTab }) } }}>
             <TabsList className="h-auto max-w-full flex-wrap justify-start">
               {tabs.map((t) => (
                 <TabsTrigger key={t} value={t}>
                   {TAB_LABEL[t]} ({counts[t].toLocaleString('id-ID')})
                 </TabsTrigger>
               ))}
+              {canVerifyChanges && <TabsTrigger value="perubahan">Perubahan data ({pcCount})</TabsTrigger>}
             </TabsList>
           </Tabs>
+
+          {pcView && canVerifyChanges ? (
+            <ProfileChangeTab actor={user.nama} formOf={formOf} onApply={onApplyProfile} />
+          ) : (
+          <>
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative w-full shrink-0 sm:w-64">
@@ -437,8 +451,10 @@ export default function EmployeesPage({ user, leaves, candidates, drafts, filter
               })}
             </TableBody>
           </Table>
+          </>
+          )}
         </CardContent>
-        <DirectoryFooter total={rows.length} start={start} perPage={perPage} current={current} totalPages={totalPages} onPerPage={setPerPage} onPage={setPage} />
+        {!(pcView && canVerifyChanges) && <DirectoryFooter total={rows.length} start={start} perPage={perPage} current={current} totalPages={totalPages} onPerPage={setPerPage} onPage={setPage} />}
       </Card>
 
       <TrxCreateSheet open={trxCreate !== null} onOpenChange={(o) => !o && setTrxCreate(null)} user={user} leaves={leaves} initial={trxCreate ?? undefined} />

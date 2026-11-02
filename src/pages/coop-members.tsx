@@ -5,6 +5,9 @@ import { ChangeSheet } from '@/components/koperasi/change-sheet'
 import { MemberSheet, plafonOf } from '@/components/koperasi/member-sheet'
 import { RegisterSheet } from '@/components/koperasi/register-sheet'
 import { ReviewChange, ReviewRegistration } from '@/components/koperasi/review-sheets'
+import { SourceBadge } from '@/components/mobile/source-badge'
+import { VerifySheet } from '@/components/koperasi/verify-sheet'
+import { appCount, regChecks } from '@/data/koperasi/mobile'
 import { ReqBadge, rp } from '@/components/koperasi/shared'
 import { WithdrawSheet } from '@/components/koperasi/withdraw-sheet'
 import { CoopExitTab, activeExitMembers } from '@/components/koperasi/exit-tab'
@@ -36,7 +39,8 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
   useKoperasi()
   useOffboarding()
   const isSek = user.role === 'sekretaris'
-  const [tab, setTab] = useState('anggota')
+  const [tab, setTab] = useState(() => (isSek && appCount.pendaftaran() > 0 ? 'aplikasi' : 'anggota'))
+  const [verif, setVerif] = useState<Registration | null>(null)
   const [pill, setPill] = useState<'aktif' | 'nonaktif'>('aktif')
   const [dept, setDept] = useState(ALL)
   const [input, setInput] = useState('')
@@ -65,6 +69,8 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
   const pageRows = list.slice(start, start + perPage)
   const nReg = pendingRegistrations().length
   const nChg = pendingChanges().length
+  const nApp = appCount.pendaftaran()
+  const showApp = isSek && nApp > 0
 
   const stagnant = (m: Member) => ({ wajib: setoranNow(m, 'Wajib'), sukarela: setoranNow(m, 'Sukarela') })
 
@@ -88,6 +94,7 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
 
       <Tabs value={tab} onValueChange={setTab} className="gap-6">
         <TabsList className="h-auto max-w-full flex-wrap justify-start">
+          {showApp && <TabsTrigger value="aplikasi">Dari aplikasi ({nApp})</TabsTrigger>}
           <TabsTrigger value="anggota">Anggota ({aktif.length.toLocaleString('id-ID')})</TabsTrigger>
           <TabsTrigger value="pendaftaran">Pendaftaran ({nReg})</TabsTrigger>
           <TabsTrigger value="setoran">Perubahan Setoran ({nChg})</TabsTrigger>
@@ -95,6 +102,41 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
         </TabsList>
 
         <TabsContent value="keluar"><CoopExitTab user={user} /></TabsContent>
+
+        <TabsContent value="aplikasi">
+          <Card>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className={head}>Pegawai</TableHead>
+                    <TableHead className={head}>Status kerja</TableHead>
+                    <TableHead className={head}>Diajukan</TableHead>
+                    <TableHead className={head}>Status</TableHead>
+                    <TableHead className={head}>Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {REGISTRATIONS.filter((r) => r.status === 'menunggu-sekretaris').length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={5} className="h-24 text-center text-sm text-muted-foreground">Tidak ada pendaftaran dari aplikasi.</TableCell></TableRow>}
+                  {REGISTRATIONS.filter((r) => r.status === 'menunggu-sekretaris').map((r) => (
+                    <TableRow key={r.id} className="h-12 hover:bg-muted/50">
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-1">
+                          <PersonCell nama={r.nama} nik={r.nik} />
+                          <SourceBadge sumber={r.sumber} />
+                        </div>
+                      </TableCell>
+                      <TableCell><StatusBadge variant="neutral">{r.statusKerja}</StatusBadge></TableCell>
+                      <TableCell className="tabular-nums">{formatDate(r.diajukan)}</TableCell>
+                      <TableCell><ReqBadge s={r.status} /></TableCell>
+                      <TableCell><Button variant="outline" size="sm" onClick={() => setVerif(r)}>Verifikasi</Button></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="anggota">
           <Card>
@@ -199,7 +241,12 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
                   {REGISTRATIONS.length === 0 && <TableRow className="hover:bg-transparent"><TableCell colSpan={6} className="h-24 text-center text-sm text-muted-foreground">Belum ada pendaftaran.</TableCell></TableRow>}
                   {REGISTRATIONS.map((r) => (
                     <TableRow key={r.id} className="h-12 hover:bg-muted/50">
-                      <TableCell><PersonCell nama={r.nama} nik={r.nik} /></TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-1">
+                          <PersonCell nama={r.nama} nik={r.nik} />
+                          <SourceBadge sumber={r.sumber} />
+                        </div>
+                      </TableCell>
                       <TableCell><StatusBadge variant="neutral">{r.statusKerja}</StatusBadge></TableCell>
                       <TableCell className="tabular-nums">{formatDate(r.diajukan)}</TableCell>
                       <TableCell>{r.diinputOleh}</TableCell>
@@ -210,6 +257,7 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
                         </div>
                       </TableCell>
                       <TableCell>
+                        {isSek && r.status === 'menunggu-sekretaris' && <Button variant="outline" size="sm" onClick={() => setVerif(r)}>Verifikasi</Button>}
                         {r.status === 'menunggu' && stageActor('ketua', r.nik).role === user.role && <Button variant="outline" size="sm" onClick={() => setReviewReg(r)}>Tinjau</Button>}
                       </TableCell>
                     </TableRow>
@@ -263,6 +311,19 @@ export default function CoopMembersPage({ user }: { user: CurrentUser }) {
       <RegisterSheet open={register} onOpenChange={setRegister} actor={user.nama} />
       <ChangeSheet member={change ? (memberOf(change) ?? null) : null} onOpenChange={(o) => !o && setChange(null)} actor={user.nama} />
       <WithdrawSheet key={withdraw ?? 'none'} open={withdraw !== null} onOpenChange={(o) => !o && setWithdraw(null)} actor={user.nama} initialNik={withdraw ?? undefined} />
+      {verif && (
+        <VerifySheet
+          kind="pendaftaran" id={verif.id} who={verif.nama} diajukan={verif.diajukan} oleh={verif.diinputOleh} actor={user.nama}
+          checks={regChecks(verif)} onClose={() => setVerif(null)}
+          rows={[
+            ['Pegawai', `${verif.nama} · ${verif.nik}`],
+            ['Department', verif.department],
+            ['Status kerja', verif.statusKerja],
+            ['Simpanan wajib', `${rp(verif.wajib)} / bulan`],
+            ['Simpanan sukarela', verif.sukarela ? `${rp(verif.sukarela)} / bulan` : 'Tidak ada'],
+          ]}
+        />
+      )}
       <ReviewRegistration reg={reviewReg} onClose={() => setReviewReg(null)} actor={user.nama} />
       <ReviewChange req={reviewChg} onClose={() => setReviewChg(null)} actor={user.nama} />
     </div>

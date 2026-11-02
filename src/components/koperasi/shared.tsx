@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import type { ChangeStatus, RegStatus, WdStatus } from '@/data/koperasi/requests'
 import { formatDate } from '@/lib/format'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { ALASAN_ERROR, digitsOnly, validAlasan } from '@/lib/validators'
 
@@ -16,17 +17,18 @@ export const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
 export const SHEET_W = 'w-full overflow-y-auto sm:max-w-[560px]'
 
 export const WD_LABEL: Record<WdStatus, string> = {
+  'menunggu-sekretaris': 'Menunggu Sekretaris',
   'menunggu-ketua': 'Menunggu Ketua',
   disetujui: 'Disetujui, menunggu pencairan',
   dicairkan: 'Dicairkan',
   ditolak: 'Ditolak',
   dibatalkan: 'Dibatalkan',
 }
-const WD_VARIANT: Record<WdStatus, 'info' | 'success' | 'danger' | 'neutral'> = { 'menunggu-ketua': 'info', disetujui: 'info', dicairkan: 'success', ditolak: 'danger', dibatalkan: 'neutral' }
+const WD_VARIANT: Record<WdStatus, 'info' | 'success' | 'danger' | 'neutral' | 'warning'> = { 'menunggu-sekretaris': 'warning', 'menunggu-ketua': 'info', disetujui: 'info', dicairkan: 'success', ditolak: 'danger', dibatalkan: 'neutral' }
 export const WdBadge = ({ s }: { s: WdStatus }) => <StatusBadge variant={WD_VARIANT[s]}>{WD_LABEL[s]}</StatusBadge>
 
-const REQ_LABEL: Record<RegStatus | ChangeStatus, string> = { menunggu: 'Menunggu', disetujui: 'Disetujui', ditolak: 'Ditolak' }
-const REQ_VARIANT = { menunggu: 'info', disetujui: 'success', ditolak: 'danger' } as const
+const REQ_LABEL: Record<RegStatus | ChangeStatus, string> = { 'menunggu-sekretaris': 'Menunggu Sekretaris', menunggu: 'Menunggu', disetujui: 'Disetujui', ditolak: 'Ditolak' }
+const REQ_VARIANT = { 'menunggu-sekretaris': 'warning', menunggu: 'info', disetujui: 'success', ditolak: 'danger' } as const
 export const ReqBadge = ({ s }: { s: RegStatus | ChangeStatus }) => <StatusBadge variant={REQ_VARIANT[s]}>{REQ_LABEL[s]}</StatusBadge>
 
 /** Input nominal Rupiah yang boleh Rp 0: hanya digit, tampil "Rp 1.000.000". `value` berupa digit. */
@@ -119,7 +121,7 @@ export const Meta = ({ children }: { children: ReactNode }) => <p className="tex
 
 /** Sheet tinjau (pola Approvals): Diajukan oleh + waktu, data, alasan, footer Tolak (alasan wajib) + Setujui. */
 export function ReviewSheet({
-  open, onOpenChange, title, description, diajukan, oleh, note, children, onApprove, onReject, approveLabel = 'Setujui', rejectTitle, canAct = true,
+  open, onOpenChange, title, description, diajukan, oleh, note, children, onApprove, onReject, approveLabel = 'Setujui', rejectTitle, canAct = true, approveDisabled,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
@@ -134,6 +136,8 @@ export function ReviewSheet({
   approveLabel?: string
   rejectTitle: string
   canAct?: boolean
+  /** Alasan tombol setujui nonaktif; ditampilkan sebagai Tooltip. */
+  approveDisabled?: string
 }) {
   const [tolak, setTolak] = useState(false)
   const [alasan, setAlasan] = useState('')
@@ -153,7 +157,14 @@ export function ReviewSheet({
         {canAct && (
           <SheetFooter className="mt-auto flex-row justify-end gap-2 border-t p-4">
             <Button variant="destructive" onClick={() => { setAlasan(''); setErr(''); setTolak(true) }}>Tolak</Button>
-            <Button onClick={onApprove}>{approveLabel}</Button>
+            {approveDisabled ? (
+              <Tooltip>
+                <TooltipTrigger asChild><span tabIndex={0} className="inline-flex"><Button disabled className="pointer-events-none">{approveLabel}</Button></span></TooltipTrigger>
+                <TooltipContent className="max-w-xs">{approveDisabled}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button onClick={onApprove}>{approveLabel}</Button>
+            )}
           </SheetFooter>
         )}
         <AlertDialog open={tolak} onOpenChange={setTolak}>

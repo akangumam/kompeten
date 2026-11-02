@@ -111,7 +111,16 @@ function Body({ kode, nik, user, onUji }: { kode: string; nik: string; user: Cur
               {pr.uji === 'terkunci' && <p className="text-sm text-muted-foreground">{pr.lockReason}</p>}
               {e.uji.length > 0 && (
                 <ul className="space-y-1 text-sm tabular-nums">
-                  {e.uji.map((a, i) => <li key={i}>Percobaan {i + 1}: <b>{a.nilai}</b> ({a.lulus ? 'lulus' : 'tidak lulus'}) · {formatDate(a.tanggal)}{a.sumber === 'simulasi' ? ' · simulasi' : ''}</li>)}
+                  {e.uji.map((a, i) => (
+                    <li key={i} className="space-y-0.5">
+                      <span>Percobaan {i + 1}: <b>{a.nilai}</b> ({a.lulus ? 'lulus' : 'tidak lulus'}) · {formatDate(a.tanggal)}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {a.sumber === 'aplikasi'
+                          ? `Dikerjakan di aplikasi · ${formatDate(a.tanggal)}, ${a.jam ?? '—'} WIB · Keluar aplikasi selama ujian: ${a.keluarApp ?? 0} kali`
+                          : `Diinput manual oleh ${a.oleh ?? '—'}`}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               )}
               {admin && (pr.uji === 'terbuka' || pr.uji === 'tidak-lulus') && <Button variant="outline" size="sm" onClick={() => onUji(kode, nik)}>Input nilai uji (simulasi)</Button>}

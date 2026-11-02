@@ -44,7 +44,7 @@ export function TrainingResultsTable() {
               <TableCell className="whitespace-nowrap tabular-nums">{formatDate(a.tanggal)}</TableCell>
               <TableCell className="text-right tabular-nums">{a.nilai}</TableCell>
               <TableCell><StatusBadge variant={a.lulus ? 'success' : 'danger'}>{a.lulus ? 'Lulus' : 'Tidak lulus'}</StatusBadge></TableCell>
-              <TableCell><StatusBadge variant="info">Training{a.sumber === 'simulasi' ? ' (simulasi)' : ''}</StatusBadge></TableCell>
+              <TableCell><StatusBadge variant="info">Training · {a.sumber === 'aplikasi' ? 'Aplikasi' : 'Manual'}</StatusBadge></TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, CircleCheck, CircleX } from 'lucide-react'
-import { LeaveStatusBadge } from '@/components/leave/status'
+import { SwapStatusBadge } from '@/components/shift/swap-status'
+import { SourceBadge } from '@/components/mobile/source-badge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { can } from '@/lib/access'
+import { DEMO_MODE, simLabel } from '@/lib/demo'
+import { pendingConfirm } from '@/components/shift/use-shift-swaps'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,9 +21,9 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { empByNik } from '@/data/attendance'
 import { atasanOf } from '@/data/employees'
-import { isPending, teamLabel } from '@/data/leave'
+import { teamLabel } from '@/data/leave'
 import { restAround, restError, restSummary, SHIFT_LABEL, type Ctx } from '@/data/shift-schedule'
-import type { ShiftSwap } from '@/data/shift-swaps'
+import { isSwapPending, type ShiftSwap } from '@/data/shift-swaps'
 import type { CurrentUser } from '@/data/users'
 import { formatDate } from '@/lib/format'
 import { ALASAN_ERROR, validAlasan } from '@/lib/validators'
@@ -42,6 +48,7 @@ export function TinjauSwapSheet({
   onClose,
   onApprove,
   onReject,
+  onConfirm,
 }: {
   swap: ShiftSwap | null
   mode: 'review' | 'detail'
@@ -50,11 +57,16 @@ export function TinjauSwapSheet({
   onClose: () => void
   onApprove: (s: ShiftSwap) => void
   onReject: (s: ShiftSwap, alasan: string) => void
+  onConfirm: (s: ShiftSwap, nik: string, setuju: boolean, via: 'aplikasi' | 'dicatat-hr', keterangan?: string) => void
 }) {
   const [alasan, setAlasan] = useState('')
   const [error, setError] = useState('')
   const [confirm, setConfirm] = useState(false)
+  const [catat, setCatat] = useState<{ nik: string; setuju: boolean } | null>(null)
+  const [ket, setKet] = useState('')
+  const [ketErr, setKetErr] = useState('')
   useEffect(() => {
+    setCatat(null); setKet(''); setKetErr('')
     setAlasan('')
     setError('')
     setConfirm(false)
@@ -62,7 +74,9 @@ export function TinjauSwapSheet({
 
   const a = swap ? empByNik(swap.nikA) : null
   const b = swap ? empByNik(swap.nikB) : null
-  const review = mode === 'review' && !!swap && isPending(swap.status)
+  const review = mode === 'review' && !!swap && isSwapPending(swap.status)
+  const waitingNames = swap ? pendingConfirm(swap).map((n) => empByNik(n)?.nama ?? n) : []
+  const blocked = !!swap && swap.status === 'menunggu-konfirmasi'
   const rests =
     swap && a && b
       ? [
@@ -82,9 +96,9 @@ export function TinjauSwapSheet({
             </SheetHeader>
             <div className="space-y-6 px-4">
               <div className="flex flex-wrap items-center gap-2">
-                <LeaveStatusBadge status={swap.status} />
+                <SwapStatusBadge status={swap.status} />
                 <p className="text-sm text-muted-foreground">
-                  Diajukan oleh <span className="font-medium text-foreground">{swap.by}</span> · <span className="tabular-nums">{swap.at}</span>
+                  Diajukan oleh <span className="font-medium text-foreground">{swap.by}</span> {swap.diajukanOleh === 'pegawai' && <SourceBadge sumber="aplikasi" className="ml-1 align-middle" />} · <span className="tabular-nums">{swap.at}</span>
                 </p>
               </div>
               {review && user.role === 'manager' && a.atasanId !== 'manager' && (
@@ -119,6 +133,37 @@ export function TinjauSwapSheet({
                   Jumlah operator per shift pada {formatDate(swap.date)} tidak berubah.
                 </p>
               </section>
+              <section className="space-y-2" aria-label="Konfirmasi pegawai">
+                <h3 className="text-sm font-medium">Konfirmasi pegawai</h3>
+                <ul className="space-y-2 rounded-md border p-4">
+                  {[a, b].map((e) => {
+                    const c = swap.konfirmasi[e.nik] ?? { status: 'menunggu' as const }
+                    return (
+                      <li key={e.nik} className="space-y-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-sm font-medium">{e.nama}{swap.pemohon === e.nik && <span className="font-normal text-muted-foreground"> · pemohon</span>}</span>
+                          <StatusBadge variant={c.status === 'setuju' ? 'success' : c.status === 'menolak' ? 'danger' : 'warning'}>
+                            {c.status === 'setuju' ? 'Setuju' : c.status === 'menolak' ? 'Menolak' : 'Menunggu'}
+                          </StatusBadge>
+                        </div>
+                        {c.at && (
+                          <p className="text-xs text-muted-foreground tabular-nums">
+                            {c.at} · {c.via === 'aplikasi' ? 'Dari aplikasi' : `Dicatat HR Personalia${c.oleh ? ` (${c.oleh})` : ''}`}
+                            {c.keterangan ? ` · ${c.keterangan}` : ''}
+                          </p>
+                        )}
+                        {swap.status === 'menunggu-konfirmasi' && c.status === 'menunggu' && (
+                          <div className="flex flex-wrap gap-2">
+                            {can(user, 'attendance.manage') && <Button size="sm" variant="outline" onClick={() => { setCatat({ nik: e.nik, setuju: true }); setKet(''); setKetErr('') }}>Catat konfirmasi</Button>}
+                            {DEMO_MODE && <Button size="sm" variant="outline" onClick={() => onConfirm(swap, e.nik, true, 'aplikasi')}>{simLabel}{e.nama.split(' ')[0]} setuju di aplikasi</Button>}
+                            {DEMO_MODE && <Button size="sm" variant="outline" onClick={() => { setCatat({ nik: e.nik, setuju: false }); setKet(''); setKetErr('') }}>{simLabel}{e.nama.split(' ')[0]} menolak</Button>}
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
               <section className="space-y-1">
                 <h3 className="text-sm font-medium">Alasan</h3>
                 <p className="text-sm text-muted-foreground">{swap.alasan}</p>
@@ -126,7 +171,9 @@ export function TinjauSwapSheet({
               {swap.decision && (
                 <section className="space-y-1">
                   <h3 className="text-sm font-medium">
-                    {swap.status === 'disetujui' ? 'Disetujui' : swap.status === 'ditolak' ? 'Ditolak' : 'Dibatalkan'} oleh {swap.decision.by}
+                    {swap.decision.by.endsWith('(konfirmasi pegawai)')
+                      ? `Ditolak ${swap.decision.by}`
+                      : `${swap.status === 'disetujui' ? 'Disetujui' : swap.status === 'ditolak' ? 'Ditolak' : 'Dibatalkan'} oleh ${swap.decision.by}`}
                   </h3>
                   <p className="text-xs text-muted-foreground tabular-nums">{swap.decision.at}</p>
                   {swap.decision.alasan && <p className="text-sm text-muted-foreground">Alasan: {swap.decision.alasan}</p>}
@@ -147,9 +194,39 @@ export function TinjauSwapSheet({
                 >
                   Tolak
                 </Button>
-                <Button onClick={() => onApprove(swap)}>Setujui</Button>
+                {blocked ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}><Button disabled className="pointer-events-none">Setujui</Button></span>
+                    </TooltipTrigger>
+                    <TooltipContent>Menunggu konfirmasi {waitingNames.join(' dan ')}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button onClick={() => onApprove(swap)}>Setujui</Button>
+                )}
               </SheetFooter>
             )}
+            <AlertDialog open={catat !== null} onOpenChange={(o) => !o && setCatat(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{catat?.setuju ? 'Catat konfirmasi' : 'Catat penolakan'} · {catat ? empByNik(catat.nik)?.nama : ''}</AlertDialogTitle>
+                  <AlertDialogDescription>{catat?.setuju ? 'Konfirmasi pegawai yang tidak memakai aplikasi dicatat HR Personalia beserta keterangannya.' : 'Pengajuan menjadi Ditolak karena pegawai menolak.'}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlasanField id="tks-ket" label="Keterangan" value={ket} onChange={(v) => { setKet(v); setKetErr('') }} error={ketErr} placeholder={catat?.setuju ? 'Mis. Setuju lewat telepon dengan HR' : 'Mis. Tidak bersedia bertukar shift'} />
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <Button
+                    onClick={() => {
+                      if (!validAlasan(ket)) return setKetErr(ALASAN_ERROR)
+                      if (catat) onConfirm(swap, catat.nik, catat.setuju, catat.setuju ? 'dicatat-hr' : 'aplikasi', ket.trim())
+                      setCatat(null)
+                    }}
+                  >
+                    {catat?.setuju ? 'Catat konfirmasi' : 'Catat penolakan'}
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <AlertDialog open={confirm} onOpenChange={setConfirm}>
               <AlertDialogContent>
                 <AlertDialogHeader>

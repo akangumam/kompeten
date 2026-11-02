@@ -52,6 +52,7 @@ import OvertimePage from '@/pages/overtime'
 import { useOvertime } from '@/components/overtime/use-overtime'
 import ShiftSwapPage from '@/pages/shift-swap'
 import { useShiftSwaps } from '@/components/shift/use-shift-swaps'
+import { isSwapPending } from '@/data/shift-swaps'
 import { PERIOD } from '@/data/attendance'
 import { pendingVerification } from '@/data/verification'
 import { durJam, effStatus, isAwaitingValidation, realisasiOf, unvalidatedCount } from '@/data/overtime'
@@ -324,8 +325,8 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
     const alasan = 'Pegawai keluar'
     let n = 0
     for (const r of leave.requests) if (r.nik === o.nik && r.start > o.tanggalKeluar && (isPending(r.status) || isVerif(r.status))) { leave.cancel(r.no, actor, alasan); n++ }
-    for (const w of swaps.swaps) if ((w.nikA === o.nik || w.nikB === o.nik) && w.date > o.tanggalKeluar && isPending(w.status)) { swaps.cancel(w.no, actor, alasan); n++ }
-    for (const t of overtime.records) if (t.nik === o.nik && t.date > o.tanggalKeluar && t.status === 'menunggu-approval') { overtime.cancel(t.id, actor, alasan); n++ }
+    for (const w of swaps.swaps) if ((w.nikA === o.nik || w.nikB === o.nik) && w.date > o.tanggalKeluar && isSwapPending(w.status)) { swaps.cancel(w.no, actor, alasan); n++ }
+    for (const t of overtime.records) if (t.nik === o.nik && t.date > o.tanggalKeluar && (t.status === 'menunggu-approval' || t.status === 'menunggu-persetujuan-pegawai')) { overtime.cancel(t.id, actor, alasan); n++ }
     return n
   }
   const openOffboarding = (nik: string, reason?: string) =>
@@ -481,6 +482,13 @@ function AppShell({ session, data }: { session: Session; data: SharedData }) {
               onOpen={openEmployee}
               onGenerate={generateDraft}
               onCreateDirect={createDirectDraft}
+              formOf={(nik) => (rosterEdits[nik] ?? rosterRecord(nik))?.form}
+              onApplyProfile={(nik, apply) =>
+                setRosterEdits((prev) => {
+                  const rec = prev[nik] ?? rosterRecord(nik)
+                  return rec ? { ...prev, [nik]: { ...rec, form: apply(rec.form) } } : prev
+                })
+              }
             />
           )}
           {pageOk && activePage === 'employee-draft' && record && (

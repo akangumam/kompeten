@@ -9,7 +9,8 @@ import { initials } from '@/data/candidates'
 import type { RosterEmployee } from '@/data/employees'
 import { isPending, STATUS_LABEL, type LeaveRequest } from '@/data/leave'
 import { dayShort, leaveOn, shiftOn, SHIFT_LABEL, weekDays, type Ctx } from '@/data/shift-schedule'
-import type { ShiftSwap } from '@/data/shift-swaps'
+import { swapStatusLabel } from '@/components/shift/swap-status'
+import { isSwapPending, type ShiftSwap } from '@/data/shift-swaps'
 import { cn } from '@/lib/utils'
 
 const head = 'text-xs font-medium text-muted-foreground'
@@ -24,16 +25,16 @@ function SwapCell({ swap, emp, label }: { swap: ShiftSwap; emp: RosterEmployee; 
         <button
           type="button"
           className="rounded-full focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          aria-label={`${label}, tukar dengan ${other.nama}, ${swap.no}, ${STATUS_LABEL[swap.status]}`}
+          aria-label={`${label}, tukar dengan ${other.nama}, ${swap.no}, ${swapStatusLabel(swap.status, STATUS_LABEL)}`}
         >
-          <StatusBadge variant="neutral" className={cn(isPending(swap.status) && dashed)}>
+          <StatusBadge variant="neutral" className={cn(isSwapPending(swap.status) && dashed)}>
             {label}
             <ArrowLeftRight aria-hidden />
           </StatusBadge>
         </button>
       </TooltipTrigger>
       <TooltipContent>
-        Tukar dengan {other.nama} · {swap.no} · {STATUS_LABEL[swap.status]}
+        Tukar dengan {other.nama} · {swap.no} · {swapStatusLabel(swap.status, STATUS_LABEL)}
       </TooltipContent>
     </Tooltip>
   )

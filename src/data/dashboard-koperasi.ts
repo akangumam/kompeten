@@ -54,6 +54,7 @@ export function budgetVsRealisasi(bulan: string, mode: 'bulan' | 'tahun'): Budge
 export const udMonthly = () => [...COOP_MONTHS].sort().map((m) => ({ bulan: m, selisih: selisih(m) }))
 
 /* ----------------------------- Sirkulasi transaksi ----------------------------- */
+// Pengajuan dari aplikasi yang masih Menunggu Sekretaris belum masuk sirkulasi; baru dihitung setelah diteruskan atau ditolak.
 export type Cell = { n: number; rp: number | null }
 export type CircRow = { jenis: string; diajukan: Cell; disetujui: Cell; dicairkan: Cell | null; ditolak: Cell }
 type Item = { diajukan: string; cair?: string; ok: boolean; no: boolean; nominal: number | null }
@@ -73,31 +74,35 @@ const LN_OK: LoanStatus[] = ['disetujui', 'aktif', 'lunas']
 const WD_OK: WdStatus[] = ['disetujui', 'dicairkan']
 export function circulation(bulan: string) {
   const rows: CircRow[] = [
-    row('Kasbon', KASBON.map((k) => ({ diajukan: k.diajukan, cair: k.cair?.tanggal ?? k.tunai?.tanggal, ok: KB_OK.includes(k.status), no: k.status === 'ditolak' || k.status === 'dibatalkan', nominal: k.nominal })), bulan),
-    row('Pinjaman Koperasi', LOANS.filter((l) => l.jenis === 'koperasi').map((l) => ({ diajukan: l.diajukan, cair: l.cair?.tanggal, ok: LN_OK.includes(l.status), no: l.status === 'ditolak' || l.status === 'dibatalkan', nominal: l.pokok })), bulan),
-    row('Pencairan Sukarela', WITHDRAWALS.map((w) => ({ diajukan: w.diajukan, cair: w.cair?.tanggal, ok: WD_OK.includes(w.status), no: w.status === 'ditolak' || w.status === 'dibatalkan', nominal: w.nominal })), bulan),
-    row('Pendaftaran Anggota', REGISTRATIONS.map((r) => ({ diajukan: r.diajukan, ok: r.status === 'disetujui', no: r.status === 'ditolak', nominal: null })), bulan, false),
+    row('Kasbon', KASBON.filter((k) => k.status !== 'menunggu-sekretaris').map((k) => ({ diajukan: k.diajukan, cair: k.cair?.tanggal ?? k.tunai?.tanggal, ok: KB_OK.includes(k.status), no: k.status === 'ditolak' || k.status === 'dibatalkan', nominal: k.nominal })), bulan),
+    row('Pinjaman Koperasi', LOANS.filter((l) => l.jenis === 'koperasi' && l.status !== 'menunggu-sekretaris').map((l) => ({ diajukan: l.diajukan, cair: l.cair?.tanggal, ok: LN_OK.includes(l.status), no: l.status === 'ditolak' || l.status === 'dibatalkan', nominal: l.pokok })), bulan),
+    row('Pencairan Sukarela', WITHDRAWALS.filter((w) => w.status !== 'menunggu-sekretaris').map((w) => ({ diajukan: w.diajukan, cair: w.cair?.tanggal, ok: WD_OK.includes(w.status), no: w.status === 'ditolak' || w.status === 'dibatalkan', nominal: w.nominal })), bulan),
+    row('Pendaftaran Anggota', REGISTRATIONS.filter((r) => r.status !== 'menunggu-sekretaris').map((r) => ({ diajukan: r.diajukan, ok: r.status === 'disetujui', no: r.status === 'ditolak', nominal: null })), bulan, false),
   ]
   const non = LOANS.filter((l) => l.jenis === 'non' && l.status === 'aktif')
   return { rows, nonCount: non.length, nonSisa: non.reduce((a, l) => a + sisaOf(l), 0) }
 }
 
 /* ----------------------------- Menunggu tindakan ----------------------------- */
-export type Todo = { key: string; no: string; jenis: string; anggota: string; nominal: number | null; menunggu: 'Ketua' | 'Bendahara'; page: PageId }
+export type Todo = { key: string; no: string; jenis: string; anggota: string; nominal: number | null; menunggu: 'Sekretaris' | 'Ketua' | 'Bendahara'; page: PageId }
 const nameOf = (nik: string) => activeMembers().find((m) => m.nik === nik)?.nama ?? LOANS.find((l) => l.nik === nik)?.nik ?? nik
 /** Urutan tampil: pinjaman, pencairan, pendaftaran, kasbon, lalu perubahan setoran dan pengajuan Budget/Pengeluaran. */
 export function todos(): Todo[] {
   const out: Todo[] = []
   for (const l of LOANS) {
+    if (l.status === 'menunggu-sekretaris') out.push({ key: l.id, no: l.id, jenis: 'Pinjaman Koperasi (aplikasi)', anggota: nameOf(l.nik), nominal: l.pokok, menunggu: 'Sekretaris', page: 'coop-loans' })
     if (l.status === 'menunggu-ketua') out.push({ key: l.id, no: l.id, jenis: l.jenis === 'koperasi' ? 'Pinjaman Koperasi' : 'Pinjaman Non-Koperasi', anggota: nameOf(l.nik), nominal: l.pokok, menunggu: 'Ketua', page: 'coop-loans' })
     if (l.status === 'disetujui') out.push({ key: l.id, no: l.id, jenis: 'Pinjaman Koperasi', anggota: nameOf(l.nik), nominal: l.pokok, menunggu: 'Bendahara', page: 'coop-loans' })
   }
   for (const w of WITHDRAWALS) {
+    if (w.status === 'menunggu-sekretaris') out.push({ key: w.id, no: w.id, jenis: 'Pencairan Sukarela (aplikasi)', anggota: nameOf(w.nik), nominal: w.nominal, menunggu: 'Sekretaris', page: 'coop-withdrawals' })
     if (w.status === 'menunggu-ketua') out.push({ key: w.id, no: w.id, jenis: 'Pencairan Sukarela', anggota: nameOf(w.nik), nominal: w.nominal, menunggu: 'Ketua', page: 'coop-withdrawals' })
     if (w.status === 'disetujui') out.push({ key: w.id, no: w.id, jenis: 'Pencairan Sukarela', anggota: nameOf(w.nik), nominal: w.nominal, menunggu: 'Bendahara', page: 'coop-withdrawals' })
   }
+  for (const r of REGISTRATIONS) if (r.status === 'menunggu-sekretaris') out.push({ key: r.id, no: r.id, jenis: 'Pendaftaran Anggota (aplikasi)', anggota: r.nama, nominal: null, menunggu: 'Sekretaris', page: 'coop-members' })
   for (const r of REGISTRATIONS) if (r.status === 'menunggu') out.push({ key: r.id, no: r.id, jenis: 'Pendaftaran Anggota', anggota: r.nama, nominal: null, menunggu: 'Ketua', page: 'coop-members' })
   for (const k of KASBON) {
+    if (k.status === 'menunggu-sekretaris') out.push({ key: k.id, no: k.id, jenis: 'Kasbon (aplikasi)', anggota: nameOf(k.nik), nominal: k.nominal, menunggu: 'Sekretaris', page: 'coop-cash-advance' })
     if (k.status === 'menunggu-ketua') out.push({ key: k.id, no: k.id, jenis: 'Kasbon', anggota: nameOf(k.nik), nominal: k.nominal, menunggu: 'Ketua', page: 'coop-cash-advance' })
     if (k.status === 'disetujui') out.push({ key: k.id, no: k.id, jenis: 'Kasbon', anggota: nameOf(k.nik), nominal: k.nominal, menunggu: 'Bendahara', page: 'coop-cash-advance' })
   }

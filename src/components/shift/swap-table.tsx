@@ -1,16 +1,16 @@
 import { can } from '@/lib/access'
 import { useState } from 'react'
 import { MoreHorizontal } from 'lucide-react'
-import { LeaveStatusBadge } from '@/components/leave/status'
+import { SourceBadge } from '@/components/mobile/source-badge'
+import { SwapStatusBadge } from '@/components/shift/swap-status'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { initials } from '@/data/candidates'
 import { empByNik } from '@/data/attendance'
-import { isPending } from '@/data/leave'
 import { SHIFT_LABEL } from '@/data/shift-schedule'
-import type { ShiftSwap } from '@/data/shift-swaps'
+import { isSwapPending, type ShiftSwap } from '@/data/shift-swaps'
 import type { CurrentUser } from '@/data/users'
 import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -18,10 +18,10 @@ import { cn } from '@/lib/utils'
 const head = 'text-xs font-medium text-muted-foreground'
 
 export const canReviewSwap = (s: ShiftSwap, user: CurrentUser) => {
-  if (!isPending(s.status)) return false
+  if (!isSwapPending(s.status)) return false
   if (user.role === 'manager') return true
   const a = empByNik(s.nikA)
-  return user.role === 'supervisor' && s.status === 'menunggu' && a?.atasanId === user.nik
+  return user.role === 'supervisor' && (s.status === 'menunggu' || s.status === 'menunggu-konfirmasi') && a?.atasanId === user.nik
 }
 
 function Person({ nik }: { nik: string }) {
@@ -65,6 +65,7 @@ export function SwapTable({
             <TableHead className={head}>Pegawai B</TableHead>
             <TableHead className={head}>Perubahan</TableHead>
             <TableHead className={head}>Status</TableHead>
+            <TableHead className={head}>Diajukan oleh</TableHead>
             <TableHead className={head}>Diajukan</TableHead>
             <TableHead className={cn('text-right', head)}>Aksi</TableHead>
           </TableRow>
@@ -72,7 +73,7 @@ export function SwapTable({
         <TableBody>
           {rows.length === 0 && (
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
+              <TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">
                 Tidak ada pengajuan tukar shift yang sesuai dengan filter.
               </TableCell>
             </TableRow>
@@ -92,7 +93,13 @@ export function SwapTable({
                     <span className="whitespace-nowrap">{b.nama.split(' ')[0]}: {SHIFT_LABEL[s.shiftB]} → {SHIFT_LABEL[s.shiftA]}</span>
                   </div>
                 </TableCell>
-                <TableCell><LeaveStatusBadge status={s.status} /></TableCell>
+                <TableCell><SwapStatusBadge status={s.status} /></TableCell>
+                <TableCell>
+                  <div className="flex flex-col items-start gap-0.5 leading-tight">
+                    <span className="whitespace-nowrap">{s.by}</span>
+                    <SourceBadge sumber={s.diajukanOleh === 'pegawai' ? 'aplikasi' : 'web'} />
+                  </div>
+                </TableCell>
                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">{s.at.split(',')[0]}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
@@ -109,7 +116,7 @@ export function SwapTable({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onSelect={() => onDetail(s)}>Lihat Detail</DropdownMenuItem>
-                        {isPending(s.status) && can(user, 'attendance.manage') && (
+                        {isSwapPending(s.status) && can(user, 'attendance.manage') && (
                           <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => onCancel(s)}>
                             Batalkan
                           </DropdownMenuItem>

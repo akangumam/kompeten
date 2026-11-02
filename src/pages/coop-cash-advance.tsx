@@ -18,6 +18,10 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SourceBadge } from '@/components/mobile/source-badge'
+import { VerifySheet } from '@/components/koperasi/verify-sheet'
+import { appCount, kasbonChecks } from '@/data/koperasi/mobile'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   batalKasbon, bulanName, cairkanKasbon, createKasbon, decideKasbon, kasbonBlock, kasbonDisburser, kasbonError, kasbonReviewer, kasbonTotal, kasbonUsed,
@@ -34,10 +38,10 @@ import { DEMO_TODAY } from '@/lib/today'
 
 const head = 'text-xs font-medium text-muted-foreground'
 const LABEL: Record<KasbonStatus, string> = {
-  'menunggu-ketua': 'Menunggu Ketua', disetujui: 'Disetujui, menunggu pencairan', dicairkan: 'Dicairkan', ditagihkan: 'Ditagihkan', lunas: 'Lunas', tertahan: 'Tertahan', ditolak: 'Ditolak', dibatalkan: 'Dibatalkan',
+  'menunggu-sekretaris': 'Menunggu Sekretaris', 'menunggu-ketua': 'Menunggu Ketua', disetujui: 'Disetujui, menunggu pencairan', dicairkan: 'Dicairkan', ditagihkan: 'Ditagihkan', lunas: 'Lunas', tertahan: 'Tertahan', ditolak: 'Ditolak', dibatalkan: 'Dibatalkan',
 }
 const VARIANT: Record<KasbonStatus, 'info' | 'success' | 'danger' | 'neutral' | 'warning'> = {
-  'menunggu-ketua': 'info', disetujui: 'info', dicairkan: 'success', ditagihkan: 'warning', lunas: 'success', tertahan: 'warning', ditolak: 'danger', dibatalkan: 'neutral',
+  'menunggu-sekretaris': 'warning', 'menunggu-ketua': 'info', disetujui: 'info', dicairkan: 'success', ditagihkan: 'warning', lunas: 'success', tertahan: 'warning', ditolak: 'danger', dibatalkan: 'neutral',
 }
 const labelOf = (k: Kasbon) => (k.status === 'ditagihkan' && k.periodeTagih ? `Ditagihkan (${periodLabel(k.periodeTagih)})` : LABEL[k.status])
 const closed = (k: Kasbon) => k.status === 'ditolak' || k.status === 'dibatalkan'
@@ -58,9 +62,14 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
   const [batalAlasan, setBatalAlasan] = useState('')
   const [batalErr, setBatalErr] = useState('')
   const [detail, setDetail] = useState<Kasbon | null>(null)
+  const [verif, setVerif] = useState<Kasbon | null>(null)
+  const [view, setView] = useState<'aplikasi' | 'semua'>('aplikasi')
 
   const block = kasbonBlock()
-  const list = KASBON.filter((k) => k.bulan === bulan && (!q || `${empOf(k.nik)?.nama} ${k.id}`.toLowerCase().includes(q.trim().toLowerCase())))
+  const nApp = appCount.kasbon()
+  const showApp = isSek && nApp > 0
+  const onApp = showApp && view === 'aplikasi'
+  const list = KASBON.filter((k) => (onApp ? k.status === 'menunggu-sekretaris' : k.bulan === bulan) && (!q || `${empOf(k.nik)?.nama} ${k.id}`.toLowerCase().includes(q.trim().toLowerCase())))
   const inMonth = KASBON.filter((k) => k.bulan === bulan)
   const total = inMonth.filter((k) => !['ditolak', 'dibatalkan'].includes(k.status)).reduce((a, k) => a + k.nominal, 0)
 
@@ -98,6 +107,14 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
 
       <Card>
         <CardContent className="space-y-4">
+          {showApp && (
+            <Tabs value={view} onValueChange={(v) => setView(v as 'aplikasi' | 'semua')}>
+              <TabsList>
+                <TabsTrigger value="aplikasi">Dari aplikasi ({nApp})</TabsTrigger>
+                <TabsTrigger value="semua">Semua kasbon</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
           <div className="relative w-full sm:w-72">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Input aria-label="Cari kasbon" placeholder="Cari anggota atau nomor…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -122,7 +139,12 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
               {list.map((k) => (
                 <TableRow key={k.id} className="h-12 hover:bg-muted/50">
                   <TableCell className="font-medium tabular-nums">{k.id}</TableCell>
-                  <TableCell><PersonCell nama={empOf(k.nik)?.nama ?? k.nik} nik={k.nik} /></TableCell>
+                  <TableCell>
+                    <div className="flex flex-col items-start gap-1">
+                      <PersonCell nama={empOf(k.nik)?.nama ?? k.nik} nik={k.nik} />
+                      <SourceBadge sumber={k.sumber} />
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">{rp(k.nominal)}</TableCell>
                   <TableCell className="text-right tabular-nums">{closed(k) ? '—' : rp(k.admin)}</TableCell>
                   <TableCell className="text-right font-medium tabular-nums">{closed(k) ? '—' : rp(kasbonTotal(k))}</TableCell>
@@ -147,11 +169,12 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {isSek && k.status === 'menunggu-sekretaris' && <Button variant="outline" size="sm" onClick={() => setVerif(k)}>Verifikasi</Button>}
                       {isKetua && k.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(k)}>Tinjau</Button>}
                       {isBend && k.status === 'disetujui' && <Button variant="outline" size="sm" onClick={() => setCair(k)}>Cairkan</Button>}
                       {isBend && k.status === 'dicairkan' && <Button variant="outline" size="sm" onClick={() => setTunai(k)}>Terima tunai</Button>}
-                      {isSek && (k.status === 'menunggu-ketua' || k.status === 'disetujui') && <Button variant="ghost" size="sm" onClick={() => { setBatalAlasan(''); setBatal(k) }}>Batalkan</Button>}
-                      {(closed(k) || k.status === 'lunas' || k.status === 'ditagihkan' || k.status === 'tertahan') && <Button variant="ghost" size="sm" onClick={() => setDetail(k)}>Detail</Button>}
+                      {isSek && (k.status === 'menunggu-sekretaris' || k.status === 'menunggu-ketua' || k.status === 'disetujui') && <Button variant="ghost" size="sm" onClick={() => { setBatalAlasan(''); setBatal(k) }}>Batalkan</Button>}
+                      {(closed(k) || k.status === 'menunggu-ketua' || k.status === 'lunas' || k.status === 'ditagihkan' || k.status === 'tertahan') && <Button variant="ghost" size="sm" onClick={() => setDetail(k)}>Detail</Button>}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -162,6 +185,21 @@ export default function CoopCashAdvancePage({ user }: { user: CurrentUser }) {
         </CardContent>
       </Card>
 
+      {verif && (
+        <VerifySheet
+          kind="kasbon" id={verif.id} who={empOf(verif.nik)?.nama ?? verif.nik} diajukan={verif.diajukan} oleh={verif.diinputOleh} actor={user.nama}
+          checks={kasbonChecks(verif)} onClose={() => setVerif(null)}
+          rows={[
+            ['Anggota', `${empOf(verif.nik)?.nama} · ${verif.nik}`],
+            ['Nominal', rp(verif.nominal)],
+            ['Biaya admin ' + settingAt('kasbonAdminPct') + '%', rp(verif.admin)],
+            ['Total tagihan', rp(kasbonTotal(verif))],
+            ['Penyelesaian', verif.penyelesaian === 'potong' ? 'Potong gaji' : 'Tunai ke Bendahara'],
+            ['Tujuan', verif.tujuan + (verif.catatan ? ` · ${verif.catatan}` : '')],
+            ['Plafon ' + bulanName(verif.bulan), `terpakai ${rp(kasbonUsed(verif.nik, verif.bulan))} dari ${rp(settingAt('kasbonPlafond'))}`],
+          ]}
+        />
+      )}
       {detail && <DetailSheet k={detail} onClose={() => setDetail(null)} />}
       {ajukan && <AjukanSheet actor={user.nama} onClose={() => setAjukan(false)} />}
 
@@ -334,7 +372,8 @@ function DetailSheet({ k, onClose }: { k: Kasbon; onClose: () => void }) {
           <dt className="text-muted-foreground">Penyelesaian</dt><dd>{k.penyelesaian === 'potong' ? 'Potong gaji' : 'Tunai ke Bendahara'}</dd>
           <dt className="text-muted-foreground">Tujuan</dt><dd>{k.tujuan}{k.catatan ? ` · ${k.catatan}` : ''}</dd>
           <dt className="text-muted-foreground">Diajukan</dt><dd>{formatDate(k.diajukan)} · {k.diinputOleh}</dd>
-          {k.keputusan && (<><dt className="text-muted-foreground">Keputusan Ketua</dt><dd>{k.keputusan.oleh} · {formatDate(k.keputusan.tanggal)}{k.keputusan.alasan ? ` · ${k.keputusan.alasan}` : ''}</dd></>)}
+          {k.verif && (<><dt className="text-muted-foreground">Verifikasi Sekretaris</dt><dd>{k.verif.oleh} · {formatDate(k.verif.tanggal)}{k.verif.catatan ? ` · ${k.verif.catatan}` : ''}</dd></>)}
+          {k.keputusan && (<><dt className="text-muted-foreground">Keputusan {k.keputusan.oleh === 'Ratna Dewi' ? 'Sekretaris' : 'Ketua'}</dt><dd>{k.keputusan.oleh} · {formatDate(k.keputusan.tanggal)}{k.keputusan.alasan ? ` · ${k.keputusan.alasan}` : ''}</dd></>)}
           {k.cair && (<><dt className="text-muted-foreground">Pencairan</dt><dd>{k.cair.oleh} · {formatDate(k.cair.tanggal)} · Ref. {k.cair.ref} · {k.cair.bukti}</dd></>)}
           {k.tunai && (<><dt className="text-muted-foreground">Diterima tunai</dt><dd>{k.tunai.oleh} · {formatDate(k.tunai.tanggal)} · {k.tunai.bukti}</dd></>)}
           {k.batal && (<><dt className="text-muted-foreground">Dibatalkan</dt><dd>{k.batal.oleh} · {formatDate(k.batal.tanggal)} · {k.batal.alasan}</dd></>)}

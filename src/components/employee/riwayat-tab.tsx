@@ -1,15 +1,19 @@
 import { DiscJenisBadge, DiscStatusCell } from '@/components/industrial/shared'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { canSeeDiscipline, disciplineOf, useDiscipline, violationOf } from '@/data/discipline'
+import { approvedOf, changedLabels, usePcs } from '@/data/profile-changes'
 import { riwayatOf, showsPay, useTrx } from '@/data/transactions'
 import type { CurrentUser } from '@/data/users'
 import { formatDate } from '@/lib/format'
+import { DEMO_TODAY } from '@/lib/today'
 
 /** Riwayat Kepegawaian: linimasa terbaru di atas; dibangkitkan dari Transaksi Kepegawaian dan riwayat kontrak. */
 export function RiwayatTab({ nik, user }: { nik: string; user: CurrentUser }) {
   useTrx()
   useDiscipline()
-  const entries = riwayatOf(nik, showsPay(user))
+  usePcs()
+  const pdt = approvedOf(nik).map((c) => ({ tanggal: DEMO_TODAY, judul: 'Perubahan data pribadi', detail: `${changedLabels(c).join(', ')} diperbarui atas pengajuan pegawai, diverifikasi ${c.keputusan?.by ?? 'HR Personalia'}`, trxNo: undefined, suratNo: undefined, terjadwal: false }))
+  const entries = [...pdt, ...riwayatOf(nik, showsPay(user))].sort((a, b) => b.tanggal.localeCompare(a.tanggal))
   // Catatan disiplin hanya untuk HR Development & Industrial, HR & GA Manager, dan atasan langsung.
   const disc = canSeeDiscipline(nik, user) ? disciplineOf(nik) : []
   return (

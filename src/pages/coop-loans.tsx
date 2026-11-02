@@ -17,6 +17,9 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SourceBadge } from '@/components/mobile/source-badge'
+import { VerifySheet } from '@/components/koperasi/verify-sheet'
+import { appCount, loanChecks } from '@/data/koperasi/mobile'
 import {
   BILL_PERIOD_IDS, billStateOf, cairkanLoan, cancelLoan, catatPelunasan, createLoan, createNonKop, decideLoan, eligibility, konfirmasiPelunasan, koperasiLoans, loanBlock, loanDisburser,
   loanError, loanMutasi, loanReviewer, lunasCount, nonLoans, paidSum, periodLabel, plafon, scheduleOf, setorNonKop, sisaOf, TUJUAN, type InstStatus, type Loan, type LoanStatus,
@@ -30,8 +33,8 @@ import { formatDate } from '@/lib/format'
 import { DEMO_TODAY } from '@/lib/today'
 
 const head = 'text-xs font-medium text-muted-foreground'
-const LABEL: Record<LoanStatus, string> = { 'menunggu-ketua': 'Menunggu Ketua', disetujui: 'Disetujui, menunggu pencairan', aktif: 'Aktif', lunas: 'Lunas', ditolak: 'Ditolak', dibatalkan: 'Dibatalkan' }
-const VARIANT: Record<LoanStatus, 'info' | 'success' | 'danger' | 'neutral'> = { 'menunggu-ketua': 'info', disetujui: 'info', aktif: 'success', lunas: 'neutral', ditolak: 'danger', dibatalkan: 'neutral' }
+const LABEL: Record<LoanStatus, string> = { 'menunggu-sekretaris': 'Menunggu Sekretaris', 'menunggu-ketua': 'Menunggu Ketua', disetujui: 'Disetujui, menunggu pencairan', aktif: 'Aktif', lunas: 'Lunas', ditolak: 'Ditolak', dibatalkan: 'Dibatalkan' }
+const VARIANT: Record<LoanStatus, 'info' | 'success' | 'danger' | 'neutral' | 'warning'> = { 'menunggu-sekretaris': 'warning', 'menunggu-ketua': 'info', disetujui: 'info', aktif: 'success', lunas: 'neutral', ditolak: 'danger', dibatalkan: 'neutral' }
 const INST_LABEL: Record<InstStatus, string> = { akan: 'Akan datang', ditagihkan: 'Ditagihkan', lunas: 'Lunas', tertahan: 'Tertahan' }
 const INST_VARIANT: Record<InstStatus, 'neutral' | 'warning' | 'success'> = { akan: 'neutral', ditagihkan: 'warning', lunas: 'success', tertahan: 'warning' }
 const curMonth = DEMO_TODAY.slice(0, 7)
@@ -48,9 +51,13 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
   const [detail, setDetail] = useState<string | null>(null)
   const [review, setReview] = useState<Loan | null>(null)
   const [cair, setCair] = useState<Loan | null>(null)
+  const [verif, setVerif] = useState<Loan | null>(null)
+  const [view, setView] = useState<'aplikasi' | 'semua'>('aplikasi')
 
   const all = tab === 'koperasi' ? koperasiLoans() : nonLoans()
-  const list = all.filter((l) => !q || `${empOf(l.nik)?.nama} ${l.id}`.toLowerCase().includes(q.trim().toLowerCase()))
+  const nApp = appCount.pinjaman()
+  const onApp = isSek && tab === 'koperasi' && nApp > 0 && view === 'aplikasi'
+  const list = all.filter((l) => (!onApp || l.status === 'menunggu-sekretaris') && (!q || `${empOf(l.nik)?.nama} ${l.id}`.toLowerCase().includes(q.trim().toLowerCase())))
   const aktif = all.filter((l) => l.status === 'aktif')
   const bulanIni = aktif.reduce((a, l) => a + l.inst.filter((i) => i.tagihPeriode === curMonth && i.status !== 'lunas').reduce((x, i) => x + i.nominal, 0), 0)
 
@@ -77,6 +84,14 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
 
       <Card>
         <CardContent className="space-y-4">
+          {isSek && tab === 'koperasi' && nApp > 0 && (
+            <Tabs value={view} onValueChange={(v) => setView(v as 'aplikasi' | 'semua')}>
+              <TabsList>
+                <TabsTrigger value="aplikasi">Dari aplikasi ({nApp})</TabsTrigger>
+                <TabsTrigger value="semua">Semua pinjaman</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
           <div className="relative w-full sm:w-72">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Input aria-label="Cari pinjaman" placeholder="Cari anggota atau nomor…" className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -100,7 +115,12 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
               {list.map((l) => (
                 <TableRow key={l.id} className="h-12 hover:bg-muted/50">
                   <TableCell className="font-medium tabular-nums">{l.id}</TableCell>
-                  <TableCell><PersonCell nama={empOf(l.nik)?.nama ?? l.nik} nik={l.nik} /></TableCell>
+                  <TableCell>
+                    <div className="flex flex-col items-start gap-1">
+                      <PersonCell nama={empOf(l.nik)?.nama ?? l.nik} nik={l.nik} />
+                      <SourceBadge sumber={l.sumber} />
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">{rp(l.pokok)}</TableCell>
                   <TableCell className="tabular-nums">{l.tenor} bulan</TableCell>
                   <TableCell className="text-right tabular-nums">{rp(l.angsuran ?? scheduleOf(l.pokok, l.tenor)[0] ?? 0)}</TableCell>
@@ -115,6 +135,7 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {isSek && l.status === 'menunggu-sekretaris' && <Button variant="outline" size="sm" onClick={() => setVerif(l)}>Verifikasi</Button>}
                       {isKetua && l.status === 'menunggu-ketua' && <Button variant="outline" size="sm" onClick={() => setReview(l)}>Tinjau</Button>}
                       {isBend && l.status === 'disetujui' && <Button variant="outline" size="sm" onClick={() => setCair(l)}>Cairkan</Button>}
                       <Button variant="ghost" size="sm" onClick={() => setDetail(l.id)}>Detail</Button>
@@ -129,6 +150,20 @@ export default function CoopLoansPage({ user }: { user: CurrentUser }) {
 
       {ajukan && <AjukanSheet actor={user.nama} onClose={() => setAjukan(false)} />}
       {nonSheet && <NonKopSheet actor={user.nama} onClose={() => setNonSheet(false)} />}
+      {verif && (
+        <VerifySheet
+          kind="pinjaman" id={verif.id} who={empOf(verif.nik)?.nama ?? verif.nik} diajukan={verif.diajukan} oleh={verif.diinputOleh} actor={user.nama}
+          checks={loanChecks(verif)} onClose={() => setVerif(null)}
+          rows={[
+            ['Anggota', `${empOf(verif.nik)?.nama} · ${verif.nik}`],
+            ['Pokok', rp(verif.pokok)],
+            ['Tenor', `${verif.tenor} bulan`],
+            ['Angsuran', `${rp(scheduleOf(verif.pokok, verif.tenor)[0] ?? 0)} / bulan (tanpa jasa)`],
+            ['Tujuan', verif.tujuan],
+            ['Plafon tersedia', `${rp(plafon(verif.nik, verif.id).tersedia)} (${plafon(verif.nik, verif.id).kali}× simpanan wajib dikurangi pinjaman berjalan)`],
+          ]}
+        />
+      )}
       {detail && <DetailSheet id={detail} user={user} onClose={() => setDetail(null)} />}
       {review && (
         <ReviewSheet
@@ -404,7 +439,7 @@ function DetailSheet({ id, user, onClose }: { id: string; user: CurrentUser; onC
         <SheetFooter className="flex-row flex-wrap justify-end gap-2">
           {isSek && l.status === 'aktif' && !l.pelunasan && <Button variant="outline" onClick={() => setPelunasan(true)}>Pelunasan</Button>}
           {isBend && l.pelunasan?.status === 'menunggu-bendahara' && <Button onClick={() => { konfirmasiPelunasan(l.id, 'Nina Marlina'); toast.success(`${l.id} Lunas`) }}>Konfirmasi Pelunasan</Button>}
-          {isSek && (l.status === 'menunggu-ketua' || l.status === 'disetujui') && <Button variant="outline" onClick={() => { cancelLoan(l.id, 'Dibatalkan Sekretaris', user.nama); toast.success(`${l.id} dibatalkan`) }}>Batalkan</Button>}
+          {isSek && (l.status === 'menunggu-sekretaris' || l.status === 'menunggu-ketua' || l.status === 'disetujui') && <Button variant="outline" onClick={() => { cancelLoan(l.id, 'Dibatalkan Sekretaris', user.nama); toast.success(`${l.id} dibatalkan`) }}>Batalkan</Button>}
           <Button variant="outline" onClick={onClose}>Tutup</Button>
         </SheetFooter>
         {pelunasan && <PelunasanDialog l={l} actor={user.nama} onClose={() => setPelunasan(false)} />}

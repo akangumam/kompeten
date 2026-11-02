@@ -6,6 +6,7 @@ import { stageActor } from '@/data/koperasi/ksb'
 import { activeMembers, memberOf, monthsAsMember } from '@/data/koperasi/members'
 import { settingAt } from '@/data/koperasi/settings'
 import { bump } from '@/data/koperasi/store'
+import { notify } from '@/data/notifications'
 import { DEMO_TODAY } from '@/lib/today'
 
 /**
@@ -17,7 +18,9 @@ export const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'
 export const bulanName = (id: string) => MONTHS_ID[Number(id.slice(5, 7)) - 1]
 export const periodLabel = (id: string) => `${bulanName(id)} ${id.slice(0, 4)}`
 export const rp = (n: number) => `Rp ${n.toLocaleString('id-ID')}`
-type Decision = { oleh: string; tanggal: string; alasan?: string }
+export type Decision = { oleh: string; tanggal: string; alasan?: string }
+/** Verifikasi Sekretaris atas pengajuan anggota dari aplikasi. */
+export type Verif = { oleh: string; tanggal: string; catatan?: string }
 type Cair = { oleh: string; tanggal: string; ref: string; bukti: string }
 
 /* ============================ Periode tagihan payroll ============================ */
@@ -32,7 +35,7 @@ export const billStateOf = (id: string) => BILL_STATE[id] ?? { status: 'draft' a
 export const nextOpenPeriod = (after = '2026-09') => BILL_PERIOD_IDS.find((id) => id > after && billStateOf(id).status === 'draft') ?? BILL_PERIOD_IDS[BILL_PERIOD_IDS.length - 1]
 
 /* ============================ Kasbon ============================ */
-export type KasbonStatus = 'menunggu-ketua' | 'disetujui' | 'dicairkan' | 'ditagihkan' | 'lunas' | 'tertahan' | 'ditolak' | 'dibatalkan'
+export type KasbonStatus = 'menunggu-sekretaris' | 'menunggu-ketua' | 'disetujui' | 'dicairkan' | 'ditagihkan' | 'lunas' | 'tertahan' | 'ditolak' | 'dibatalkan'
 export const TUJUAN = ['Kebutuhan keluarga', 'Pendidikan', 'Kesehatan', 'Lainnya'] as const
 export type Kasbon = {
   id: string
@@ -47,6 +50,9 @@ export type Kasbon = {
   diajukan: string
   diinputOleh: string
   status: KasbonStatus
+  /** 'aplikasi' = diajukan anggota lewat aplikasi mobile (diverifikasi Sekretaris lebih dulu). */
+  sumber?: 'web' | 'aplikasi'
+  verif?: Verif
   keputusan?: Decision
   cair?: Cair
   /** Periode payroll tempat tagihan dipotong. */
@@ -63,9 +69,12 @@ export const KASBON: Kasbon[] = [
   kb('KSB-2026-0101', 'PPI-2024-0112', '2026-10', 500_000, { diajukan: '2026-10-05', keputusan: { oleh: 'Rudi Hartanto', tanggal: '2026-10-05' }, cair: { oleh: 'Nina Marlina', tanggal: '2026-10-06', ref: 'TRF-061026-001', bukti: 'bukti-ksb-0101.pdf' }, periodeTagih: '2026-10' }),
   kb('KSB-2026-0095', 'PPI-2024-0112', '2026-09', 300_000, { diajukan: '2026-09-04', status: 'lunas', penyelesaian: 'tunai', keputusan: { oleh: 'Rudi Hartanto', tanggal: '2026-09-04' }, cair: { oleh: 'Nina Marlina', tanggal: '2026-09-05', ref: 'TRF-050926-001', bukti: 'bukti-ksb-0095.pdf' }, tunai: { oleh: 'Nina Marlina', tanggal: '2026-09-28', bukti: 'bukti-tunai-ksb-0095.pdf' } }),
 ]
-let ksbSeq = 103
+// Seed pengajuan dari aplikasi mobile: menunggu verifikasi Sekretaris. Jendela kasbon Okt = tgl 1–23, jadi tanggal pengajuan 22 Okt.
+KASBON.unshift(kb('KSB-2026-0103', 'PPI-2022-0045', '2026-10', 500_000, { diajukan: '2026-10-22', diinputOleh: 'Wahyu Hidayat (aplikasi)', status: 'menunggu-sekretaris', sumber: 'aplikasi' }))
+notify({ to: 'sekretaris', title: 'Kasbon dari aplikasi', body: 'Kasbon dari aplikasi — Wahyu Hidayat Rp 500.000', page: 'coop-cash-advance' })
+let ksbSeq = 104
 
-const RESERVING_KASBON: KasbonStatus[] = ['menunggu-ketua', 'disetujui', 'dicairkan', 'ditagihkan', 'tertahan']
+const RESERVING_KASBON: KasbonStatus[] = ['menunggu-sekretaris', 'menunggu-ketua', 'disetujui', 'dicairkan', 'ditagihkan', 'tertahan']
 export const kasbonTotal = (k: Kasbon) => k.nominal + k.admin
 export const kasbonUsed = (nik: string, bulan: string) => KASBON.filter((k) => k.nik === nik && k.bulan === bulan && RESERVING_KASBON.includes(k.status)).reduce((a, k) => a + k.nominal, 0)
 
@@ -136,7 +145,7 @@ export function terimaTunai(id: string, input: { tanggal: string; bukti: string 
 }
 export function batalKasbon(id: string, alasan: string, by: string) {
   const k = KASBON.find((x) => x.id === id)
-  if (!k || (k.status !== 'menunggu-ketua' && k.status !== 'disetujui')) return
+  if (!k || (k.status !== 'menunggu-sekretaris' && k.status !== 'menunggu-ketua' && k.status !== 'disetujui')) return
   k.status = 'dibatalkan'
   k.batal = { oleh: by, tanggal: DEMO_TODAY, alasan }
   bump()
@@ -148,7 +157,7 @@ export const previewAdmin = adminOf
 /* ============================ Pinjaman ============================ */
 export type InstStatus = 'akan' | 'ditagihkan' | 'lunas' | 'tertahan'
 export type Inst = { ke: number; periode: string; nominal: number; status: InstStatus; /** Periode payroll yang menagih (berpindah saat Tertahan). */ tagihPeriode: string; setoran?: { tanggal: string; bukti: string; oleh: string } }
-export type LoanStatus = 'menunggu-ketua' | 'disetujui' | 'aktif' | 'lunas' | 'ditolak' | 'dibatalkan'
+export type LoanStatus = 'menunggu-sekretaris' | 'menunggu-ketua' | 'disetujui' | 'aktif' | 'lunas' | 'ditolak' | 'dibatalkan'
 export type Pelunasan = { nominal: number; metode: 'Tunai' | 'Transfer'; bukti: string; oleh: string; tanggal: string; status: 'menunggu-bendahara' | 'dikonfirmasi'; konfirmasi?: { oleh: string; tanggal: string } }
 export type Loan = {
   id: string
@@ -160,6 +169,8 @@ export type Loan = {
   diajukan: string
   diinputOleh: string
   status: LoanStatus
+  sumber?: 'web' | 'aplikasi'
+  verif?: Verif
   keputusan?: Decision
   cair?: Cair
   inst: Inst[]
@@ -206,7 +217,9 @@ export const LOANS: Loan[] = [
     inst: mkInst('2026-11', Array(10).fill(560_000)),
   }),
 ]
-let pjkSeq = 72
+LOANS.unshift(loan({ id: 'PJK-2026-0072', jenis: 'koperasi', nik: 'PPI-2024-0127', pokok: 2_000_000, tenor: 6, diajukan: '2026-10-25', diinputOleh: 'Siti Nurhaliza (aplikasi)', status: 'menunggu-sekretaris', sumber: 'aplikasi', inst: [], tujuan: 'Kebutuhan keluarga' }))
+notify({ to: 'sekretaris', title: 'Pinjaman dari aplikasi', body: 'Pinjaman koperasi dari aplikasi — Siti Nurhaliza Rp 2.000.000 tenor 6 bulan', page: 'coop-loans' })
+let pjkSeq = 73
 let pnkSeq = 5
 
 export const koperasiLoans = () => LOANS.filter((l) => l.jenis === 'koperasi')
@@ -214,7 +227,7 @@ export const nonLoans = () => LOANS.filter((l) => l.jenis === 'non')
 export const lunasCount = (l: Loan) => l.inst.filter((i) => i.status === 'lunas').length
 export const paidSum = (l: Loan) => l.inst.filter((i) => i.status === 'lunas').reduce((a, i) => a + i.nominal, 0)
 /** Sisa pokok (Koperasi) atau sisa kewajiban (Non-Koperasi): pokok/jumlah angsuran dikurangi yang Lunas. */
-export const sisaOf = (l: Loan) => (l.status === 'aktif' ? (l.jenis === 'non' ? l.inst.reduce((a, i) => a + i.nominal, 0) : l.pokok) - paidSum(l) : l.status === 'menunggu-ketua' || l.status === 'disetujui' ? l.pokok : 0)
+export const sisaOf = (l: Loan) => (l.status === 'aktif' ? (l.jenis === 'non' ? l.inst.reduce((a, i) => a + i.nominal, 0) : l.pokok) - paidSum(l) : l.status === 'menunggu-sekretaris' || l.status === 'menunggu-ketua' || l.status === 'disetujui' ? l.pokok : 0)
 export const totalAngsuran = (l: Loan) => l.inst.reduce((a, i) => a + i.nominal, 0)
 
 /** Masa keanggotaan dan kelayakan pinjaman. */
@@ -274,7 +287,7 @@ export function cairkanLoan(id: string, input: { tanggal: string; ref: string; b
 }
 export function cancelLoan(id: string, alasan: string, by: string) {
   const l = LOANS.find((x) => x.id === id)
-  if (!l || (l.status !== 'menunggu-ketua' && l.status !== 'disetujui')) return
+  if (!l || (l.status !== 'menunggu-sekretaris' && l.status !== 'menunggu-ketua' && l.status !== 'disetujui')) return
   l.status = 'dibatalkan'
   l.batal = { oleh: by, tanggal: DEMO_TODAY, alasan }
   bump()

@@ -88,7 +88,7 @@ export default function TrainingPage({ user }: { user: CurrentUser }) {
 
       <ProgramSheet open={!!sheet} program={sheet?.program} readOnly={sheet?.readOnly ?? true} onClose={() => setSheet(null)} />
       <DetailSheet target={detail} user={user} onClose={() => setDetail(null)} onUji={(kode, nik) => setUji({ kode, nik })} />
-      <UjiDialog target={uji} onClose={() => setUji(null)} />
+      <UjiDialog target={uji} oleh={user.nama} onClose={() => setUji(null)} />
       <AttendanceSheet target={hadir} onClose={() => setHadir(null)} />
       <CertificateDialog no={cert} onClose={() => setCert(null)} />
       <ProposeDialog open={!!propose} program={propose?.program} user={user} onClose={() => setPropose(null)} />

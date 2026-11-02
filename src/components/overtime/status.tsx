@@ -1,9 +1,10 @@
-import { Ban, CalendarClock, CircleCheck, CircleSlash, CircleX, Hourglass, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { Ban, CalendarClock, CircleCheck, CircleSlash, CircleX, Hourglass, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { OT_LABEL, type OtStatus } from '@/data/overtime'
 
 const META: Record<OtStatus, { variant: 'info' | 'success' | 'warning' | 'danger' | 'neutral'; icon: LucideIcon }> = {
   'menunggu-approval': { variant: 'info', icon: Hourglass },
+  'menunggu-persetujuan-pegawai': { variant: 'info', icon: UserCheck },
   terjadwal: { variant: 'neutral', icon: CalendarClock },
   'menunggu-validasi': { variant: 'warning', icon: Hourglass },
   'menunggu-validasi-manager': { variant: 'info', icon: Hourglass },

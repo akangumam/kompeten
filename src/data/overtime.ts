@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/format'
 
 export type OtStatus =
   | 'menunggu-approval'
+  | 'menunggu-persetujuan-pegawai'
   | 'terjadwal'
   | 'menunggu-validasi'
   | 'menunggu-validasi-manager'
@@ -25,6 +26,7 @@ export type OtStatus =
 
 export const OT_LABEL: Record<OtStatus, string> = {
   'menunggu-approval': 'Menunggu Approval',
+  'menunggu-persetujuan-pegawai': 'Menunggu Persetujuan Pegawai',
   terjadwal: 'Terjadwal',
   'menunggu-validasi': 'Menunggu Validasi',
   'menunggu-validasi-manager': 'Menunggu Validasi Manager',
@@ -52,6 +54,8 @@ export type OtRecord = {
   /** Istirahat selama lembur (menit, kelipatan 15) yang dikurangkan dari realisasi. */
   istirahat?: number
   decision?: { by: string; at: string; alasan?: string }
+  /** Persetujuan pegawai atas SPL (PP 35/2021). `via` menunjukkan siapa yang menjawab. */
+  persetujuanPegawai?: { setuju: boolean; at: string; via: 'aplikasi' | 'dicatat-atasan' | 'dicatat-hr'; oleh?: string; alasan?: string }
   /** Verifikasi HRD setelah validasi Atasan; data berlaku (Tervalidasi) setelah langkah ini. */
   verif?: { by: string; at: string }
 }
@@ -201,8 +205,11 @@ export const canDecide = (user: OtUser, e: RosterEmployee, status: OtStatus) => 
 }
 /** Verifikasi HRD: hanya HR Personalia, setelah Atasan memvalidasi realisasi. */
 export const canVerify = (user: OtUser, status: OtStatus) => can(user, 'attendance.manage') && status === 'menunggu-verifikasi'
+/** Persetujuan lisan dicatat oleh Atasan pegawai atau HR Personalia. */
+export const canRecordConsent = (user: OtUser, e: RosterEmployee, status: OtStatus) =>
+  status === 'menunggu-persetujuan-pegawai' && (can(user, 'attendance.manage') || (user.role === 'supervisor' && e.atasanId === user.nik))
 export const canCancel = (user: OtUser, e: RosterEmployee, status: OtStatus) =>
-  (status === 'terjadwal' || status === 'menunggu-approval') && (can(user, 'attendance.manage') || (user.role === 'supervisor' && e.atasanId === user.nik))
+  (status === 'terjadwal' || status === 'menunggu-approval' || status === 'menunggu-persetujuan-pegawai') && (can(user, 'attendance.manage') || (user.role === 'supervisor' && e.atasanId === user.nik))
 
 export const onBehalfOf = (user: OtUser, e: RosterEmployee) =>
   user.role === 'manager' && e.atasanId !== 'manager' ? atasanOf(e).nama : null
@@ -337,6 +344,7 @@ const WAHYU = 'PPI-2022-0045'
 const LUKMAN = 'PPI-2025-0071'
 const HENDRA = 'PPI-2019-0007'
 const DEDI = 'PPI-2025-0034'
+const lisan = (at: string): Partial<OtRecord> => ({ persetujuanPegawai: { setuju: true, at, via: 'dicatat-atasan', oleh: SPV, alasan: 'Disetujui lisan di briefing pagi' } })
 
 export const SEED_OVERTIME: OtRecord[] = [
   seed('LBR-2026-0371', EKO, '2026-09-07', '15.00', '18.00', 'Kejar target PO-2588 tutup botol 24 mm', 'tervalidasi', valid(3, '2026-09-07')),
@@ -374,6 +382,7 @@ export const SEED_OVERTIME: OtRecord[] = [
   seed('LBR-2026-0415', DEDI, '2026-10-27', '15.00', '19.00', 'Stok opname akhir bulan', 'terjadwal', {
     by: 'Bambang Hermawan',
     at: '24 Okt 2026, 13.20 WIB',
+    persetujuanPegawai: { setuju: true, at: '24 Okt 2026, 15.00 WIB', via: 'dicatat-atasan', oleh: 'Bambang Hermawan', alasan: 'Disetujui lisan saat briefing' },
   }),
   seed('LBR-2026-0416', EKO, '2026-10-29', '15.00', '18.00', 'Persiapan audit pelanggan', 'menunggu-approval', {
     by: 'Teddy Syahputra',
@@ -382,9 +391,25 @@ export const SEED_OVERTIME: OtRecord[] = [
   }),
   ...(['0417|2026-10-27', '0418|2026-10-28', '0419|2026-10-29', '0420|2026-10-30'] as const).map((k) => {
     const [n, d] = k.split('|')
-    return seed(`LBR-2026-${n}`, LUKMAN, d, '15.00', '19.00', 'Kejar target PO-2615', 'terjadwal', { at: '24 Okt 2026, 16.00 WIB' })
+    return seed(`LBR-2026-${n}`, LUKMAN, d, '15.00', '19.00', 'Kejar target PO-2615', 'terjadwal', { at: '24 Okt 2026, 16.00 WIB', ...lisan('24 Okt 2026, 16.30 WIB') })
+  }),
+  seed('LBR-2026-0421', YUSUF, '2026-10-28', '15.00', '18.00', 'Persiapan pengiriman PO-2618', 'menunggu-persetujuan-pegawai', { at: '26 Okt 2026, 09.10 WIB' }),
+  seed('LBR-2026-0421', RIZKY, '2026-10-28', '15.00', '18.00', 'Persiapan pengiriman PO-2618', 'menunggu-persetujuan-pegawai', { at: '26 Okt 2026, 09.10 WIB' }),
+  seed('LBR-2026-0422', EKO, '2026-10-30', '15.00', '18.00', 'Penyelesaian order PO-2620', 'terjadwal', {
+    at: '26 Okt 2026, 09.20 WIB',
+    persetujuanPegawai: { setuju: true, at: '26 Okt 2026, 10.12 WIB', via: 'aplikasi' },
+  }),
+  seed('LBR-2026-0423', WAHYU, '2026-10-29', '23.00', '02.00', 'Kejar target PO-2619', 'ditolak', {
+    at: '26 Okt 2026, 09.30 WIB',
+    persetujuanPegawai: { setuju: false, at: '26 Okt 2026, 11.05 WIB', via: 'aplikasi', alasan: 'Ada acara keluarga, tidak bisa lembur' },
+    decision: { by: 'Wahyu Hidayat', at: '26 Okt 2026, 11.05 WIB', alasan: 'Ada acara keluarga, tidak bisa lembur' },
   }),
 ]
+
+/** Jam mulai SPL sudah lewat (tanggal lebih awal dari hari ini, atau hari ini dan jam mulai ≤ jam sekarang). */
+export const startPassed = (r: Pick<OtRecord, 'date' | 'start'>, nowHHMM: string) =>
+  r.date < DEMO_TODAY || (r.date === DEMO_TODAY && toMin(r.start) <= toMin(nowHHMM))
+export const EXPIRE_REASON = 'Tidak disetujui pegawai sampai jam mulai'
 
 export const nextNo = (recs: OtRecord[]) =>
   `LBR-2026-${String(Math.max(...recs.map((r) => Number(r.no.slice(-4)))) + 1).padStart(4, '0')}`

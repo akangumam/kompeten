@@ -7,8 +7,6 @@ import { descId, Field } from '@/components/employee/field'
 import { EmployeeMulti } from '@/components/overtime/employee-multi'
 import type { NewSpl } from '@/components/overtime/use-overtime'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -57,12 +55,11 @@ export function BuatSplSheet({
   const [end, setEnd] = useState('')
   const [startTouched, setStartTouched] = useState(false)
   const [pekerjaan, setPekerjaan] = useState('')
-  const [consent, setConsent] = useState(false)
   const [blurred, setBlurred] = useState({ pekerjaan: false, start: false, end: false })
 
   useEffect(() => {
     if (open) {
-      setDate(''); setNiks([]); setStart(''); setEnd(''); setStartTouched(false); setPekerjaan(''); setConsent(false)
+      setDate(''); setNiks([]); setStart(''); setEnd(''); setStartTouched(false); setPekerjaan('')
       setBlurred({ pekerjaan: false, start: false, end: false })
     }
   }, [open])
@@ -103,7 +100,7 @@ export function BuatSplSheet({
 
   const pekerjaanError = blurred.pekerjaan && pekerjaan.trim().length < 10 ? 'Pekerjaan minimal 10 karakter' : ''
   const valid =
-    !!date && !dErr && emps.length > 0 && rows.every((r) => !r.error) && timesOk && dur > 0 && !tErr && pekerjaan.trim().length >= 10 && consent
+    !!date && !dErr && emps.length > 0 && rows.every((r) => !r.error) && timesOk && dur > 0 && !tErr && pekerjaan.trim().length >= 10
   const isSpv = user.role === 'supervisor'
 
   return (
@@ -113,7 +110,7 @@ export function BuatSplSheet({
           <SheetTitle>Buat SPL</SheetTitle>
           <SheetDescription>
             Surat Perintah Lembur diterbitkan sebelum pekerjaan dilakukan.{' '}
-            {isSpv ? 'SPL langsung berstatus Terjadwal.' : 'SPL menunggu approval atasan langsung.'}
+            {isSpv ? 'SPL diteruskan ke pegawai untuk persetujuan (PP 35/2021), lalu Terjadwal.' : 'SPL menunggu approval atasan langsung, lalu persetujuan pegawai.'}
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-4">
@@ -212,16 +209,6 @@ export function BuatSplSheet({
             />
           </Field>
 
-          <div className="flex items-start gap-3">
-            <Checkbox id="spl-setuju" checked={consent} onCheckedChange={(v) => setConsent(v === true)} className="mt-0.5" />
-            <Label htmlFor="spl-setuju" className="font-normal leading-snug">
-              <span className="font-medium">
-                Pegawai yang tercantum sudah menyetujui perintah lembur ini.
-                <span aria-hidden className="text-danger"> *</span>
-                <span className="sr-only"> (wajib)</span>
-              </span>
-            </Label>
-          </div>
           {date && <p className="sr-only">SPL untuk {formatDate(date)}</p>}
         </div>
         <SheetFooter className="flex-row justify-end gap-2">
